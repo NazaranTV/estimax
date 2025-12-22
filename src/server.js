@@ -16,14 +16,40 @@ app.use(express.json({ limit: '1mb' }));
 
 // Session middleware (MUST be before routes)
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
+const MySQLStore = require('express-mysql-session')(session);
+
+// MySQL session store options
+const sessionStoreOptions = {
+  clearExpired: true,
+  checkExpirationInterval: 900000, // 15 minutes
+  expiration: parseInt(process.env.SESSION_MAX_AGE) || 24 * 60 * 60 * 1000,
+  createDatabaseTable: true,
+  schema: {
+    tableName: 'sessions',
+    columnNames: {
+      session_id: 'session_id',
+      expires: 'expires',
+      data: 'data'
+    }
+  }
+};
+
+// Get connection options from DATABASE_URL
+const parseConnectionString = (connStr) => {
+  const url = new URL(connStr || 'mysql://root:password@localhost:3306/estimator3');
+  return {
+    host: url.hostname,
+    port: url.port || 3306,
+    user: url.username,
+    password: url.password,
+    database: url.pathname.slice(1)
+  };
+};
+
+const sessionStore = new MySQLStore(sessionStoreOptions, parseConnectionString(process.env.DATABASE_URL));
 
 app.use(session({
-  store: new pgSession({
-    pool: pool,
-    tableName: 'sessions',
-    createTableIfMissing: true,
-  }),
+  store: sessionStore,
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,

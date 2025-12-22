@@ -1,0 +1,94 @@
+========================================
+REQUIRED ENVIRONMENT VARIABLES FOR HOSTINGER
+========================================
+
+Click "Add Variable" or "Edit" next to "Environment Variables: None" and add these:
+
+MINIMUM REQUIRED (to get app running):
+----------------------------------------
+
+Name: DATABASE_URL
+Value: postgres://YOUR_DB_USER:YOUR_DB_PASSWORD@YOUR_DB_HOST:5432/YOUR_DB_NAME
+(Get this from Hostinger PostgreSQL database settings)
+
+Name: SESSION_SECRET
+Value: (Run this command to generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+Example: a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
+
+Name: NODE_ENV
+Value: production
+
+Name: PORT
+Value: 3000
+
+
+REQUIRED FOR EMAIL FEATURES (estimates/invoices):
+--------------------------------------------------
+
+Name: RESEND_API_KEY
+Value: re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+(Get from https://resend.com after signing up)
+
+Name: FROM_EMAIL
+Value: onboarding@resend.dev
+(Use this for testing, or your verified domain email for production)
+
+Name: PUBLIC_URL
+Value: https://your-app-name.hostinger.site
+(Your actual Hostinger URL)
+
+
+OPTIONAL (for price scraping features):
+----------------------------------------
+
+Name: VALUESERP_API_KEY
+Value: (Only if you use price scraping)
+
+Name: SCRAPINGFISH_API_KEY
+Value: (Only if you use price scraping)
+
+
+========================================
+HOW TO GET YOUR DATABASE_URL:
+========================================
+
+1. In Hostinger, go to Databases → PostgreSQL
+2. Find or create a database
+3. Note these details:
+   - Database name: u123456_estimax
+   - Username: u123456_estimax
+   - Password: (the password you set)
+   - Host: sql.hostinger.com (or similar)
+   - Port: 5432
+
+4. Format as:
+   postgres://username:password@host:port/database_name
+
+5. Example:
+   postgres://u123456_estimax:MyP@ssw0rd123@sql.hostinger.com:5432/u123456_estimax
+
+
+========================================
+GENERATE SESSION_SECRET:
+========================================
+
+Run this on your local computer:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+Copy the output (looks like: a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456)
+
+Paste it as the value for SESSION_SECRET
+
+
+========================================
+QUICK START (Minimum to deploy):
+========================================
+
+Just add these 4 variables to get started:
+
+DATABASE_URL = postgres://user:pass@host:5432/dbname
+SESSION_SECRET = (generated value from command above)
+NODE_ENV = production
+PORT = 3000
+
+Then add email variables later when you need to send invoices/estimates.

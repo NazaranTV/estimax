@@ -1,0 +1,124 @@
+========================================
+HOSTINGER ENVIRONMENT VARIABLES SETUP
+========================================
+
+You have 2 OPTIONS:
+
+┌─────────────────────────────────────┐
+│ OPTION 1: Import .env (EASIEST)    │
+└─────────────────────────────────────┘
+
+1. Open the file: .env.hostinger
+2. Replace the placeholder values with your actual credentials
+3. Save the file
+4. In Hostinger, click "Import .env"
+5. Select the .env.hostinger file
+6. Done!
+
+
+┌─────────────────────────────────────┐
+│ OPTION 2: Manual Entry              │
+└─────────────────────────────────────┘
+
+Click "Add more" for each variable and enter:
+
+Variable 1:
+Key: DATABASE_URL
+Value: postgres://YOUR_USERNAME:YOUR_PASSWORD@YOUR_HOST:5432/YOUR_DB_NAME
+
+Variable 2:
+Key: SESSION_SECRET
+Value: (Generate first - see instructions below)
+
+Variable 3:
+Key: NODE_ENV
+Value: production
+
+Variable 4:
+Key: PORT
+Value: 3000
+
+Variable 5 (Optional - for emails):
+Key: RESEND_API_KEY
+Value: (Get from resend.com)
+
+Variable 6 (Optional - for emails):
+Key: FROM_EMAIL
+Value: onboarding@resend.dev
+
+Variable 7 (Optional - for emails):
+Key: PUBLIC_URL
+Value: https://your-app.hostinger.site
+
+
+========================================
+BEFORE YOU START - GATHER THESE:
+========================================
+
+1. POSTGRESQL CREDENTIALS (from Hostinger)
+   → Go to: Hostinger Dashboard → Databases → PostgreSQL
+   → You need:
+     • Database name
+     • Username
+     • Password
+     • Host (usually sql.hostinger.com or similar)
+
+2. GENERATE SESSION SECRET (on your computer)
+   → Open terminal/command prompt
+   → Run: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   → Copy the output (long random string)
+
+3. RESEND API KEY (optional, for later)
+   → Sign up at: https://resend.com
+   → Get your API key from dashboard
+
+
+========================================
+EXAMPLE (with fake credentials):
+========================================
+
+If Hostinger shows:
+  Database: u123456_estimax_db
+  Username: u123456_estimax
+  Password: MyP@ss2024!
+  Host: sql.hostinger.com
+
+Then your DATABASE_URL would be:
+postgres://u123456_estimax:MyP@ss2024!@sql.hostinger.com:5432/u123456_estimax_db
+
+Your SESSION_SECRET might look like:
+9f7a8c2e1d4b6f3a9e8c7d2f1a5b9c4e6d8f2a7c3e5d1f9b8c4a6e2d7f3a1c5e
+
+
+========================================
+COPY-PASTE TEMPLATE:
+========================================
+
+DATABASE_URL=postgres://USERNAME:PASSWORD@HOST:5432/DATABASE
+SESSION_SECRET=YOUR_GENERATED_SECRET_HERE
+NODE_ENV=production
+PORT=3000
+RESEND_API_KEY=re_your_key_here
+FROM_EMAIL=onboarding@resend.dev
+PUBLIC_URL=https://your-app.hostinger.site
+
+
+========================================
+TROUBLESHOOTING:
+========================================
+
+❌ "Cannot connect to database"
+   → Check DATABASE_URL format
+   → Verify username, password, host, database name
+   → Ensure database exists in Hostinger
+
+❌ "Session error"
+   → Make sure SESSION_SECRET is set
+   → Generate new secret if needed
+
+❌ "Port already in use"
+   → Keep PORT as 3000 (Hostinger handles this)
+
+❌ Email not sending
+   → Add RESEND_API_KEY and FROM_EMAIL
+   → Verify API key at resend.com

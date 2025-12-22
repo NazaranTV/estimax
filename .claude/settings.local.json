@@ -48,7 +48,9 @@
       "Bash(\"/c/Users/19319/Desktop/cloudflared.exe\" tunnel --url http://localhost:3000)",
       "Bash(timeout 10 node:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []
