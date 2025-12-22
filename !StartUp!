@@ -1,0 +1,4 @@
+D:
+cd D:/Projects/Estimator3
+npm run
+C:\Users\19319\Desktop\cloudflared.exe tunnel --url http://localhost:3000
