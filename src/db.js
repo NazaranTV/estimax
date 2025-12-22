@@ -181,6 +181,27 @@ async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
     CREATE INDEX IF NOT EXISTS idx_notifications_document_id ON notifications(document_id);
 
+    CREATE TABLE IF NOT EXISTS company_settings (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      address TEXT,
+      phone TEXT,
+      email TEXT,
+      logo TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS payment_methods (
+      id SERIAL PRIMARY KEY,
+      method_name TEXT NOT NULL,
+      payment_url TEXT,
+      qr_code_url TEXT,
+      display_url TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
     -- ============================================================
     -- ADD user_id COLUMNS FOR DATA ISOLATION
     -- ============================================================
