@@ -23,6 +23,20 @@ console.log('Express app created');
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
+// Early health check before any DB dependencies
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Server is running',
+    env: {
+      nodeEnv: process.env.NODE_ENV,
+      port: PORT,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      hasSessionSecret: !!process.env.SESSION_SECRET
+    }
+  });
+});
+
 // Session middleware (MUST be before routes)
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
