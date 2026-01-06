@@ -6,25 +6,37 @@ const connectionString =
 // Parse MySQL connection string
 const parseConnectionString = (connStr) => {
   try {
+    console.log('[db.js] Parsing connection string...');
     const url = new URL(connStr);
-    return {
+    const config = {
       host: url.hostname,
       port: url.port || 3306,
-      user: url.username,
-      password: url.password,
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
       database: url.pathname.slice(1),
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
       charset: 'utf8mb4'
     };
+    console.log('[db.js] Config parsed:', {
+      host: config.host,
+      port: config.port,
+      user: config.user,
+      database: config.database
+    });
+    return config;
   } catch (err) {
-    console.error('Invalid DATABASE_URL format. Use: mysql://user:pass@host:port/database');
+    console.error('[db.js] ERROR: Invalid DATABASE_URL format');
+    console.error('[db.js] Error:', err.message);
+    console.error('[db.js] Expected format: mysql://user:pass@host:port/database');
     throw err;
   }
 };
 
+console.log('[db.js] Creating MySQL connection pool...');
 const pool = mysql.createPool(parseConnectionString(connectionString));
+console.log('[db.js] Pool created successfully');
 
 async function initDb() {
   const connection = await pool.getConnection();
