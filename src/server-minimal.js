@@ -1,6 +1,15 @@
 // Absolute minimal server for debugging
 console.log('=== MINIMAL SERVER STARTING ===');
 
+// TEMPORARY: Hardcode env vars if not set (Hostinger isn't loading them properly)
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'mysql://u210215546_estimax_user:Karlo1242773831%214815162342@localhost/u210215546_estimax';
+  process.env.SESSION_SECRET = '301d6a034fec732305b18772883b954db244d90075aa688da2b32bff8719f836';
+  process.env.NODE_ENV = 'production';
+  process.env.PORT = '3000';
+  console.log('✓ Hardcoded environment variables (TEMPORARY FIX)');
+}
+
 // Try to load .env.production first, fallback to .env
 const dotenv = require('dotenv');
 const fs = require('fs');
@@ -12,7 +21,7 @@ if (fs.existsSync('.env.production')) {
   dotenv.config();
   console.log('✓ Loaded .env');
 } else {
-  console.log('⚠ No .env file found, using system environment variables');
+  console.log('⚠ No .env file found');
 }
 
 const express = require('express');
