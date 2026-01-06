@@ -62,6 +62,21 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/diagnostic', (req, res) => {
+  res.json({
+    deploymentTest: 'v1.0.2-FRESH-' + Date.now(),
+    timestamp: new Date().toISOString(),
+    commitExpected: '7fdb3d5',
+    envVars: {
+      DATABASE_URL_RAW: process.env.DATABASE_URL,
+      SESSION_SECRET_RAW: process.env.SESSION_SECRET,
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+      ALL_ENV_KEYS: Object.keys(process.env).sort()
+    }
+  });
+});
+
 console.log('Routes defined, starting server...');
 
 app.listen(PORT, '0.0.0.0', () => {
