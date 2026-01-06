@@ -228,7 +228,7 @@ app.post('/api/documents', requireAuth, async (req, res) => {
         service_address, line_items, subtotal, tax_rate, total, status, due_date, valid_until, notes, converted_from_estimate, payment_status, updated_at
       )
       VALUES (?,?,?,?,?,?,?,?,?,?0,?1,?2,?3,?4,?5,?6,?7,?8,?9,?0,?1,NOW())
-      RETURNING *
+     
     `,
       [
         req.session.userId,
@@ -321,7 +321,7 @@ app.put('/api/documents/:id', requireAuth, async (req, res) => {
         payment_status = COALESCE(?9, payment_status),
         updated_at = NOW()
       WHERE id = ?0
-      RETURNING *
+     
     `,
       [
         type || null,
@@ -813,7 +813,7 @@ app.post('/api/documents/:id/send', requireAuth, async (req, res) => {
       UPDATE documents
       SET status = 'sent', sent_at = NOW(), sent_via = ?, updated_at = NOW()
       WHERE id = ?
-      RETURNING *
+     
     `,
       [id, sendMethod || 'manual'],
     );
@@ -828,7 +828,7 @@ app.post('/api/documents/:id/send', requireAuth, async (req, res) => {
 app.delete('/api/documents/:id', requireAuth, async (req, res) => {
   try {
     const { id} = req.params;
-    const { rows } = await pool.query('DELETE FROM documents WHERE id = ? AND user_id = ? RETURNING *', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM documents WHERE id = ? AND user_id = ?', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -965,7 +965,7 @@ app.post('/api/documents/:id/payments', requireAuth, async (req, res) => {
       `
       INSERT INTO payments (document_id, amount, payment_method, check_number, payment_date, notes, user_id)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-      RETURNING *
+     
       `,
       [id, amount, paymentMethod, checkNumber, paymentDate, notes || null, req.session.userId]
     );
@@ -1018,7 +1018,7 @@ app.put('/api/notifications/:id/read', requireAuth, async (req, res) => {
     const { isRead } = req.body;
 
     const { rows } = await pool.query(
-      'UPDATE notifications SET is_read = ? WHERE id = ? AND user_id = ? RETURNING *',
+      'UPDATE notifications SET is_read = ? WHERE id = ? AND user_id = ?',
       [isRead !== false, id, req.session.userId]
     );
 
@@ -1043,7 +1043,7 @@ app.put('/api/notifications/mark-all-read', requireAuth, async (req, res) => {
 app.delete('/api/notifications/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM notifications WHERE id = ? AND user_id = ? RETURNING *', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM notifications WHERE id = ? AND user_id = ?', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1071,7 +1071,7 @@ app.post('/api/clients', requireAuth, async (req, res) => {
       `
       INSERT INTO clients (user_id, name, email, phone, company, billing_email, billing_address, notes)
       VALUES (?,?,?,?,?,?,?,?)
-      RETURNING *
+     
     `,
       [req.session.userId, name, email || null, phone || null, company || null, billingEmail || null, billingAddress || null, notes || null],
     );
@@ -1097,7 +1097,7 @@ app.put('/api/clients/:id', requireAuth, async (req, res) => {
         billing_address = COALESCE(?, billing_address),
         notes = COALESCE(?, notes)
       WHERE id = ? AND user_id = ?
-      RETURNING *
+     
     `,
       [name || null, email || null, phone || null, company || null, billingEmail || null, billingAddress || null, notes || null, id, req.session.userId],
     );
@@ -1112,7 +1112,7 @@ app.put('/api/clients/:id', requireAuth, async (req, res) => {
 app.delete('/api/clients/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM clients WHERE id = ? AND user_id = ? RETURNING *', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM clients WHERE id = ? AND user_id = ?', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1140,7 +1140,7 @@ app.post('/api/items', requireAuth, async (req, res) => {
       `
       INSERT INTO items (user_id, name, description, default_qty, default_rate, default_markup)
       VALUES (?,?,?,?,?,?)
-      RETURNING *
+     
     `,
       [req.session.userId, name, description || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
     );
@@ -1164,7 +1164,7 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
         default_rate = COALESCE(?, default_rate),
         default_markup = COALESCE(?, default_markup)
       WHERE id = ? AND user_id = ?
-      RETURNING *
+     
     `,
       [name || null, description || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id, req.session.userId],
     );
@@ -1179,7 +1179,7 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
 app.delete('/api/items/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM items WHERE id = ? AND user_id = ? RETURNING *', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM items WHERE id = ? AND user_id = ?', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1266,7 +1266,7 @@ app.post('/api/materials', requireAuth, async (req, res) => {
       `
       INSERT INTO materials (user_id, name, description, default_qty, default_rate, default_markup)
       VALUES (?,?,?,?,?,?)
-      RETURNING *
+     
     `,
       [req.session.userId, name, description || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
     );
@@ -1290,7 +1290,7 @@ app.put('/api/materials/:id', requireAuth, async (req, res) => {
         default_rate = COALESCE(?, default_rate),
         default_markup = COALESCE(?, default_markup)
       WHERE id = ? AND user_id = ?
-      RETURNING *
+     
     `,
       [name || null, description || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id, req.session.userId],
     );
@@ -1305,7 +1305,7 @@ app.put('/api/materials/:id', requireAuth, async (req, res) => {
 app.delete('/api/materials/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM materials WHERE id = ? AND user_id = ? RETURNING *', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM materials WHERE id = ? AND user_id = ?', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1347,7 +1347,7 @@ app.put('/api/company-settings', requireAuth, async (req, res) => {
       const { rows } = await pool.query(
         `INSERT INTO company_settings (user_id, name, address, phone, email, logo, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, NOW())
-         RETURNING *`,
+        `,
         [req.session.userId, name, address, phone, email, logo]
       );
       return res.json(toCamel(rows[0]));
@@ -1357,7 +1357,7 @@ app.put('/api/company-settings', requireAuth, async (req, res) => {
         `UPDATE company_settings
          SET name = ?, address = ?, phone = ?, email = ?, logo = ?, updated_at = NOW()
          WHERE id = ? AND user_id = ?
-         RETURNING *`,
+        `,
         [name, address, phone, email, logo, existing[0].id, req.session.userId]
       );
       return res.json(toCamel(rows[0]));
@@ -1385,7 +1385,7 @@ app.post('/api/payment-methods', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO payment_methods (user_id, method_name, payment_url, qr_code_url, display_url, updated_at)
        VALUES (?, ?, ?, ?, ?, NOW())
-       RETURNING *`,
+      `,
       [req.session.userId, methodName, paymentUrl || null, qrCodeUrl, displayUrl || null]
     );
     res.json(toCamel(rows[0]));
@@ -1403,7 +1403,7 @@ app.put('/api/payment-methods/:id', requireAuth, async (req, res) => {
       `UPDATE payment_methods
        SET method_name = ?, payment_url = ?, qr_code_url = ?, display_url = ?, updated_at = NOW()
        WHERE id = ? AND user_id = ?
-       RETURNING *`,
+      `,
       [methodName, paymentUrl || null, qrCodeUrl, displayUrl || null, id, req.session.userId]
     );
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
@@ -1417,7 +1417,7 @@ app.put('/api/payment-methods/:id', requireAuth, async (req, res) => {
 app.delete('/api/payment-methods/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM payment_methods WHERE id = ? AND user_id = ? RETURNING *', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM payment_methods WHERE id = ? AND user_id = ?', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {

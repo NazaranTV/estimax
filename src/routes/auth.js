@@ -46,7 +46,7 @@ router.post('/register', async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO users (email, password_hash, email_verification_token, email_verification_expires)
        VALUES (?, ?, ?, ?)
-       RETURNING id, email, created_at`,
+       `,
       [normalizedEmail, passwordHash, verificationToken, verificationExpires]
     );
 
