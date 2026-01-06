@@ -7,6 +7,32 @@ const pool = new Pool({ connectionString });
 
 async function initDb() {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+      email_verification_token TEXT,
+      email_verification_expires TIMESTAMPTZ,
+      reset_token TEXT,
+      reset_token_expires TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      last_login_at TIMESTAMPTZ
+    );
+    CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+    CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(email_verification_token);
+    CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      sid VARCHAR(255) PRIMARY KEY,
+      sess JSON NOT NULL,
+      expire TIMESTAMPTZ NOT NULL,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);
+    CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+
     CREATE TABLE IF NOT EXISTS clients (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
