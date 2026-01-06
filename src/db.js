@@ -7,24 +7,6 @@ const pool = new Pool({ connectionString });
 
 async function initDb() {
   await pool.query(`
-    DO $$
-    BEGIN
-      IF EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE table_name='documents' AND constraint_type='UNIQUE' AND constraint_name='documents_po_number_key'
-      ) THEN
-        ALTER TABLE documents DROP CONSTRAINT documents_po_number_key;
-      END IF;
-    END$$;
-
-    ALTER TABLE documents
-      ADD COLUMN IF NOT EXISTS service_address TEXT,
-      ADD COLUMN IF NOT EXISTS client_billing_email TEXT,
-      ADD COLUMN IF NOT EXISTS client_billing_address TEXT,
-      ADD COLUMN IF NOT EXISTS valid_until DATE,
-      ADD COLUMN IF NOT EXISTS po_number TEXT,
-      ADD COLUMN IF NOT EXISTS client_phone TEXT;
-
     CREATE TABLE IF NOT EXISTS clients (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
