@@ -1,0 +1,94 @@
+========================================
+COPY-PASTE THESE INTO HOSTINGER
+========================================
+
+In Hostinger, under "Environment Variables", add these 4 variables:
+
+========================================
+VARIABLE 1 - DATABASE_URL
+========================================
+
+Key:
+DATABASE_URL
+
+Value:
+mysql://u210215546_Alexander90802:Karlo1242773831!4815162342@localhost/u210215546_estimax
+
+
+========================================
+VARIABLE 2 - SESSION_SECRET
+========================================
+
+Key:
+SESSION_SECRET
+
+Value:
+301d6a034fec732305b18772883b954db244d90075aa688da2b32bff8719f836
+
+
+========================================
+VARIABLE 3 - NODE_ENV
+========================================
+
+Key:
+NODE_ENV
+
+Value:
+production
+
+
+========================================
+VARIABLE 4 - PORT
+========================================
+
+Key:
+PORT
+
+Value:
+3000
+
+
+========================================
+OPTIONAL - EMAIL VARIABLES (Add Later)
+========================================
+
+Variable 5:
+Key: RESEND_API_KEY
+Value: (get from https://resend.com when ready)
+
+Variable 6:
+Key: FROM_EMAIL
+Value: onboarding@resend.dev
+
+Variable 7:
+Key: PUBLIC_URL
+Value: (your Hostinger app URL after deployment)
+
+
+========================================
+HOW TO ADD IN HOSTINGER
+========================================
+
+Option A - Import .env file:
+1. Click "Import .env"
+2. Select: .env.hostinger
+3. Done!
+
+Option B - Manual entry:
+1. Click "Add more" for each variable
+2. Copy the Key from above
+3. Copy the Value from above
+4. Repeat for all 4 required variables
+
+========================================
+THEN DEPLOY
+========================================
+
+1. Upload: estimax-hostinger-deploy.zip
+2. Framework: Express
+3. Node version: 22.x
+4. Root directory: ./
+5. Entry file: src/server.js
+6. Deploy!
+
+Your app will automatically create all database tables and be ready to use!

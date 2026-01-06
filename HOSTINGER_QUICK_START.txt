@@ -1,0 +1,142 @@
+========================================
+HOSTINGER DEPLOYMENT - QUICK START
+========================================
+
+Based on your Hostinger database shown in screenshot #2:
+
+Your MySQL Database Details:
+-----------------------------
+Database Name: u210215546_estimax
+Username: u210215546_Alexander90802
+Password: Karlo1242773831!4815162342
+Host: localhost
+
+========================================
+STEP 1: Get Your Database Password
+========================================
+
+In Hostinger:
+1. Go to: Databases → Management
+2. Look for database: u210155546_estimax
+3. Click on it or look for "Show Password" or similar
+4. Copy your password
+
+========================================
+STEP 2: Build Your DATABASE_URL
+========================================
+
+Format: mysql://USERNAME:PASSWORD@HOST/DATABASE
+
+Your DATABASE_URL will be:
+mysql://u210215546_Alexander90802:YOUR_PASSWORD_HERE@localhost/u210215546_estimax
+
+Example (if your password was "MyPass123"):
+mysql://u210215546_Alexander90802:MyPass123@localhost/u210215546_estimax
+
+========================================
+STEP 3: Set Environment Variables
+========================================
+
+In Hostinger deployment settings, add these variables:
+
+Variable 1:
+Key: DATABASE_URL
+Value: mysql://u210215546_Alexander90802:Karlo1242773831!4815162342@localhost/u210215546_estimax
+
+Variable 2:
+Key: SESSION_SECRET
+Value: 301d6a034fec732305b18772883b954db244d90075aa688da2b32bff8719f836
+
+Variable 3:
+Key: NODE_ENV
+Value: production
+
+Variable 4:
+Key: PORT
+Value: 3000
+
+========================================
+STEP 4: Optional Email Variables
+========================================
+
+(Add these later if you want to send invoices/estimates via email)
+
+Variable 5:
+Key: RESEND_API_KEY
+Value: (get from resend.com)
+
+Variable 6:
+Key: FROM_EMAIL
+Value: onboarding@resend.dev
+
+Variable 7:
+Key: PUBLIC_URL
+Value: (your Hostinger app URL)
+
+========================================
+STEP 5: Deploy
+========================================
+
+1. Upload: estimax-hostinger-deploy.zip
+2. Framework: Express
+3. Node version: 22.x
+4. Root directory: ./
+5. Entry file: src/server.js
+6. Click: Deploy
+
+========================================
+WHAT HAPPENS NEXT
+========================================
+
+The app will:
+✓ Install dependencies (mysql2, express-mysql-session, etc.)
+✓ Connect to your MySQL database
+✓ Auto-create all tables
+✓ Start the server
+✓ Be ready to use!
+
+Your database (u210215546_estimax) will be populated with tables like:
+- users
+- documents
+- clients
+- items
+- materials
+- payments
+- sessions
+- etc.
+
+========================================
+FIRST USE
+========================================
+
+1. Visit your Hostinger app URL
+2. Click "Register" to create your first account
+3. Check your email for verification
+4. Log in and start creating estimates/invoices!
+
+========================================
+TROUBLESHOOTING
+========================================
+
+If deployment fails:
+1. Check DATABASE_URL is exactly right (username, password, database name)
+2. Make sure SESSION_SECRET is set
+3. Verify database exists in Hostinger (u210215546_estimax)
+4. Check Hostinger logs for specific error messages
+
+Common mistakes:
+❌ Wrong password in DATABASE_URL
+❌ Missing @ or / in DATABASE_URL
+❌ Using wrong database name
+❌ Forgetting to set SESSION_SECRET
+
+========================================
+NEED HELP?
+========================================
+
+Check these files for more info:
+- MYSQL_MIGRATION_COMPLETE.md (detailed migration info)
+- SETUP_VARIABLES.txt (general setup guide)
+- HOSTINGER_DEPLOYMENT.md (full deployment guide)
+
+Your deployment package is ready: estimax-hostinger-deploy.zip (88 KB)
