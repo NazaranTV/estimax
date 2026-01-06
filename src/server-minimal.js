@@ -38,7 +38,20 @@ const PORT = process.env.PORT || 3000;
 console.log('Express loaded, PORT:', PORT);
 
 app.get('/', (req, res) => {
-  res.send('Hello from minimal server!');
+  const diagnostics = {
+    message: 'Hello from minimal server!',
+    version: 'v1.0.3-' + Date.now(),
+    commit: '92196f0-UPDATED',
+    timestamp: new Date().toISOString(),
+    envVars: {
+      DATABASE_URL: process.env.DATABASE_URL || 'NOT_SET',
+      SESSION_SECRET: process.env.SESSION_SECRET ? 'SET (' + process.env.SESSION_SECRET.length + ' chars)' : 'NOT_SET',
+      NODE_ENV: process.env.NODE_ENV || 'NOT_SET',
+      PORT: process.env.PORT || 'NOT_SET',
+      ALL_KEYS: Object.keys(process.env).sort().join(', ')
+    }
+  };
+  res.json(diagnostics);
 });
 
 app.get('/health', (req, res) => {
