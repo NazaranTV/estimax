@@ -26,6 +26,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
+  const path = require('path');
+  const cwd = process.cwd();
+  const envProductionPath = path.join(cwd, '.env.production');
+  const envPath = path.join(cwd, '.env');
+
   res.json({
     status: 'ok',
     message: 'Minimal server running',
@@ -34,6 +39,13 @@ app.get('/health', (req, res) => {
       PORT: PORT,
       DATABASE_URL: process.env.DATABASE_URL ? 'SET (length: ' + process.env.DATABASE_URL.length + ')' : 'NOT SET',
       SESSION_SECRET: process.env.SESSION_SECRET ? 'SET' : 'NOT SET'
+    },
+    debug: {
+      cwd: cwd,
+      envProductionExists: fs.existsSync(envProductionPath),
+      envExists: fs.existsSync(envPath),
+      envProductionPath: envProductionPath,
+      filesInCwd: fs.readdirSync(cwd).slice(0, 20)
     }
   });
 });
