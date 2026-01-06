@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Only load .env for local development (Railway provides env vars directly)
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 console.log('=== SERVER STARTING ===');
 console.log('NODE_ENV:', process.env.NODE_ENV);
