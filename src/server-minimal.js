@@ -1,6 +1,20 @@
 // Absolute minimal server for debugging
 console.log('=== MINIMAL SERVER STARTING ===');
 
+// Try to load .env.production first, fallback to .env
+const dotenv = require('dotenv');
+const fs = require('fs');
+
+if (fs.existsSync('.env.production')) {
+  dotenv.config({ path: '.env.production' });
+  console.log('✓ Loaded .env.production');
+} else if (fs.existsSync('.env')) {
+  dotenv.config();
+  console.log('✓ Loaded .env');
+} else {
+  console.log('⚠ No .env file found, using system environment variables');
+}
+
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
