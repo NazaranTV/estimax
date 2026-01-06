@@ -59,17 +59,39 @@ const sessionStoreOptions = {
 
 // Get connection options from DATABASE_URL
 const parseConnectionString = (connStr) => {
-  const url = new URL(connStr || 'mysql://root:password@localhost:3306/estimator3');
-  return {
-    host: url.hostname,
-    port: url.port || 3306,
-    user: url.username,
-    password: url.password,
-    database: url.pathname.slice(1)
-  };
+  try {
+    console.log('Parsing DATABASE_URL...');
+    const url = new URL(connStr || 'mysql://root:password@localhost:3306/estimator3');
+    const config = {
+      host: url.hostname,
+      port: url.port || 3306,
+      user: url.username,
+      password: decodeURIComponent(url.password),
+      database: url.pathname.slice(1)
+    };
+    console.log('Database config:', {
+      host: config.host,
+      port: config.port,
+      user: config.user,
+      database: config.database,
+      passwordLength: config.password.length
+    });
+    return config;
+  } catch (err) {
+    console.error('Failed to parse DATABASE_URL:', err.message);
+    throw new Error('Invalid DATABASE_URL format');
+  }
 };
 
-const sessionStore = new MySQLStore(sessionStoreOptions, parseConnectionString(process.env.DATABASE_URL));
+let sessionStore;
+try {
+  console.log('Creating MySQL session store...');
+  sessionStore = new MySQLStore(sessionStoreOptions, parseConnectionString(process.env.DATABASE_URL));
+  console.log('✓ Session store created');
+} catch (err) {
+  console.error('✗ Failed to create session store:', err.message);
+  process.exit(1);
+}
 
 app.use(session({
   store: sessionStore,
