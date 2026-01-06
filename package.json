@@ -16,12 +16,12 @@
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cheerio": "^1.1.2",
+    "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-session": "^1.18.2",
-    "express-mysql-session": "^3.0.3",
-    "mysql2": "^3.11.5",
+    "pg": "^8.16.3",
     "resend": "^6.6.0"
   },
   "devDependencies": {

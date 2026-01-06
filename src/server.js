@@ -2,13 +2,6 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
-
-console.log('=== SERVER STARTING ===');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('PORT:', process.env.PORT);
-console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-console.log('SESSION_SECRET:', process.env.SESSION_SECRET ? 'SET' : 'NOT SET');
-
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -21,83 +14,19 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-console.log('Express app created');
-
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
-// Early health check before any DB dependencies
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'Server is running',
-    env: {
-      nodeEnv: process.env.NODE_ENV,
-      port: PORT,
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-      hasSessionSecret: !!process.env.SESSION_SECRET
-    }
-  });
-});
-
 // Session middleware (MUST be before routes)
 const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
-
-// MySQL session store options
-const sessionStoreOptions = {
-  clearExpired: true,
-  checkExpirationInterval: 900000, // 15 minutes
-  expiration: parseInt(process.env.SESSION_MAX_AGE) || 24 * 60 * 60 * 1000,
-  createDatabaseTable: true,
-  schema: {
-    tableName: 'sessions',
-    columnNames: {
-      session_id: 'session_id',
-      expires: 'expires',
-      data: 'data'
-    }
-  }
-};
-
-// Get connection options from DATABASE_URL
-const parseConnectionString = (connStr) => {
-  try {
-    console.log('Parsing DATABASE_URL...');
-    const url = new URL(connStr || 'mysql://root:password@localhost:3306/estimator3');
-    const config = {
-      host: url.hostname,
-      port: url.port || 3306,
-      user: url.username,
-      password: decodeURIComponent(url.password),
-      database: url.pathname.slice(1)
-    };
-    console.log('Database config:', {
-      host: config.host,
-      port: config.port,
-      user: config.user,
-      database: config.database,
-      passwordLength: config.password.length
-    });
-    return config;
-  } catch (err) {
-    console.error('Failed to parse DATABASE_URL:', err.message);
-    throw new Error('Invalid DATABASE_URL format');
-  }
-};
-
-let sessionStore;
-try {
-  console.log('Creating MySQL session store...');
-  sessionStore = new MySQLStore(sessionStoreOptions, parseConnectionString(process.env.DATABASE_URL));
-  console.log('✓ Session store created');
-} catch (err) {
-  console.error('✗ Failed to create session store:', err.message);
-  process.exit(1);
-}
+const pgSession = require('connect-pg-simple')(session);
 
 app.use(session({
-  store: sessionStore,
+  store: new pgSession({
+    pool: pool,
+    tableName: 'sessions',
+    createTableIfMissing: true,
+  }),
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -116,15 +45,10 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-console.log('Initializing database...');
 initDb()
-  .then(() => {
-    console.log('✓ Database ready');
-  })
+  .then(() => console.log('Database ready'))
   .catch((err) => {
-    console.error('✗ FATAL: Failed to initialize database');
-    console.error('Error details:', err.message);
-    console.error('Stack:', err.stack);
+    console.error('Failed to prepare database', err);
     process.exit(1);
   });
 
@@ -157,7 +81,7 @@ const generatePoNumber = async (type = 'estimate') => {
 
   // Get all existing PO numbers for this type
   const { rows } = await pool.query(
-    'SELECT po_number FROM documents WHERE po_number LIKE ? ORDER BY po_number DESC LIMIT 1',
+    'SELECT po_number FROM documents WHERE po_number LIKE $1 ORDER BY po_number DESC LIMIT 1',
     [`${prefix}-%`]
   );
 
@@ -188,7 +112,7 @@ app.get('/api/health', (_req, res) => {
 app.get('/api/debug/invoices', async (_req, res) => {
   try {
     const { rows } = await pool.query(
-      'SELECT id, type, po_number, status, payment_status FROM documents WHERE type = ? LIMIT 10',
+      'SELECT id, type, po_number, status, payment_status FROM documents WHERE type = $1 LIMIT 10',
       ['invoice']
     );
     res.json(rows);
@@ -202,10 +126,10 @@ app.get('/api/documents', requireAuth, async (req, res) => {
   try {
     const { type } = req.query;
     const params = [req.session.userId];
-    let query = 'SELECT * FROM documents WHERE user_id = ?';
+    let query = 'SELECT * FROM documents WHERE user_id = $1';
     if (type) {
       params.push(type);
-      query += ' AND type = ?';
+      query += ' AND type = $2';
     }
     query += ' ORDER BY updated_at DESC';
     const { rows } = await pool.query(query, params);
@@ -219,7 +143,7 @@ app.get('/api/documents', requireAuth, async (req, res) => {
 app.get('/api/documents/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('SELECT * FROM documents WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+    const { rows } = await pool.query('SELECT * FROM documents WHERE id = $1 AND user_id = $2', [id, req.session.userId]);
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(toCamel(rows[0]));
   } catch (err) {
@@ -254,7 +178,7 @@ app.post('/api/documents', requireAuth, async (req, res) => {
     }
     let resolvedClient = null;
     if (clientId) {
-      const { rows } = await pool.query('SELECT * FROM clients WHERE id = ? AND user_id = ?', [clientId, req.session.userId]);
+      const { rows } = await pool.query('SELECT * FROM clients WHERE id = $1 AND user_id = $2', [clientId, req.session.userId]);
       resolvedClient = rows[0] || null;
     }
 
@@ -280,8 +204,8 @@ app.post('/api/documents', requireAuth, async (req, res) => {
         user_id, type, po_number, client_id, client_name, client_email, client_billing_email, client_phone, client_billing_address, project_name,
         service_address, line_items, subtotal, tax_rate, total, status, due_date, valid_until, notes, converted_from_estimate, payment_status, updated_at
       )
-      VALUES (?,?,?,?,?,?,?,?,?,?0,?1,?2,?3,?4,?5,?6,?7,?8,?9,?0,?1,NOW())
-     
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,NOW())
+      RETURNING *
     `,
       [
         req.session.userId,
@@ -321,7 +245,7 @@ app.put('/api/documents/:id', requireAuth, async (req, res) => {
 
     // Verify ownership
     const { rows: check } = await pool.query(
-      'SELECT id FROM documents WHERE id = ? AND user_id = ?',
+      'SELECT id FROM documents WHERE id = $1 AND user_id = $2',
       [id, req.session.userId]
     );
     if (check.length === 0) {
@@ -353,28 +277,28 @@ app.put('/api/documents/:id', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       UPDATE documents SET
-        type = COALESCE(?, type),
-        po_number = COALESCE(?, po_number),
-        client_id = COALESCE(?, client_id),
-        client_name = COALESCE(?, client_name),
-        client_email = COALESCE(?, client_email),
-        client_billing_email = COALESCE(?, client_billing_email),
-        client_phone = COALESCE(?, client_phone),
-        client_billing_address = COALESCE(?, client_billing_address),
-        project_name = COALESCE(?, project_name),
-        service_address = COALESCE(?0, service_address),
-        line_items = COALESCE(?1, line_items),
-        subtotal = COALESCE(?2, subtotal),
-        tax_rate = COALESCE(?3, tax_rate),
-        total = COALESCE(?4, total),
-        status = COALESCE(?5, status),
-        due_date = COALESCE(?6, due_date),
-        valid_until = COALESCE(?7, valid_until),
-        notes = COALESCE(?8, notes),
-        payment_status = COALESCE(?9, payment_status),
+        type = COALESCE($1, type),
+        po_number = COALESCE($2, po_number),
+        client_id = COALESCE($3, client_id),
+        client_name = COALESCE($4, client_name),
+        client_email = COALESCE($5, client_email),
+        client_billing_email = COALESCE($6, client_billing_email),
+        client_phone = COALESCE($7, client_phone),
+        client_billing_address = COALESCE($8, client_billing_address),
+        project_name = COALESCE($9, project_name),
+        service_address = COALESCE($10, service_address),
+        line_items = COALESCE($11, line_items),
+        subtotal = COALESCE($12, subtotal),
+        tax_rate = COALESCE($13, tax_rate),
+        total = COALESCE($14, total),
+        status = COALESCE($15, status),
+        due_date = COALESCE($16, due_date),
+        valid_until = COALESCE($17, valid_until),
+        notes = COALESCE($18, notes),
+        payment_status = COALESCE($19, payment_status),
         updated_at = NOW()
-      WHERE id = ?0
-     
+      WHERE id = $20
+      RETURNING *
     `,
       [
         type || null,
@@ -811,7 +735,7 @@ app.post('/api/documents/:id/send', requireAuth, async (req, res) => {
 
     // Verify ownership
     const { rows: ownerCheck } = await pool.query(
-      'SELECT id FROM documents WHERE id = ? AND user_id = ?',
+      'SELECT id FROM documents WHERE id = $1 AND user_id = $2',
       [id, req.session.userId]
     );
     if (ownerCheck.length === 0) {
@@ -820,7 +744,7 @@ app.post('/api/documents/:id/send', requireAuth, async (req, res) => {
     const { sendMethod } = req.body;
 
     // Get the document
-    const { rows: docRows } = await pool.query('SELECT * FROM documents WHERE id = ?', [id]);
+    const { rows: docRows } = await pool.query('SELECT * FROM documents WHERE id = $1', [id]);
     if (!docRows.length) return res.status(404).json({ error: 'Document not found' });
 
     const doc = toCamel(docRows[0]);
@@ -864,9 +788,9 @@ app.post('/api/documents/:id/send', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       UPDATE documents
-      SET status = 'sent', sent_at = NOW(), sent_via = ?, updated_at = NOW()
-      WHERE id = ?
-     
+      SET status = 'sent', sent_at = NOW(), sent_via = $2, updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
     `,
       [id, sendMethod || 'manual'],
     );
@@ -881,7 +805,7 @@ app.post('/api/documents/:id/send', requireAuth, async (req, res) => {
 app.delete('/api/documents/:id', requireAuth, async (req, res) => {
   try {
     const { id} = req.params;
-    const { rows } = await pool.query('DELETE FROM documents WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM documents WHERE id = $1 AND user_id = $2 RETURNING *', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -897,7 +821,7 @@ app.get('/view/:token', async (req, res) => {
 
     // Fetch document by share token
     const { rows: docRows } = await pool.query(
-      'SELECT * FROM documents WHERE share_token = ?',
+      'SELECT * FROM documents WHERE share_token = $1',
       [token]
     );
 
@@ -924,14 +848,14 @@ app.get('/view/:token', async (req, res) => {
     // Insert view record
     await pool.query(
       `INSERT INTO document_views (document_id, ip_address, user_agent, referrer)
-       VALUES (?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4)`,
       [doc.id, ipAddress, userAgent, referrer]
     );
 
     // Create notification for this view
     await pool.query(
       `INSERT INTO notifications (type, document_id, title, message, metadata)
-       VALUES (?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5)`,
       [
         'document_viewed',
         doc.id,
@@ -949,7 +873,7 @@ app.get('/view/:token', async (req, res) => {
     // Update document status to 'viewed' if currently 'sent'
     if (doc.status === 'sent') {
       await pool.query(
-        `UPDATE documents SET status = 'viewed', updated_at = NOW() WHERE id = ?`,
+        `UPDATE documents SET status = 'viewed', updated_at = NOW() WHERE id = $1`,
         [doc.id]
       );
     }
@@ -984,14 +908,14 @@ app.get('/api/documents/:id/payments', requireAuth, async (req, res) => {
     const { id } = req.params;
     // Verify document ownership
     const { rows: docCheck } = await pool.query(
-      'SELECT id FROM documents WHERE id = ? AND user_id = ?',
+      'SELECT id FROM documents WHERE id = $1 AND user_id = $2',
       [id, req.session.userId]
     );
     if (docCheck.length === 0) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
     const { rows } = await pool.query(
-      'SELECT * FROM payments WHERE document_id = ? AND user_id = ? ORDER BY payment_date DESC',
+      'SELECT * FROM payments WHERE document_id = $1 AND user_id = $2 ORDER BY payment_date DESC',
       [id, req.session.userId]
     );
     res.json(rows.map(toCamel));
@@ -1006,7 +930,7 @@ app.post('/api/documents/:id/payments', requireAuth, async (req, res) => {
     const { id } = req.params;
     // Verify document ownership
     const { rows: docCheck } = await pool.query(
-      'SELECT id FROM documents WHERE id = ? AND user_id = ?',
+      'SELECT id FROM documents WHERE id = $1 AND user_id = $2',
       [id, req.session.userId]
     );
     if (docCheck.length === 0) {
@@ -1017,8 +941,8 @@ app.post('/api/documents/:id/payments', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       INSERT INTO payments (document_id, amount, payment_method, check_number, payment_date, notes, user_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-     
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
       `,
       [id, amount, paymentMethod, checkNumber, paymentDate, notes || null, req.session.userId]
     );
@@ -1034,14 +958,14 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
   try {
     const { limit = 50, unreadOnly = false } = req.query;
 
-    let query = 'SELECT * FROM notifications WHERE user_id = ?';
+    let query = 'SELECT * FROM notifications WHERE user_id = $1';
     const params = [req.session.userId];
 
     if (unreadOnly === 'true') {
       query += ' AND is_read = false';
     }
 
-    query += ' ORDER BY created_at DESC LIMIT ?';
+    query += ' ORDER BY created_at DESC LIMIT $2';
     params.push(limit);
 
     const { rows } = await pool.query(query, params);
@@ -1055,7 +979,7 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
 app.get('/api/notifications/unread-count', requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      'SELECT COUNT(*) as count FROM notifications WHERE is_read = false AND user_id = ?',
+      'SELECT COUNT(*) as count FROM notifications WHERE is_read = false AND user_id = $1',
       [req.session.userId]
     );
     res.json({ count: parseInt(rows[0].count) });
@@ -1071,7 +995,7 @@ app.put('/api/notifications/:id/read', requireAuth, async (req, res) => {
     const { isRead } = req.body;
 
     const { rows } = await pool.query(
-      'UPDATE notifications SET is_read = ? WHERE id = ? AND user_id = ?',
+      'UPDATE notifications SET is_read = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
       [isRead !== false, id, req.session.userId]
     );
 
@@ -1085,7 +1009,7 @@ app.put('/api/notifications/:id/read', requireAuth, async (req, res) => {
 
 app.put('/api/notifications/mark-all-read', requireAuth, async (req, res) => {
   try {
-    await pool.query('UPDATE notifications SET is_read = true WHERE is_read = false AND user_id = ?', [req.session.userId]);
+    await pool.query('UPDATE notifications SET is_read = true WHERE is_read = false AND user_id = $1', [req.session.userId]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -1096,7 +1020,7 @@ app.put('/api/notifications/mark-all-read', requireAuth, async (req, res) => {
 app.delete('/api/notifications/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM notifications WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM notifications WHERE id = $1 AND user_id = $2 RETURNING *', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1108,7 +1032,7 @@ app.delete('/api/notifications/:id', requireAuth, async (req, res) => {
 // Clients
 app.get('/api/clients', requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM clients WHERE user_id = ? ORDER BY created_at DESC', [req.session.userId]);
+    const { rows } = await pool.query('SELECT * FROM clients WHERE user_id = $1 ORDER BY created_at DESC', [req.session.userId]);
     res.json(rows.map(toCamel));
   } catch (err) {
     console.error(err);
@@ -1123,8 +1047,8 @@ app.post('/api/clients', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       INSERT INTO clients (user_id, name, email, phone, company, billing_email, billing_address, notes)
-      VALUES (?,?,?,?,?,?,?,?)
-     
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      RETURNING *
     `,
       [req.session.userId, name, email || null, phone || null, company || null, billingEmail || null, billingAddress || null, notes || null],
     );
@@ -1142,15 +1066,15 @@ app.put('/api/clients/:id', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       UPDATE clients SET
-        name = COALESCE(?, name),
-        email = COALESCE(?, email),
-        phone = COALESCE(?, phone),
-        company = COALESCE(?, company),
-        billing_email = COALESCE(?, billing_email),
-        billing_address = COALESCE(?, billing_address),
-        notes = COALESCE(?, notes)
-      WHERE id = ? AND user_id = ?
-     
+        name = COALESCE($1, name),
+        email = COALESCE($2, email),
+        phone = COALESCE($3, phone),
+        company = COALESCE($4, company),
+        billing_email = COALESCE($5, billing_email),
+        billing_address = COALESCE($6, billing_address),
+        notes = COALESCE($7, notes)
+      WHERE id = $8 AND user_id = $9
+      RETURNING *
     `,
       [name || null, email || null, phone || null, company || null, billingEmail || null, billingAddress || null, notes || null, id, req.session.userId],
     );
@@ -1165,7 +1089,7 @@ app.put('/api/clients/:id', requireAuth, async (req, res) => {
 app.delete('/api/clients/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM clients WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM clients WHERE id = $1 AND user_id = $2 RETURNING *', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1177,7 +1101,7 @@ app.delete('/api/clients/:id', requireAuth, async (req, res) => {
 // Items
 app.get('/api/items', requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM items WHERE user_id = ? ORDER BY created_at DESC', [req.session.userId]);
+    const { rows } = await pool.query('SELECT * FROM items WHERE user_id = $1 ORDER BY created_at DESC', [req.session.userId]);
     res.json(rows.map(toCamel));
   } catch (err) {
     console.error(err);
@@ -1192,8 +1116,8 @@ app.post('/api/items', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       INSERT INTO items (user_id, name, description, default_qty, default_rate, default_markup)
-      VALUES (?,?,?,?,?,?)
-     
+      VALUES ($1,$2,$3,$4,$5,$6)
+      RETURNING *
     `,
       [req.session.userId, name, description || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
     );
@@ -1211,13 +1135,13 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       UPDATE items SET
-        name = COALESCE(?, name),
-        description = COALESCE(?, description),
-        default_qty = COALESCE(?, default_qty),
-        default_rate = COALESCE(?, default_rate),
-        default_markup = COALESCE(?, default_markup)
-      WHERE id = ? AND user_id = ?
-     
+        name = COALESCE($1, name),
+        description = COALESCE($2, description),
+        default_qty = COALESCE($3, default_qty),
+        default_rate = COALESCE($4, default_rate),
+        default_markup = COALESCE($5, default_markup)
+      WHERE id = $6 AND user_id = $7
+      RETURNING *
     `,
       [name || null, description || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id, req.session.userId],
     );
@@ -1232,7 +1156,7 @@ app.put('/api/items/:id', requireAuth, async (req, res) => {
 app.delete('/api/items/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM items WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM items WHERE id = $1 AND user_id = $2 RETURNING *', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1303,7 +1227,7 @@ app.post('/api/scrape-prices', requireAuth, async (req, res) => {
 // Materials
 app.get('/api/materials', requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM materials WHERE user_id = ? ORDER BY created_at DESC', [req.session.userId]);
+    const { rows } = await pool.query('SELECT * FROM materials WHERE user_id = $1 ORDER BY created_at DESC', [req.session.userId]);
     res.json(rows.map(toCamel));
   } catch (err) {
     console.error(err);
@@ -1318,8 +1242,8 @@ app.post('/api/materials', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       INSERT INTO materials (user_id, name, description, default_qty, default_rate, default_markup)
-      VALUES (?,?,?,?,?,?)
-     
+      VALUES ($1,$2,$3,$4,$5,$6)
+      RETURNING *
     `,
       [req.session.userId, name, description || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
     );
@@ -1337,13 +1261,13 @@ app.put('/api/materials/:id', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `
       UPDATE materials SET
-        name = COALESCE(?, name),
-        description = COALESCE(?, description),
-        default_qty = COALESCE(?, default_qty),
-        default_rate = COALESCE(?, default_rate),
-        default_markup = COALESCE(?, default_markup)
-      WHERE id = ? AND user_id = ?
-     
+        name = COALESCE($1, name),
+        description = COALESCE($2, description),
+        default_qty = COALESCE($3, default_qty),
+        default_rate = COALESCE($4, default_rate),
+        default_markup = COALESCE($5, default_markup)
+      WHERE id = $6 AND user_id = $7
+      RETURNING *
     `,
       [name || null, description || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id, req.session.userId],
     );
@@ -1358,7 +1282,7 @@ app.put('/api/materials/:id', requireAuth, async (req, res) => {
 app.delete('/api/materials/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM materials WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM materials WHERE id = $1 AND user_id = $2 RETURNING *', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1370,7 +1294,7 @@ app.delete('/api/materials/:id', requireAuth, async (req, res) => {
 // Company Settings endpoints
 app.get('/api/company-settings', requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM company_settings WHERE user_id = ? ORDER BY id LIMIT 1', [req.session.userId]);
+    const { rows } = await pool.query('SELECT * FROM company_settings WHERE user_id = $1 ORDER BY id LIMIT 1', [req.session.userId]);
     if (rows.length === 0) {
       // Return defaults if no settings exist
       return res.json({
@@ -1393,14 +1317,14 @@ app.put('/api/company-settings', requireAuth, async (req, res) => {
     const { name, address, phone, email, logo } = req.body;
 
     // Check if settings exist for this user
-    const { rows: existing } = await pool.query('SELECT id FROM company_settings WHERE user_id = ? LIMIT 1', [req.session.userId]);
+    const { rows: existing } = await pool.query('SELECT id FROM company_settings WHERE user_id = $1 LIMIT 1', [req.session.userId]);
 
     if (existing.length === 0) {
       // Insert new settings
       const { rows } = await pool.query(
         `INSERT INTO company_settings (user_id, name, address, phone, email, logo, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, NOW())
-        `,
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+         RETURNING *`,
         [req.session.userId, name, address, phone, email, logo]
       );
       return res.json(toCamel(rows[0]));
@@ -1408,9 +1332,9 @@ app.put('/api/company-settings', requireAuth, async (req, res) => {
       // Update existing settings
       const { rows } = await pool.query(
         `UPDATE company_settings
-         SET name = ?, address = ?, phone = ?, email = ?, logo = ?, updated_at = NOW()
-         WHERE id = ? AND user_id = ?
-        `,
+         SET name = $1, address = $2, phone = $3, email = $4, logo = $5, updated_at = NOW()
+         WHERE id = $6 AND user_id = $7
+         RETURNING *`,
         [name, address, phone, email, logo, existing[0].id, req.session.userId]
       );
       return res.json(toCamel(rows[0]));
@@ -1424,7 +1348,7 @@ app.put('/api/company-settings', requireAuth, async (req, res) => {
 // Payment Methods endpoints
 app.get('/api/payment-methods', requireAuth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM payment_methods WHERE user_id = ? ORDER BY id', [req.session.userId]);
+    const { rows } = await pool.query('SELECT * FROM payment_methods WHERE user_id = $1 ORDER BY id', [req.session.userId]);
     res.json(rows.map(toCamel));
   } catch (err) {
     console.error('Get payment methods error:', err);
@@ -1437,8 +1361,8 @@ app.post('/api/payment-methods', requireAuth, async (req, res) => {
     const { methodName, paymentUrl, qrCodeUrl, displayUrl } = req.body;
     const { rows } = await pool.query(
       `INSERT INTO payment_methods (user_id, method_name, payment_url, qr_code_url, display_url, updated_at)
-       VALUES (?, ?, ?, ?, ?, NOW())
-      `,
+       VALUES ($1, $2, $3, $4, $5, NOW())
+       RETURNING *`,
       [req.session.userId, methodName, paymentUrl || null, qrCodeUrl, displayUrl || null]
     );
     res.json(toCamel(rows[0]));
@@ -1454,9 +1378,9 @@ app.put('/api/payment-methods/:id', requireAuth, async (req, res) => {
     const { methodName, paymentUrl, qrCodeUrl, displayUrl } = req.body;
     const { rows } = await pool.query(
       `UPDATE payment_methods
-       SET method_name = ?, payment_url = ?, qr_code_url = ?, display_url = ?, updated_at = NOW()
-       WHERE id = ? AND user_id = ?
-      `,
+       SET method_name = $1, payment_url = $2, qr_code_url = $3, display_url = $4, updated_at = NOW()
+       WHERE id = $5 AND user_id = $6
+       RETURNING *`,
       [methodName, paymentUrl || null, qrCodeUrl, displayUrl || null, id, req.session.userId]
     );
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
@@ -1470,7 +1394,7 @@ app.put('/api/payment-methods/:id', requireAuth, async (req, res) => {
 app.delete('/api/payment-methods/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('DELETE FROM payment_methods WHERE id = ? AND user_id = ?', [id, req.session.userId]);
+    const { rows } = await pool.query('DELETE FROM payment_methods WHERE id = $1 AND user_id = $2 RETURNING *', [id, req.session.userId]);
     if (!rows.length) return res.status(403).json({ error: 'Unauthorized or not found' });
     res.json({ success: true });
   } catch (err) {
@@ -1489,12 +1413,6 @@ app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-console.log(`Starting server on port ${PORT}...`);
 app.listen(PORT, () => {
-  console.log(`✓ Server successfully started on http://localhost:${PORT}`);
-  console.log('=== SERVER READY ===');
-}).on('error', (err) => {
-  console.error('✗ FATAL: Server failed to start');
-  console.error('Error:', err.message);
-  process.exit(1);
+  console.log(`Estimator running on http://localhost:${PORT}`);
 });
