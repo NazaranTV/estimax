@@ -28,7 +28,7 @@ router.post('/register', async (req, res) => {
     // Check if user exists
     const normalizedEmail = email.toLowerCase().trim();
     const { rows: existing } = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
+      'SELECT id FROM users WHERE email = ?',
       [normalizedEmail]
     );
 
@@ -45,7 +45,7 @@ router.post('/register', async (req, res) => {
     // Create user
     const { rows } = await pool.query(
       `INSERT INTO users (email, password_hash, email_verification_token, email_verification_expires)
-       VALUES ($1, $2, $3, $4)
+       VALUES (?, ?, ?, ?)
        RETURNING id, email, created_at`,
       [normalizedEmail, passwordHash, verificationToken, verificationExpires]
     );
@@ -83,7 +83,7 @@ router.post('/login', async (req, res) => {
 
     // Get user
     const { rows } = await pool.query(
-      'SELECT id, email, password_hash, email_verified FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, email_verified FROM users WHERE email = ?',
       [normalizedEmail]
     );
 
@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Update last login
-    await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+    await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
 
     // Create session
     req.session.userId = user.id;
@@ -149,7 +149,7 @@ router.get('/verify-email', async (req, res) => {
 
     const { rows } = await pool.query(
       `SELECT id, email FROM users
-       WHERE email_verification_token = $1
+       WHERE email_verification_token = ?
        AND email_verification_expires > NOW()
        AND email_verified = false`,
       [token]
@@ -168,7 +168,7 @@ router.get('/verify-email', async (req, res) => {
            email_verification_token = NULL,
            email_verification_expires = NULL,
            updated_at = NOW()
-       WHERE id = $1`,
+       WHERE id = ?`,
       [user.id]
     );
 
@@ -190,7 +190,7 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
     const userId = req.session.userId;
 
     const { rows } = await pool.query(
-      'SELECT email, email_verified FROM users WHERE id = $1',
+      'SELECT email, email_verified FROM users WHERE id = ?',
       [userId]
     );
 
@@ -209,10 +209,10 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
 
     await pool.query(
       `UPDATE users
-       SET email_verification_token = $1,
-           email_verification_expires = $2,
+       SET email_verification_token = ?,
+           email_verification_expires = ?,
            updated_at = NOW()
-       WHERE id = $3`,
+       WHERE id = ?`,
       [verificationToken, verificationExpires, userId]
     );
 
@@ -242,7 +242,7 @@ router.post('/forgot-password', async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     const { rows } = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
+      'SELECT id FROM users WHERE email = ?',
       [normalizedEmail]
     );
 
@@ -258,10 +258,10 @@ router.post('/forgot-password', async (req, res) => {
 
     await pool.query(
       `UPDATE users
-       SET reset_token = $1,
-           reset_token_expires = $2,
+       SET reset_token = ?,
+           reset_token_expires = ?,
            updated_at = NOW()
-       WHERE id = $3`,
+       WHERE id = ?`,
       [resetToken, resetExpires, user.id]
     );
 
@@ -295,7 +295,7 @@ router.post('/reset-password', async (req, res) => {
 
     const { rows } = await pool.query(
       `SELECT id FROM users
-       WHERE reset_token = $1
+       WHERE reset_token = ?
        AND reset_token_expires > NOW()`,
       [token]
     );
@@ -312,11 +312,11 @@ router.post('/reset-password', async (req, res) => {
     // Update password and clear reset token
     await pool.query(
       `UPDATE users
-       SET password_hash = $1,
+       SET password_hash = ?,
            reset_token = NULL,
            reset_token_expires = NULL,
            updated_at = NOW()
-       WHERE id = $2`,
+       WHERE id = ?`,
       [passwordHash, user.id]
     );
 
@@ -331,7 +331,7 @@ router.post('/reset-password', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      'SELECT id, email, email_verified, created_at, last_login_at FROM users WHERE id = $1',
+      'SELECT id, email, email_verified, created_at, last_login_at FROM users WHERE id = ?',
       [req.session.userId]
     );
 

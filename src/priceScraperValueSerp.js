@@ -32,7 +32,7 @@ async function getShoppingResults(searchQuery) {
 }
 
 /**
- * Parse price from text (handles formats like "$12.99", "12.99", "$1,234.56")
+ * Parse price from text (handles formats like "?2.99", "12.99", "?,234.56")
  */
 function parsePrice(text) {
   if (!text) return 0;
