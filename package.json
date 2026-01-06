@@ -1,12 +1,13 @@
 {
   "name": "estimator3",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Local-first contractor estimates & invoices app",
-  "main": "server.js",
+  "main": "src/server-minimal.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server-minimal.js",
-    "build": "echo 'Build complete - Express app ready'"
+    "start": "node --trace-warnings src/server-minimal.js",
+    "build": "echo 'Build complete - Express app ready'",
+    "postinstall": "echo 'Dependencies installed successfully'"
   },
   "keywords": [],
   "author": "",
