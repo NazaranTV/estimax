@@ -1,4 +1,11 @@
 require('dotenv').config();
+
+console.log('=== SERVER STARTING ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('SESSION_SECRET:', process.env.SESSION_SECRET ? 'SET' : 'NOT SET');
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -10,6 +17,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+console.log('Express app created');
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
@@ -68,10 +77,15 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+console.log('Initializing database...');
 initDb()
-  .then(() => console.log('Database ready'))
+  .then(() => {
+    console.log('✓ Database ready');
+  })
   .catch((err) => {
-    console.error('Failed to prepare database', err);
+    console.error('✗ FATAL: Failed to initialize database');
+    console.error('Error details:', err.message);
+    console.error('Stack:', err.stack);
     process.exit(1);
   });
 
@@ -1436,6 +1450,12 @@ app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+console.log(`Starting server on port ${PORT}...`);
 app.listen(PORT, () => {
-  console.log(`Estimator running on http://localhost:${PORT}`);
+  console.log(`✓ Server successfully started on http://localhost:${PORT}`);
+  console.log('=== SERVER READY ===');
+}).on('error', (err) => {
+  console.error('✗ FATAL: Server failed to start');
+  console.error('Error:', err.message);
+  process.exit(1);
 });
