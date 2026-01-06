@@ -57,7 +57,11 @@
       "Bash(find:*)",
       "Bash(ls:*)",
       "Bash(git rm:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(if [ -d \"D:\\\\Projects\\\\Estimator3 - Copy/src/routes\" ])",
+      "Bash(then cp -r \"D:\\\\Projects\\\\Estimator3 - Copy/src/routes\" \"D:\\\\Projects\\\\Estimax\\\\src/\")",
+      "Bash(else echo \"No routes directory in backup\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []
