@@ -23,7 +23,6 @@
         Notifications <span id="notificationsBadge" class="badge hidden">0</span>
       </button>
       <button data-view="settings">Settings</button>
-      <button id="logoutBtn" class="ghost" style="margin-left: auto;">Logout</button>
     </nav>
 
     <section class="workspace card hidden" id="overviewView">
@@ -62,17 +61,15 @@
     </section>
 
     <section class="workspace card hidden" id="workspace">
-      <div class="pane pane--list">
-        <div class="card__header">
-          <div>
-            <p class="eyebrow" id="listEyebrow">Estimates</p>
-            <h3 id="listTitle">All estimates</h3>
-          </div>
-          <div class="list-actions">
-            <input id="searchDocs" type="text" placeholder="Search by name, client, PO, or project">
-            <button class="btn primary" id="newDocBtn" type="button">New</button>
-          </div>
+      <div class="workspace__header">
+        <div>
+          <p class="eyebrow" id="listEyebrow">Estimates</p>
+          <h2 id="listTitle">All estimates</h2>
         </div>
+        <button class="btn primary" id="newDocBtn" type="button">Create Estimate</button>
+      </div>
+      <div class="pane">
+        <input id="searchDocs" type="text" placeholder="Search by name, client, PO, or project" class="search-input" style="margin-bottom: 16px;">
         <div class="pill-nav" id="statusFilters">
           <!-- Status filter buttons will be dynamically populated -->
         </div>
@@ -307,6 +304,16 @@
             <p class="meta" style="margin-top: 8px;">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--accent);">OpenAI Platform</a></p>
           </label>
           <button class="btn small" id="saveApiKey" style="margin-top: 12px;">Save API Key</button>
+        </div>
+
+        <div class="client-card" style="margin-top: 24px;">
+          <div>
+            <h4>Account</h4>
+            <p class="meta">Manage your account settings</p>
+          </div>
+          <div class="client-actions">
+            <button class="btn small" id="logoutBtn">Logout</button>
+          </div>
         </div>
       </div>
     </section>

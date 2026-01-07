@@ -1374,6 +1374,7 @@ const switchView = (view) => {
     setFormType(view === 'estimates' ? 'estimate' : 'invoice');
     listEyebrow.textContent = view === 'estimates' ? 'Estimates' : 'Invoices';
     listTitle.textContent = view === 'estimates' ? 'All estimates' : 'All invoices';
+    document.getElementById('newDocBtn').textContent = view === 'estimates' ? 'Create Estimate' : 'Create Invoice';
     searchDocs.value = '';
     searchTerm = '';
     activeStatusFilter = 'all';

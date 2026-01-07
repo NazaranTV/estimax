@@ -1858,30 +1858,19 @@ select option[selected] {
     font-size: 28px;
   }
 
-  /* Pill navigation - wrap instead of scroll on mobile */
+  /* Pill navigation - horizontal scroll on mobile */
   .pill-nav {
     width: 100%;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     gap: 8px;
-    padding: 8px;
-    overflow-x: visible;
+    padding-bottom: 4px;
   }
 
   .pill-nav button {
-    flex: 1 1 auto;
-    min-width: calc(50% - 4px); /* 2 columns on mobile */
-    max-width: calc(50% - 4px);
+    min-width: 80px;
     font-size: 13px;
-    padding: 12px 8px;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Special handling for long text */
-  .pill-nav button[data-view="notifications"] {
-    font-size: 12px;
+    padding: 10px 16px;
   }
 
   /* Action buttons in lists */
