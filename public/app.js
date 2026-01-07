@@ -3,7 +3,9 @@ let currentUser = null;
 
 async function checkAuth() {
   try {
-    const res = await fetch('/api/auth/me');
+    const res = await fetch('/api/auth/me', {
+      credentials: 'include' // Include cookies in the request
+    });
 
     if (!res.ok) {
       // Not authenticated - redirect to login
