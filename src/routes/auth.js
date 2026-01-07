@@ -6,6 +6,10 @@ const router = express.Router();
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
+  // Registration disabled during development
+  return res.status(403).json({ error: 'Registration is currently disabled' });
+
+  /* Commented out for development
   try {
     const { email, password } = req.body;
 
@@ -61,6 +65,7 @@ router.post('/register', async (req, res) => {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
   }
+  */
 });
 
 // POST /api/auth/login
