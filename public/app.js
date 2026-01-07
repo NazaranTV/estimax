@@ -1520,7 +1520,7 @@ const updateStatus = async (id, status, statusType = 'delivery') => {
 
 const loadDocuments = async () => {
   try {
-    const res = await fetch('/api/documents');
+    const res = await fetch('/api/documents', { credentials: 'include' });
     if (!res.ok) {
       throw new Error(`Failed to fetch documents: ${res.status}`);
     }
@@ -1603,7 +1603,7 @@ const loadDocuments = async () => {
 
 const loadClients = async () => {
   try {
-    const res = await fetch('/api/clients');
+    const res = await fetch('/api/clients', { credentials: 'include' });
     clients = await res.json();
   renderClients();
   populateClientPicker();
@@ -1618,7 +1618,7 @@ const loadClients = async () => {
 
 const loadItems = async () => {
   try {
-    const res = await fetch('/api/items');
+    const res = await fetch('/api/items', { credentials: 'include' });
     items = await res.json();
     renderItemsList();
     renderItemsView();
@@ -1629,7 +1629,7 @@ const loadItems = async () => {
 
 const loadMaterials = async () => {
   try {
-    const res = await fetch('/api/materials');
+    const res = await fetch('/api/materials', { credentials: 'include' });
     materials = await res.json();
     renderMaterialsList();
     renderMaterialsView();
@@ -1655,7 +1655,7 @@ const loadNotifications = async () => {
 
 const loadUnreadCount = async () => {
   try {
-    const res = await fetch('/api/notifications/unread-count');
+    const res = await fetch('/api/notifications/unread-count', { credentials: 'include' });
     const data = await res.json();
     unreadCount = data.count;
     updateNotificationsBadge();
@@ -1752,7 +1752,7 @@ const markNotificationRead = async (id, isRead) => {
 
 const markAllNotificationsRead = async () => {
   try {
-    await fetch('/api/notifications/mark-all-read', { method: 'PUT' });
+    await fetch('/api/notifications/mark-all-read', { method: 'PUT', credentials: 'include' });
     await loadNotifications();
     await loadUnreadCount();
   } catch (err) {
@@ -2048,6 +2048,7 @@ document.getElementById('clientForm').addEventListener('submit', async (e) => {
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to save client');
@@ -2659,6 +2660,7 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to save item');
@@ -2691,6 +2693,7 @@ document.getElementById('materialForm').addEventListener('submit', async (e) => 
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to save material');
@@ -2871,7 +2874,7 @@ if (themeSelect) {
 // Company Information Management
 const loadCompanyInfo = async () => {
   try {
-    const res = await fetch('/api/company-settings');
+    const res = await fetch('/api/company-settings', { credentials: 'include' });
     if (res.ok) {
       const info = await res.json();
       document.getElementById('companyName').value = info.name || '';
@@ -2921,7 +2924,7 @@ const saveCompanyInfo = async () => {
 
 const getCompanyInfo = async () => {
   try {
-    const res = await fetch('/api/company-settings');
+    const res = await fetch('/api/company-settings', { credentials: 'include' });
     if (res.ok) {
       return await res.json();
     }
@@ -2972,7 +2975,7 @@ let editingPaymentMethodId = null;
 
 const loadPaymentMethods = async () => {
   try {
-    const res = await fetch('/api/payment-methods');
+    const res = await fetch('/api/payment-methods', { credentials: 'include' });
     if (res.ok) {
       paymentMethods = await res.json();
       renderPaymentMethods();
@@ -3639,7 +3642,7 @@ const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
       window.location.href = '/login.html';
     } catch (err) {
       console.error('Logout error:', err);
