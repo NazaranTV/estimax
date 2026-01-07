@@ -206,20 +206,20 @@ h4 {
 
 /* Cards - Railway inspired */
 .card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
+  background: #1c1c1f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   padding: 24px;
   transition: var(--transition);
 }
 
 .card:hover {
-  border-color: var(--border-normal);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .card--elevated {
-  background: var(--bg-elevated);
-  border-color: var(--border-normal);
+  background: #27272a;
+  border-color: rgba(255, 255, 255, 0.12);
   box-shadow: var(--shadow-sm);
 }
 
@@ -593,8 +593,8 @@ textarea {
   font-size: 13px;
   font-weight: 500;
   border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1c1c1f;
   color: var(--text-secondary);
   cursor: pointer;
   transition: var(--transition);
@@ -604,16 +604,17 @@ textarea {
 
 .pill-nav button:hover,
 .filters button:hover {
-  border-color: var(--border-normal);
-  background: var(--bg-hover);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: #27272a;
   color: var(--text-primary);
 }
 
 .pill-nav button.active,
 .filters button.active {
-  background: var(--accent-soft);
-  border-color: rgba(124, 58, 237, 0.3);
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.4);
   color: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.25), 0 0 16px rgba(124, 58, 237, 0.12);
 }
 
 /* Hidden utility */
