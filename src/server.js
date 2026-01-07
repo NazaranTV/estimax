@@ -630,6 +630,63 @@ app.delete('/api/materials/:id', async (req, res) => {
   }
 });
 
+// Payment Methods API
+app.get('/api/payment-methods', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM payment_methods ORDER BY id ASC');
+    res.json(rows.map(toCamel));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load payment methods' });
+  }
+});
+
+app.post('/api/payment-methods', async (req, res) => {
+  try {
+    const { name, type, qrCode } = req.body;
+    if (!name || !type) return res.status(400).json({ error: 'Name and type are required' });
+
+    const { rows } = await pool.query(
+      'INSERT INTO payment_methods (name, type, qr_code) VALUES ($1, $2, $3) RETURNING *',
+      [name, type, qrCode || null]
+    );
+    res.status(201).json(toCamel(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create payment method' });
+  }
+});
+
+app.put('/api/payment-methods/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, type, qrCode } = req.body;
+
+    const { rows } = await pool.query(
+      'UPDATE payment_methods SET name = $1, type = $2, qr_code = $3 WHERE id = $4 RETURNING *',
+      [name, type, qrCode || null, id]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json(toCamel(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update payment method' });
+  }
+});
+
+app.delete('/api/payment-methods/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('DELETE FROM payment_methods WHERE id = $1 RETURNING *', [id]);
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete payment method' });
+  }
+});
+
 // Fallback to SPA index for any other route (except static files)
 app.get(/.*/, (req, res) => {
   // If it's a request for an HTML file in public, let express.static handle it
