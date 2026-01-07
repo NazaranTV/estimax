@@ -481,14 +481,15 @@ textarea {
 
 .summary__card {
   padding: 20px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
+  background: #52525b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-md);
   transition: var(--transition);
 }
 
 .summary__card:hover {
-  border-color: var(--border-normal);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #5a5a63;
   transform: translateY(-2px);
 }
 
