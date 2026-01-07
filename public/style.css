@@ -326,19 +326,19 @@ select,
 textarea {
   width: 100%;
   padding: 10px 14px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 14px;
   font-family: inherit;
-  transition: var(--transition);
+  transition: all 0.2s ease;
 }
 
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: var(--border-normal);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 input:focus,
@@ -346,8 +346,8 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
-  background: var(--bg-secondary);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: #18181b;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
 }
 
 input::placeholder,
