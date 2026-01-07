@@ -113,6 +113,12 @@ router.post('/login', async (req, res) => {
         return res.status(500).json({ error: 'Failed to save session' });
       }
 
+      console.log('Session saved successfully:', {
+        sessionId: req.sessionID,
+        userId: req.session.userId,
+        cookie: req.session.cookie
+      });
+
       res.json({
         message: 'Login successful',
         user: {
@@ -143,7 +149,15 @@ router.post('/logout', (req, res) => {
 // GET /api/auth/me
 router.get('/me', async (req, res) => {
   try {
+    console.log('Auth check:', {
+      sessionId: req.sessionID,
+      userId: req.session.userId,
+      hasSession: !!req.session,
+      cookie: req.headers.cookie
+    });
+
     if (!req.session.userId) {
+      console.log('No userId in session - not authenticated');
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
