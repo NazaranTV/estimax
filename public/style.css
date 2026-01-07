@@ -206,7 +206,7 @@ h4 {
 
 /* Cards - Railway inspired */
 .card {
-  background: #1c1c1f;
+  background: #181622;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -218,7 +218,7 @@ h4 {
 }
 
 .card--elevated {
-  background: #27272a;
+  background: #181622;
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: var(--shadow-sm);
 }
@@ -594,7 +594,7 @@ textarea {
   font-weight: 500;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #1c1c1f;
+  background: #181622;
   color: var(--text-secondary);
   cursor: pointer;
   transition: var(--transition);
@@ -605,7 +605,7 @@ textarea {
 .pill-nav button:hover,
 .filters button:hover {
   border-color: rgba(255, 255, 255, 0.15);
-  background: #27272a;
+  background: #1f1d2b;
   color: var(--text-primary);
 }
 
