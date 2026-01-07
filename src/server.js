@@ -5,15 +5,39 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const { pool, initDb, toCamel } = require('./db');
 const { getMaterialData } = require('./priceScraperValueSerp');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+
+// Session middleware
+app.use(session({
+  store: new pgSession({
+    pool: pool,
+    tableName: 'sessions'
+  }),
+  secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
+}));
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// Auth routes
+app.use('/api/auth', authRoutes);
 
 initDb()
   .then(() => console.log('Database ready'))
