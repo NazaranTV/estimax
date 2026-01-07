@@ -485,12 +485,14 @@ textarea {
   border: 1px solid #33323E;
   border-radius: var(--radius-md);
   transition: var(--transition);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .summary__card:hover {
   border-color: #3d3b4a;
   background: #272532;
   transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .summary__value {
