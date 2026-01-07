@@ -2909,6 +2909,7 @@ const saveCompanyInfo = async () => {
     const res = await fetch('/api/company-settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(info)
     });
 
