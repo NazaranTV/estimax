@@ -25,10 +25,10 @@ async function createAdminUser() {
       ON CONFLICT (email) DO UPDATE
       SET password_hash = $2, updated_at = NOW()
       RETURNING id, email;
-    `, ['admin', passwordHash, true]);
+    `, ['admin@admin.com', passwordHash, true]);
 
     console.log('✓ Admin user created successfully!');
-    console.log('  Email: admin');
+    console.log('  Email: admin@admin.com');
     console.log('  Password: admin');
     console.log('  User ID:', result.rows[0].id);
 
