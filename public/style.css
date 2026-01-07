@@ -432,16 +432,16 @@ textarea {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
+  background: #211F2D;
+  border: 1px solid #33323E;
   border-radius: var(--radius-md);
   transition: var(--transition);
   cursor: pointer;
 }
 
 .doc-card:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-normal);
+  background: #272532;
+  border-color: #3d3b4a;
 }
 
 .doc-card__info {
