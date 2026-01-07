@@ -14,6 +14,9 @@ const authRoutes = require('./routes/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust Railway's proxy for secure cookies
+app.set('trust proxy', 1);
+
 // CORS configuration - allow credentials (cookies)
 app.use(cors({
   origin: true, // Reflect the request origin
