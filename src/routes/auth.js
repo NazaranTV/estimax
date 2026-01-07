@@ -40,14 +40,22 @@ router.post('/register', async (req, res) => {
     req.session.userId = user.id;
     req.session.userEmail = user.email;
 
-    res.json({
-      message: 'Registration successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        emailVerified: user.email_verified,
-        createdAt: user.created_at
+    // Save session before responding
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ error: 'Failed to save session' });
       }
+
+      res.json({
+        message: 'Registration successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          emailVerified: user.email_verified,
+          createdAt: user.created_at
+        }
+      });
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -98,13 +106,21 @@ router.post('/login', async (req, res) => {
       req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
     }
 
-    res.json({
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        emailVerified: user.email_verified
+    // Save session before responding
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ error: 'Failed to save session' });
       }
+
+      res.json({
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          emailVerified: user.email_verified
+        }
+      });
     });
   } catch (error) {
     console.error('Login error:', error);
