@@ -40,6 +40,11 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// Health check endpoint for Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Auth routes
 app.use('/api/auth', authRoutes);
 
