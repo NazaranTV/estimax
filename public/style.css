@@ -63,7 +63,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Railway-style grid background */
+/* Railway-style dot pattern background */
 body::before {
   content: '';
   position: fixed;
@@ -71,10 +71,8 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
   pointer-events: none;
   z-index: 0;
 }
@@ -579,6 +577,41 @@ textarea {
   gap: 16px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+}
+
+/* Filter pills / Status filters */
+.pill-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 0;
+}
+
+.pill-nav button {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.pill-nav button:hover {
+  border-color: var(--border-normal);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.pill-nav button.active {
+  background: var(--accent-soft);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: var(--accent-primary);
 }
 
 /* Hidden utility */

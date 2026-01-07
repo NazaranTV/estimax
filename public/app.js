@@ -127,12 +127,13 @@ const debugPane = document.getElementById('debugPane');
 const toggleDebugBtn = document.getElementById('toggleDebug');
 
 const logDebug = (msg) => {
-  const time = new Date().toLocaleTimeString();
-  const line = `[${time}] ${msg}\n`;
-  if (debugLogEl) {
-    debugLogEl.textContent = line + debugLogEl.textContent;
-  }
-  console.debug('DEBUG:', msg);
+  // Debug logging disabled in production
+  // const time = new Date().toLocaleTimeString();
+  // const line = `[${time}] ${msg}\n`;
+  // if (debugLogEl) {
+  //   debugLogEl.textContent = line + debugLogEl.textContent;
+  // }
+  // console.debug('DEBUG:', msg);
 };
 
 window.addEventListener('error', (e) => {
