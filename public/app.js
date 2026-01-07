@@ -3043,7 +3043,8 @@ const deletePaymentMethod = async (id) => {
   if (confirm('Are you sure you want to delete this payment method?')) {
     try {
       const res = await fetch(`/api/payment-methods/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
       if (res.ok) {
         await loadPaymentMethods();
@@ -3137,12 +3138,14 @@ document.getElementById('paymentMethodForm').addEventListener('submit', async (e
       res = await fetch(`/api/payment-methods/${editingPaymentMethodId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(method)
       });
     } else {
       res = await fetch('/api/payment-methods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(method)
       });
     }

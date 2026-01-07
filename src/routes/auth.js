@@ -77,9 +77,9 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Find user
+    // Find user (case-insensitive email lookup)
     const result = await pool.query(
-      'SELECT id, email, password_hash, email_verified FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, email_verified FROM users WHERE LOWER(email) = LOWER($1)',
       [email]
     );
 
