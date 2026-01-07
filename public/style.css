@@ -154,17 +154,19 @@ h4 {
   background: rgba(9, 9, 11, 0.95);
   backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border-normal);
-  padding: 12px 0;
+  padding: 0;
   margin-bottom: 32px;
 }
 
 .nav__inner {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 24px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  padding: 0 24px;
 }
 
 .nav__inner::-webkit-scrollbar {
@@ -173,35 +175,41 @@ h4 {
 
 .nav__item {
   position: relative;
-  padding: 6px 14px;
-  border: 1px solid transparent;
+  padding: 14px 0;
+  border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.15s ease;
-  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  border-radius: 0;
   font-family: inherit;
   box-shadow: none;
 }
 
-.nav__item:not(.active) {
-  border-color: var(--border-subtle);
+.nav__item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
 }
 
 .nav__item:hover:not(.active) {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--border-normal);
 }
 
 .nav__item.active {
   color: var(--text-primary);
-  background: var(--bg-secondary);
-  border-color: rgba(124, 58, 237, 0.4);
-  box-shadow: 0 0 8px rgba(124, 58, 237, 0.25), 0 0 16px rgba(124, 58, 237, 0.12);
+}
+
+.nav__item.active::after {
+  background: var(--accent-primary);
 }
 
 /* Cards - Railway inspired */
