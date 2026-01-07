@@ -1702,45 +1702,95 @@ select option[selected] {
 
 @media (max-width: 720px) {
   body {
-    padding: 12px;
+    padding: 8px;
+  }
+
+  .page {
+    margin-bottom: 24px;
   }
 
   .card {
     padding: 16px;
+    border-radius: var(--radius-sm);
   }
 
   .modal__content {
     padding: 20px;
+    max-height: 85vh;
+    overflow-y: auto;
   }
 
   h1 {
-    font-size: 26px;
+    font-size: 24px;
+    line-height: 1.3;
   }
 
   h2 {
     font-size: 20px;
+    line-height: 1.3;
   }
 
   h3 {
     font-size: 18px;
+    line-height: 1.3;
+  }
+
+  /* Improve touch targets for buttons */
+  .btn,
+  button {
+    min-height: 44px;
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+
+  /* Make inputs easier to tap */
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 14px;
+  }
+
+  textarea {
+    min-height: 100px;
   }
 
   .grid.two,
   .grid.three,
   .totals {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .line-item {
     grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .line-item__row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Stack form fields vertically */
+  .line-item input,
+  .line-item textarea {
+    width: 100%;
   }
 
   .list-actions {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
 
   .list-actions input {
+    width: 100%;
+  }
+
+  .list-actions button {
     width: 100%;
   }
 
@@ -1750,18 +1800,112 @@ select option[selected] {
     gap: 12px;
   }
 
+  .card__header .btn {
+    width: 100%;
+  }
+
   .filters {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .filters button {
+    white-space: nowrap;
+    min-width: 80px;
   }
 
   .client-card {
     grid-template-columns: 1fr;
     gap: 12px;
+    padding: 14px;
   }
 
   .client-actions {
-    flex-direction: row;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .client-actions button {
+    width: 100%;
+  }
+
+  /* Document cards */
+  .doc-card {
+    padding: 14px;
+  }
+
+  .doc-card .actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .doc-card .actions button {
+    width: 100%;
+  }
+
+  /* Summary cards */
+  .summary__card {
+    padding: 16px;
+  }
+
+  .summary__card span {
+    font-size: 28px;
+  }
+
+  /* Pill navigation */
+  .pill-nav {
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+
+  .pill-nav button {
+    min-width: 80px;
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  /* Action buttons in lists */
+  .panel__item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .panel__item .btn {
+    width: 100%;
+  }
+
+  /* Workspace header */
+  .workspace__header {
+    gap: 12px;
+  }
+
+  .workspace__header .btn {
+    width: 100%;
+  }
+
+  /* Modals take full width on mobile */
+  .modal__content {
+    width: calc(100vw - 32px);
+    max-width: none;
+    margin: 16px;
+  }
+
+  /* Photo upload buttons */
+  .photo-upload {
+    min-height: 44px;
+  }
+
+  /* Make totals section more compact */
+  .totals {
+    gap: 10px;
+  }
+
+  /* Reduce spacing in tight areas */
+  .line-item__actions {
+    gap: 8px;
   }
 }
 
