@@ -34,7 +34,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // 'none' required for cross-origin cookies with secure
+    sameSite: 'lax' // Use 'lax' for same-origin requests
   }
 }));
 
