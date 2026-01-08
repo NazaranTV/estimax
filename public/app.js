@@ -1945,8 +1945,25 @@ const renderClients = () => {
       </div>
     `;
 
-    card.querySelector('[data-action="edit"]').onclick = () => editClient(c);
-    card.querySelector('[data-action="delete"]').onclick = () => deleteClient(c.id);
+    const editBtn = card.querySelector('[data-action="edit"]');
+    const delBtn = card.querySelector('[data-action="delete"]');
+
+    editBtn.onclick = (e) => {
+      e.stopPropagation();
+      editClient(c);
+    };
+    delBtn.onclick = (e) => {
+      e.stopPropagation();
+      deleteClient(c.id);
+    };
+
+    // Add click event to show preview (excluding button clicks)
+    card.addEventListener('click', (e) => {
+      if (!e.target.closest('button')) {
+        showClientPreview(c);
+      }
+    });
+
     container.appendChild(card);
   });
 };
@@ -2113,6 +2130,12 @@ const renderMaterialsView = () => {
       const card = document.createElement('div');
       card.className = 'material-card';
       card.style.marginBottom = '12px';
+
+      // Calculate unit rate
+      const qty = Number(m.defaultQty) || 1;
+      const rate = Number(m.defaultRate) || 0;
+      const unitRate = qty > 0 ? rate / qty : 0;
+
       card.innerHTML = `
         <div class="material-card__header">
           <div class="material-card__name">${m.name}</div>
@@ -2120,8 +2143,8 @@ const renderMaterialsView = () => {
         </div>
 
         <div class="material-card__details">
-          <div class="material-card__detail">📦 Qty: ${m.defaultQty || 1}</div>
-          <div class="material-card__detail">💰 Rate: ${currency(m.defaultRate || 0)}</div>
+          <div class="material-card__detail">💰 Price: ${currency(m.defaultRate || 0)}</div>
+          <div class="material-card__detail">📊 Unit Rate: ${currency(unitRate)}</div>
           <div class="material-card__detail">📈 Markup: ${m.defaultMarkup || 0}%</div>
         </div>
 
@@ -2132,10 +2155,26 @@ const renderMaterialsView = () => {
         </div>
       `;
 
+      // Add click event to show preview (excluding button clicks)
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+          showMaterialPreview(m);
+        }
+      });
+
       // Add event listeners for action buttons
-      card.querySelector('[data-action="edit"]').addEventListener('click', () => editMaterial(m));
-      card.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateMaterial(m));
-      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteMaterial(m.id));
+      card.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        editMaterial(m);
+      });
+      card.querySelector('[data-action="duplicate"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        duplicateMaterial(m);
+      });
+      card.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteMaterial(m.id);
+      });
 
       categoryContent.appendChild(card);
     });
@@ -2218,6 +2257,12 @@ const renderItemsView = () => {
       const card = document.createElement('div');
       card.className = 'item-card';
       card.style.marginBottom = '12px';
+
+      // Calculate unit rate
+      const qty = Number(i.defaultQty) || 1;
+      const rate = Number(i.defaultRate) || 0;
+      const unitRate = qty > 0 ? rate / qty : 0;
+
       card.innerHTML = `
         <div class="item-card__header">
           <div class="item-card__name">${i.name}</div>
@@ -2225,8 +2270,8 @@ const renderItemsView = () => {
         </div>
 
         <div class="item-card__details">
-          <div class="item-card__detail">📦 Qty: ${i.defaultQty || 1}</div>
           <div class="item-card__detail">💰 Rate: ${currency(i.defaultRate || 0)}</div>
+          <div class="item-card__detail">📊 Unit Rate: ${currency(unitRate)}</div>
           <div class="item-card__detail">📈 Markup: ${i.defaultMarkup || 0}%</div>
         </div>
 
@@ -2238,9 +2283,29 @@ const renderItemsView = () => {
       `;
 
       // Add event listeners for action buttons
-      card.querySelector('[data-action="edit"]').addEventListener('click', () => editItem(i));
-      card.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateItem(i));
-      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteItem(i.id));
+      const editBtn = card.querySelector('[data-action="edit"]');
+      const dupBtn = card.querySelector('[data-action="duplicate"]');
+      const delBtn = card.querySelector('[data-action="delete"]');
+
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        editItem(i);
+      });
+      dupBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        duplicateItem(i);
+      });
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteItem(i.id);
+      });
+
+      // Add click event to show preview (excluding button clicks)
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+          showItemPreview(i);
+        }
+      });
 
       categoryContent.appendChild(card);
     });
@@ -4197,5 +4262,150 @@ if (itemCategoryInput) {
 if (materialCategoryInput) {
   setupAutocomplete(materialCategoryInput, materials);
 }
+
+// Preview functions for Materials, Items, and Clients
+window.showMaterialPreview = (material) => {
+  const qty = Number(material.defaultQty) || 1;
+  const rate = Number(material.defaultRate) || 0;
+  const unitRate = qty > 0 ? rate / qty : 0;
+  const markup = Number(material.defaultMarkup) || 0;
+
+  clientViewBody.innerHTML = `
+    <div style="display: block;">
+      <div style="padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 24px;">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">${material.name}</h2>
+        ${material.description ? `<p style="font-size: 14px; color: var(--muted); line-height: 1.6;">${material.description}</p>` : ''}
+        ${material.category ? `<span style="display: inline-block; margin-top: 12px; padding: 4px 12px; background: rgba(124, 58, 237, 0.15); color: var(--accent-primary); border-radius: 12px; font-size: 12px; font-weight: 600;">📁 ${material.category}</span>` : ''}
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Default Quantity</div>
+          <div style="font-size: 20px; font-weight: 700;">${qty}</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Price</div>
+          <div style="font-size: 20px; font-weight: 700;">${currency(rate)}</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Unit Rate</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--accent-primary);">${currency(unitRate)}</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Markup</div>
+          <div style="font-size: 20px; font-weight: 700;">${markup}%</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(124, 58, 237, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Created</div>
+        <div style="font-size: 13px;">${new Date(material.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+      </div>
+    </div>
+  `;
+  clientViewTitle.textContent = 'Material Preview';
+  clientViewModal.classList.remove('hidden');
+};
+
+window.showItemPreview = (item) => {
+  const qty = Number(item.defaultQty) || 1;
+  const rate = Number(item.defaultRate) || 0;
+  const unitRate = qty > 0 ? rate / qty : 0;
+  const markup = Number(item.defaultMarkup) || 0;
+
+  clientViewBody.innerHTML = `
+    <div style="display: block;">
+      <div style="padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 24px;">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">${item.name}</h2>
+        ${item.description ? `<p style="font-size: 14px; color: var(--muted); line-height: 1.6;">${item.description}</p>` : ''}
+        ${item.category ? `<span style="display: inline-block; margin-top: 12px; padding: 4px 12px; background: rgba(124, 58, 237, 0.15); color: var(--accent-primary); border-radius: 12px; font-size: 12px; font-weight: 600;">📁 ${item.category}</span>` : ''}
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Default Quantity</div>
+          <div style="font-size: 20px; font-weight: 700;">${qty}</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Rate</div>
+          <div style="font-size: 20px; font-weight: 700;">${currency(rate)}</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Unit Rate</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--accent-primary);">${currency(unitRate)}</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Markup</div>
+          <div style="font-size: 20px; font-weight: 700;">${markup}%</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(124, 58, 237, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Created</div>
+        <div style="font-size: 13px;">${new Date(item.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+      </div>
+    </div>
+  `;
+  clientViewTitle.textContent = 'Item Preview';
+  clientViewModal.classList.remove('hidden');
+};
+
+window.showClientPreview = (client) => {
+  clientViewBody.innerHTML = `
+    <div style="display: block;">
+      <div style="padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 24px;">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">${client.name}</h2>
+        ${client.company ? `<p style="font-size: 16px; color: var(--muted); font-weight: 600;">${client.company}</p>` : ''}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div>
+          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;">Contact Information</h4>
+          ${client.phone ? `
+            <div style="margin-bottom: 12px;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px;">Phone</div>
+              <div style="font-size: 14px;">📞 ${formatPhoneNumber(client.phone)}</div>
+            </div>
+          ` : ''}
+          ${client.email ? `
+            <div style="margin-bottom: 12px;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px;">Email</div>
+              <div style="font-size: 14px;">✉️ ${client.email}</div>
+            </div>
+          ` : ''}
+        </div>
+        <div>
+          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;">Billing Information</h4>
+          ${client.billingEmail ? `
+            <div style="margin-bottom: 12px;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px;">Billing Email</div>
+              <div style="font-size: 14px;">✉️ ${client.billingEmail}</div>
+            </div>
+          ` : ''}
+          ${client.billingAddress ? `
+            <div style="margin-bottom: 12px;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px;">Billing Address</div>
+              <div style="font-size: 14px; line-height: 1.5;">📍 ${formatAddress(client.billingAddress)}</div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      ${client.notes ? `
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent-primary); margin-bottom: 24px;">
+          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Notes</h4>
+          <p style="font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">${client.notes}</p>
+        </div>
+      ` : ''}
+
+      <div style="background: rgba(124, 58, 237, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;">Client Since</div>
+        <div style="font-size: 13px;">${new Date(client.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+      </div>
+    </div>
+  `;
+  clientViewTitle.textContent = 'Client Preview';
+  clientViewModal.classList.remove('hidden');
+};
 
 } // End of initApp function

@@ -61,7 +61,8 @@
       "Bash(if [ -d \"D:\\\\Projects\\\\Estimator3 - Copy/src/routes\" ])",
       "Bash(then cp -r \"D:\\\\Projects\\\\Estimator3 - Copy/src/routes\" \"D:\\\\Projects\\\\Estimax\\\\src/\")",
       "Bash(else echo \"No routes directory in backup\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
