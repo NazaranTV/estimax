@@ -720,11 +720,15 @@ const setFormType = (type) => {
 };
 
 const renderMaterialsSection = (row) => {
+  const contentDiv = row.querySelector('.line-item__content');
+  if (!contentDiv) return;
+
   let materialsWrap = row.querySelector('.materials-list');
   if (!materialsWrap) {
     materialsWrap = document.createElement('div');
     materialsWrap.className = 'materials-list';
-    row.appendChild(materialsWrap);
+    materialsWrap.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);';
+    contentDiv.appendChild(materialsWrap);
   }
   if (viewMode === 'client') {
     materialsWrap.style.display = 'none';
@@ -732,28 +736,41 @@ const renderMaterialsSection = (row) => {
   }
   materialsWrap.style.display = 'block';
   materialsWrap.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;';
+  header.innerHTML = '<span style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted);">Materials</span>';
+  materialsWrap.appendChild(header);
+
   const addBtn = document.createElement('button');
   addBtn.className = 'btn small';
-  addBtn.textContent = 'Add material';
+  addBtn.textContent = '+ Add Material';
   addBtn.type = 'button';
   addBtn.onclick = () => openMaterialModal(row);
-  materialsWrap.appendChild(addBtn);
+  header.appendChild(addBtn);
+
   if (!row.materialsData || !row.materialsData.length) {
     const empty = document.createElement('p');
     empty.className = 'muted';
+    empty.style.cssText = 'font-size: 13px; margin-top: 8px;';
     empty.textContent = 'No materials added';
     materialsWrap.appendChild(empty);
     return;
   }
+
+  const materialsTable = document.createElement('div');
+  materialsTable.style.cssText = 'margin-top: 8px;';
+
   row.materialsData.forEach((m, idx) => {
     const mRow = document.createElement('div');
     mRow.className = 'material-row';
+    mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: center;';
     mRow.innerHTML = `
-      <input value="${m.name || ''}" placeholder="Material" data-field="m-name">
-      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="Qty" data-field="m-qty">
-      <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="Rate" data-field="m-rate">
-      <input type="number" step="1" value="${m.markup ?? ''}" placeholder="Markup %" data-field="m-markup">
-      <button type="button">Remove</button>
+      <input value="${m.name || ''}" placeholder="Material name" data-field="m-name" style="padding: 6px 8px; font-size: 13px;">
+      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="Qty" data-field="m-qty" style="padding: 6px 8px; font-size: 13px;">
+      <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="Rate" data-field="m-rate" style="padding: 6px 8px; font-size: 13px;">
+      <input type="number" step="1" value="${m.markup ?? ''}" placeholder="Markup" data-field="m-markup" style="padding: 6px 8px; font-size: 13px;">
+      <button type="button" class="btn small ghost" style="color: #ef4444;">Remove</button>
     `;
     const sync = () => {
       row.materialsData[idx] = {
@@ -773,8 +790,10 @@ const renderMaterialsSection = (row) => {
       if (row.updateLineTotal) row.updateLineTotal();
       recalcTotals();
     };
-    materialsWrap.appendChild(mRow);
+    materialsTable.appendChild(mRow);
   });
+
+  materialsWrap.appendChild(materialsTable);
 };
 
 const addLineItemRow = (item = {}) => {
