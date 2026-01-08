@@ -720,15 +720,20 @@ const setFormType = (type) => {
 };
 
 const renderMaterialsSection = (row) => {
+  console.log('renderMaterialsSection called', { row, viewMode });
   const contentDiv = row.querySelector('.line-item__content');
-  if (!contentDiv) return;
+  if (!contentDiv) {
+    console.error('No line-item__content found!');
+    return;
+  }
 
   let materialsWrap = row.querySelector('.materials-list');
   if (!materialsWrap) {
     materialsWrap = document.createElement('div');
     materialsWrap.className = 'materials-list';
-    materialsWrap.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);';
+    materialsWrap.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);';
     contentDiv.appendChild(materialsWrap);
+    console.log('Created new materials section', materialsWrap);
   }
   if (viewMode === 'client') {
     materialsWrap.style.display = 'none';
@@ -739,7 +744,7 @@ const renderMaterialsSection = (row) => {
 
   const header = document.createElement('div');
   header.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;';
-  header.innerHTML = '<span style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted);">Materials</span>';
+  header.innerHTML = '<span style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-primary);">Materials</span>';
   materialsWrap.appendChild(header);
 
   const addBtn = document.createElement('button');
