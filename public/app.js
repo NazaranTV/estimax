@@ -1699,6 +1699,7 @@ const loadItems = async () => {
   try {
     const res = await fetch('/api/items', { credentials: 'include' });
     items = await res.json();
+    populateItemCategories();
     renderItemsList();
     renderItemsView();
   } catch (err) {
@@ -1710,11 +1711,29 @@ const loadMaterials = async () => {
   try {
     const res = await fetch('/api/materials', { credentials: 'include' });
     materials = await res.json();
+    populateMaterialCategories();
     renderMaterialsList();
     renderMaterialsView();
   } catch (err) {
     console.error(err);
   }
+};
+
+// Populate category datalists with existing categories
+const populateItemCategories = () => {
+  const datalist = document.getElementById('itemCategories');
+  if (!datalist) return;
+
+  const categories = [...new Set(items.map(i => i.category).filter(Boolean))].sort();
+  datalist.innerHTML = categories.map(cat => `<option value="${cat}">`).join('');
+};
+
+const populateMaterialCategories = () => {
+  const datalist = document.getElementById('materialCategories');
+  if (!datalist) return;
+
+  const categories = [...new Set(materials.map(m => m.category).filter(Boolean))].sort();
+  datalist.innerHTML = categories.map(cat => `<option value="${cat}">`).join('');
 };
 
 // Notifications functions
@@ -2035,15 +2054,9 @@ const renderMaterialsView = () => {
 
   const filteredMaterials = materials.filter(m =>
     m.name.toLowerCase().includes(searchTerm) ||
-    (m.description || '').toLowerCase().includes(searchTerm)
+    (m.description || '').toLowerCase().includes(searchTerm) ||
+    (m.category || '').toLowerCase().includes(searchTerm)
   );
-
-  // Sort alphabetically by name
-  filteredMaterials.sort((a, b) => {
-    const nameA = (a.name || '').toLowerCase();
-    const nameB = (b.name || '').toLowerCase();
-    return nameA.localeCompare(nameB);
-  });
 
   if (!filteredMaterials.length) {
     container.innerHTML = searchTerm
@@ -2052,34 +2065,91 @@ const renderMaterialsView = () => {
     return;
   }
 
-  filteredMaterials.forEach((m) => {
-    const card = document.createElement('div');
-    card.className = 'material-card';
-    card.innerHTML = `
-      <div class="material-card__header">
-        <div class="material-card__name">${m.name}</div>
-        ${m.description ? `<div class="material-card__description">${m.description}</div>` : ''}
-      </div>
+  // Group materials by category
+  const materialsByCategory = {};
+  filteredMaterials.forEach(m => {
+    const category = m.category || 'Uncategorized';
+    if (!materialsByCategory[category]) {
+      materialsByCategory[category] = [];
+    }
+    materialsByCategory[category].push(m);
+  });
 
-      <div class="material-card__details">
-        <div class="material-card__detail">📦 Qty: ${m.defaultQty || 1}</div>
-        <div class="material-card__detail">💰 Rate: ${currency(m.defaultRate || 0)}</div>
-        <div class="material-card__detail">📈 Markup: ${m.defaultMarkup || 0}%</div>
-      </div>
+  // Sort categories alphabetically, but put Uncategorized last
+  const categories = Object.keys(materialsByCategory).sort((a, b) => {
+    if (a === 'Uncategorized') return 1;
+    if (b === 'Uncategorized') return -1;
+    return a.localeCompare(b);
+  });
 
-      <div class="material-card__actions">
-        <button class="btn small" data-action="edit">Edit</button>
-        <button class="btn small ghost" data-action="duplicate">Duplicate</button>
-        <button class="btn small ghost" data-action="delete" style="color: #ef4444;">Delete</button>
-      </div>
+  // Render each category
+  categories.forEach(category => {
+    const categorySection = document.createElement('div');
+    categorySection.className = 'category-section';
+    categorySection.style.marginBottom = '24px';
+
+    const categoryHeader = document.createElement('div');
+    categoryHeader.className = 'category-header';
+    categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 12px; user-select: none;';
+    categoryHeader.innerHTML = `
+      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s;">▼</span>
+      <span style="font-weight: 600; font-size: 14px;">${category}</span>
+      <span class="muted" style="font-size: 12px; margin-left: auto;">${materialsByCategory[category].length} material${materialsByCategory[category].length === 1 ? '' : 's'}</span>
     `;
 
-    // Add event listeners for action buttons
-    card.querySelector('[data-action="edit"]').addEventListener('click', () => editMaterial(m));
-    card.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateMaterial(m));
-    card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteMaterial(m.id));
+    const categoryContent = document.createElement('div');
+    categoryContent.className = 'category-content';
+    categoryContent.style.display = 'block';
 
-    container.appendChild(card);
+    // Sort materials within category alphabetically by name
+    materialsByCategory[category].sort((a, b) => {
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+
+    // Add materials to category
+    materialsByCategory[category].forEach((m) => {
+      const card = document.createElement('div');
+      card.className = 'material-card';
+      card.style.marginBottom = '12px';
+      card.innerHTML = `
+        <div class="material-card__header">
+          <div class="material-card__name">${m.name}</div>
+          ${m.description ? `<div class="material-card__description">${m.description}</div>` : ''}
+        </div>
+
+        <div class="material-card__details">
+          <div class="material-card__detail">📦 Qty: ${m.defaultQty || 1}</div>
+          <div class="material-card__detail">💰 Rate: ${currency(m.defaultRate || 0)}</div>
+          <div class="material-card__detail">📈 Markup: ${m.defaultMarkup || 0}%</div>
+        </div>
+
+        <div class="material-card__actions">
+          <button class="btn small" data-action="edit">Edit</button>
+          <button class="btn small ghost" data-action="duplicate">Duplicate</button>
+          <button class="btn small ghost" data-action="delete" style="color: #ef4444;">Delete</button>
+        </div>
+      `;
+
+      // Add event listeners for action buttons
+      card.querySelector('[data-action="edit"]').addEventListener('click', () => editMaterial(m));
+      card.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateMaterial(m));
+      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteMaterial(m.id));
+
+      categoryContent.appendChild(card);
+    });
+
+    // Toggle category collapse
+    categoryHeader.addEventListener('click', () => {
+      const isCollapsed = categoryContent.style.display === 'none';
+      categoryContent.style.display = isCollapsed ? 'block' : 'none';
+      categoryHeader.querySelector('.category-toggle').style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+    });
+
+    categorySection.appendChild(categoryHeader);
+    categorySection.appendChild(categoryContent);
+    container.appendChild(categorySection);
   });
 };
 
@@ -2089,15 +2159,9 @@ const renderItemsView = () => {
 
   const filteredItems = items.filter(i =>
     i.name.toLowerCase().includes(searchTerm) ||
-    (i.description || '').toLowerCase().includes(searchTerm)
+    (i.description || '').toLowerCase().includes(searchTerm) ||
+    (i.category || '').toLowerCase().includes(searchTerm)
   );
-
-  // Sort alphabetically by name
-  filteredItems.sort((a, b) => {
-    const nameA = (a.name || '').toLowerCase();
-    const nameB = (b.name || '').toLowerCase();
-    return nameA.localeCompare(nameB);
-  });
 
   if (!filteredItems.length) {
     itemsListView.innerHTML = searchTerm
@@ -2106,34 +2170,91 @@ const renderItemsView = () => {
     return;
   }
 
-  filteredItems.forEach((i) => {
-    const card = document.createElement('div');
-    card.className = 'item-card';
-    card.innerHTML = `
-      <div class="item-card__header">
-        <div class="item-card__name">${i.name}</div>
-        ${i.description ? `<div class="item-card__description">${i.description}</div>` : ''}
-      </div>
+  // Group items by category
+  const itemsByCategory = {};
+  filteredItems.forEach(i => {
+    const category = i.category || 'Uncategorized';
+    if (!itemsByCategory[category]) {
+      itemsByCategory[category] = [];
+    }
+    itemsByCategory[category].push(i);
+  });
 
-      <div class="item-card__details">
-        <div class="item-card__detail">📦 Qty: ${i.defaultQty || 1}</div>
-        <div class="item-card__detail">💰 Rate: ${currency(i.defaultRate || 0)}</div>
-        <div class="item-card__detail">📈 Markup: ${i.defaultMarkup || 0}%</div>
-      </div>
+  // Sort categories alphabetically, but put Uncategorized last
+  const categories = Object.keys(itemsByCategory).sort((a, b) => {
+    if (a === 'Uncategorized') return 1;
+    if (b === 'Uncategorized') return -1;
+    return a.localeCompare(b);
+  });
 
-      <div class="item-card__actions">
-        <button class="btn small" data-action="edit">Edit</button>
-        <button class="btn small ghost" data-action="duplicate">Duplicate</button>
-        <button class="btn small ghost" data-action="delete" style="color: #ef4444;">Delete</button>
-      </div>
+  // Render each category
+  categories.forEach(category => {
+    const categorySection = document.createElement('div');
+    categorySection.className = 'category-section';
+    categorySection.style.marginBottom = '24px';
+
+    const categoryHeader = document.createElement('div');
+    categoryHeader.className = 'category-header';
+    categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 12px; user-select: none;';
+    categoryHeader.innerHTML = `
+      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s;">▼</span>
+      <span style="font-weight: 600; font-size: 14px;">${category}</span>
+      <span class="muted" style="font-size: 12px; margin-left: auto;">${itemsByCategory[category].length} item${itemsByCategory[category].length === 1 ? '' : 's'}</span>
     `;
 
-    // Add event listeners for action buttons
-    card.querySelector('[data-action="edit"]').addEventListener('click', () => editItem(i));
-    card.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateItem(i));
-    card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteItem(i.id));
+    const categoryContent = document.createElement('div');
+    categoryContent.className = 'category-content';
+    categoryContent.style.display = 'block';
 
-    itemsListView.appendChild(card);
+    // Sort items within category alphabetically by name
+    itemsByCategory[category].sort((a, b) => {
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+
+    // Add items to category
+    itemsByCategory[category].forEach((i) => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.style.marginBottom = '12px';
+      card.innerHTML = `
+        <div class="item-card__header">
+          <div class="item-card__name">${i.name}</div>
+          ${i.description ? `<div class="item-card__description">${i.description}</div>` : ''}
+        </div>
+
+        <div class="item-card__details">
+          <div class="item-card__detail">📦 Qty: ${i.defaultQty || 1}</div>
+          <div class="item-card__detail">💰 Rate: ${currency(i.defaultRate || 0)}</div>
+          <div class="item-card__detail">📈 Markup: ${i.defaultMarkup || 0}%</div>
+        </div>
+
+        <div class="item-card__actions">
+          <button class="btn small" data-action="edit">Edit</button>
+          <button class="btn small ghost" data-action="duplicate">Duplicate</button>
+          <button class="btn small ghost" data-action="delete" style="color: #ef4444;">Delete</button>
+        </div>
+      `;
+
+      // Add event listeners for action buttons
+      card.querySelector('[data-action="edit"]').addEventListener('click', () => editItem(i));
+      card.querySelector('[data-action="duplicate"]').addEventListener('click', () => duplicateItem(i));
+      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteItem(i.id));
+
+      categoryContent.appendChild(card);
+    });
+
+    // Toggle category collapse
+    categoryHeader.addEventListener('click', () => {
+      const isCollapsed = categoryContent.style.display === 'none';
+      categoryContent.style.display = isCollapsed ? 'block' : 'none';
+      categoryHeader.querySelector('.category-toggle').style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+    });
+
+    categorySection.appendChild(categoryHeader);
+    categorySection.appendChild(categoryContent);
+    itemsListView.appendChild(categorySection);
   });
 };
 
@@ -2821,6 +2942,7 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
   const payload = {
     name: form.name.value.trim(),
     description: form.description.value.trim(),
+    category: form.category.value.trim() || null,
     defaultQty: Number(form.defaultQty.value) || 1,
     defaultRate: Number(form.defaultRate.value) || 0,
     defaultMarkup: Number(form.defaultMarkup.value) || 0,
@@ -2854,6 +2976,7 @@ document.getElementById('materialForm').addEventListener('submit', async (e) => 
   const payload = {
     name: form.name.value.trim(),
     description: form.description.value.trim(),
+    category: form.category.value.trim() || null,
     defaultQty: Number(form.defaultQty.value) || 1,
     defaultRate: Number(form.defaultRate.value) || 0,
     defaultMarkup: Number(form.defaultMarkup.value) || 0,
@@ -2884,6 +3007,7 @@ const editItem = (item) => {
   const form = document.getElementById('itemForm');
   form.name.value = item.name;
   form.description.value = item.description || '';
+  form.category.value = item.category || '';
   form.defaultQty.value = item.defaultQty || 1;
   form.defaultRate.value = item.defaultRate || 0;
   form.defaultMarkup.value = item.defaultMarkup || 0;
@@ -2902,6 +3026,7 @@ const editMaterial = (material) => {
   const form = document.getElementById('materialForm');
   form.name.value = material.name;
   form.description.value = material.description || '';
+  form.category.value = material.category || '';
   form.defaultQty.value = material.defaultQty || 1;
   form.defaultRate.value = material.defaultRate || 0;
   form.defaultMarkup.value = material.defaultMarkup || 0;
