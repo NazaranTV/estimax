@@ -447,6 +447,19 @@ const loadClients = async () => {
   }
 };
 
+const populateClientPicker = () => {
+  const picker = document.getElementById('clientPicker');
+  if (!picker) return;
+  picker.innerHTML = '<option value="">Select saved client</option>';
+  clients.forEach((c) => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name + (c.company ? ` — ${c.company}` : '');
+    picker.appendChild(opt);
+  });
+  if (clientPickerSelection) picker.value = clientPickerSelection;
+};
+
 const loadItems = async () => {
   try {
     const res = await fetch('/api/items');
