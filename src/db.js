@@ -67,11 +67,21 @@ async function initDb() {
       notes TEXT,
       sent_via TEXT,
       sent_at TIMESTAMPTZ,
-      share_token TEXT UNIQUE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
-    CREATE INDEX IF NOT EXISTS idx_documents_share_token ON documents(share_token);
+
+    -- Add share_token column if it doesn't exist (migration for existing databases)
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='documents' AND column_name='share_token'
+      ) THEN
+        ALTER TABLE documents ADD COLUMN share_token TEXT;
+        CREATE UNIQUE INDEX idx_documents_share_token ON documents(share_token);
+      END IF;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS items (
       id SERIAL PRIMARY KEY,
