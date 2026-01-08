@@ -3796,4 +3796,54 @@ if (logoutBtn) {
   });
 }
 
+// Mobile swipe navigation between tabs
+const setupSwipeNavigation = () => {
+  const views = ['overview', 'estimates', 'invoices', 'clients', 'items', 'materials', 'ai', 'notifications', 'settings'];
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let touchStartY = 0;
+  let touchEndY = 0;
+  const minSwipeDistance = 50; // minimum distance for a swipe to register
+
+  const handleSwipe = () => {
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    // Only trigger if horizontal swipe is dominant (not scrolling vertically)
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
+      const currentIndex = views.indexOf(activeView);
+
+      if (diffX < 0 && currentIndex < views.length - 1) {
+        // Swipe left - next tab
+        switchView(views[currentIndex + 1]);
+      } else if (diffX > 0 && currentIndex > 0) {
+        // Swipe right - previous tab
+        switchView(views[currentIndex - 1]);
+      }
+    }
+  };
+
+  document.body.addEventListener('touchstart', (e) => {
+    // Don't interfere with touches on inputs, buttons, or modals
+    if (e.target.closest('input, textarea, select, button, .modal:not(.hidden)')) {
+      return;
+    }
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  document.body.addEventListener('touchend', (e) => {
+    // Don't interfere with touches on inputs, buttons, or modals
+    if (e.target.closest('input, textarea, select, button, .modal:not(.hidden)')) {
+      return;
+    }
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+  }, { passive: true });
+};
+
+// Initialize swipe navigation
+setupSwipeNavigation();
+
 } // End of initApp function
