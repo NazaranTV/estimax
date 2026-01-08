@@ -1049,34 +1049,96 @@ const renderList = () => {
     const actions = card.querySelector('.doc-card__actions');
 
     // Status pill first (spans full width)
-    actions.appendChild(statusPill(doc));
+    const pill = statusPill(doc);
+    pill.style.gridColumn = '1 / -1';
+    actions.appendChild(pill);
 
-    // Share button with direct link opening
-    const shareBtn = document.createElement('button');
-    shareBtn.className = 'btn small ghost';
-    shareBtn.textContent = 'Share';
-    shareBtn.onclick = async (e) => {
+    // Add Invoice button for estimates
+    if (doc.type === 'estimate') {
+      const invoiceBtn = document.createElement('button');
+      invoiceBtn.className = 'btn small';
+      invoiceBtn.textContent = 'Invoice';
+      invoiceBtn.onclick = (e) => {
+        e.stopPropagation();
+        createInvoiceFromEstimate(doc, card);
+      };
+      actions.appendChild(invoiceBtn);
+    }
+
+    // Add Payments button for invoices
+    if (doc.type === 'invoice') {
+      const paymentsBtn = document.createElement('button');
+      paymentsBtn.className = 'btn small';
+      paymentsBtn.textContent = 'Payments';
+      paymentsBtn.onclick = (e) => {
+        e.stopPropagation();
+        openPaymentsModal(doc);
+      };
+      actions.appendChild(paymentsBtn);
+    }
+
+    // Share dropdown with View/Email/SMS
+    const shareContainer = document.createElement('div');
+    shareContainer.className = 'dropdown-container';
+    shareContainer.innerHTML = `
+      <button class="btn small ghost dropdown-trigger">Share ▼</button>
+      <div class="dropdown-menu hidden">
+        <button class="dropdown-item" data-action="view">View</button>
+        <button class="dropdown-item" data-action="email">Email</button>
+        <button class="dropdown-item" data-action="sms">SMS</button>
+      </div>
+    `;
+
+    const trigger = shareContainer.querySelector('.dropdown-trigger');
+    const menu = shareContainer.querySelector('.dropdown-menu');
+
+    trigger.onclick = (e) => {
       e.stopPropagation();
-      try {
-        // Generate share token if it doesn't exist
-        let shareToken = doc.shareToken;
-        if (!shareToken) {
-          const res = await fetch(`/api/documents/${doc.id}/share-token`, {
-            method: 'POST',
-            credentials: 'include'
-          });
-          if (!res.ok) throw new Error('Failed to generate share token');
-          const updated = await res.json();
-          shareToken = updated.shareToken;
-        }
-        // Open share link in new tab
-        window.open(`/share.html?token=${shareToken}`, '_blank');
-      } catch (err) {
-        console.error('Failed to open share link:', err);
-        alert('Failed to open share link. Please try again.');
-      }
+      document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m !== menu) m.classList.add('hidden');
+      });
+      menu.classList.toggle('hidden');
     };
-    actions.appendChild(shareBtn);
+
+    document.addEventListener('click', (e) => {
+      if (!shareContainer.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    shareContainer.querySelectorAll('[data-action]').forEach(btn => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        menu.classList.add('hidden');
+        const action = btn.dataset.action;
+
+        if (action === 'view') {
+          // Open share link directly in new tab
+          try {
+            let shareToken = doc.shareToken;
+            if (!shareToken) {
+              const res = await fetch(`/api/documents/${doc.id}/share-token`, {
+                method: 'POST',
+                credentials: 'include'
+              });
+              if (!res.ok) throw new Error('Failed to generate share token');
+              const updated = await res.json();
+              shareToken = updated.shareToken;
+            }
+            window.open(`/share.html?token=${shareToken}`, '_blank');
+          } catch (err) {
+            console.error('Failed to open share link:', err);
+            alert('Failed to open share link. Please try again.');
+          }
+        } else if (action === 'email') {
+          showShareLink(doc);
+        } else if (action === 'sms') {
+          showShareLink(doc);
+        }
+      };
+    });
+
+    actions.appendChild(shareContainer);
 
     // Edit button
     const loadBtn = document.createElement('button');
@@ -1087,6 +1149,18 @@ const renderList = () => {
       window.location.href = `/${doc.type}-form.html?id=${doc.id}`;
     };
     actions.appendChild(loadBtn);
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn small ghost';
+    deleteBtn.textContent = '−';
+    deleteBtn.title = 'Delete';
+    deleteBtn.style.color = '#ef4444';
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      deleteDocument(doc.id, doc.type);
+    };
+    actions.appendChild(deleteBtn);
 
     listEl.appendChild(card);
   });
@@ -1204,7 +1278,9 @@ const renderTypeList = () => {
     const actions = card.querySelector('.doc-card__actions');
 
     // Status pill first (spans full width)
-    actions.appendChild(statusPill(doc));
+    const pill = statusPill(doc);
+    pill.style.gridColumn = '1 / -1';
+    actions.appendChild(pill);
 
     // Add Invoice button for estimates
     if (doc.type === 'estimate') {
@@ -1230,32 +1306,68 @@ const renderTypeList = () => {
       actions.appendChild(paymentsBtn);
     }
 
-    // Share button with direct link opening
-    const shareBtn = document.createElement('button');
-    shareBtn.className = 'btn small ghost';
-    shareBtn.textContent = 'Share';
-    shareBtn.onclick = async (e) => {
+    // Share dropdown with View/Email/SMS
+    const shareContainer = document.createElement('div');
+    shareContainer.className = 'dropdown-container';
+    shareContainer.innerHTML = `
+      <button class="btn small ghost dropdown-trigger">Share ▼</button>
+      <div class="dropdown-menu hidden">
+        <button class="dropdown-item" data-action="view">View</button>
+        <button class="dropdown-item" data-action="email">Email</button>
+        <button class="dropdown-item" data-action="sms">SMS</button>
+      </div>
+    `;
+
+    const trigger = shareContainer.querySelector('.dropdown-trigger');
+    const menu = shareContainer.querySelector('.dropdown-menu');
+
+    trigger.onclick = (e) => {
       e.stopPropagation();
-      try {
-        // Generate share token if it doesn't exist
-        let shareToken = doc.shareToken;
-        if (!shareToken) {
-          const res = await fetch(`/api/documents/${doc.id}/share-token`, {
-            method: 'POST',
-            credentials: 'include'
-          });
-          if (!res.ok) throw new Error('Failed to generate share token');
-          const updated = await res.json();
-          shareToken = updated.shareToken;
-        }
-        // Open share link in new tab
-        window.open(`/share.html?token=${shareToken}`, '_blank');
-      } catch (err) {
-        console.error('Failed to open share link:', err);
-        alert('Failed to open share link. Please try again.');
-      }
+      document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m !== menu) m.classList.add('hidden');
+      });
+      menu.classList.toggle('hidden');
     };
-    actions.appendChild(shareBtn);
+
+    document.addEventListener('click', (e) => {
+      if (!shareContainer.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    shareContainer.querySelectorAll('[data-action]').forEach(btn => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        menu.classList.add('hidden');
+        const action = btn.dataset.action;
+
+        if (action === 'view') {
+          // Open share link directly in new tab
+          try {
+            let shareToken = doc.shareToken;
+            if (!shareToken) {
+              const res = await fetch(`/api/documents/${doc.id}/share-token`, {
+                method: 'POST',
+                credentials: 'include'
+              });
+              if (!res.ok) throw new Error('Failed to generate share token');
+              const updated = await res.json();
+              shareToken = updated.shareToken;
+            }
+            window.open(`/share.html?token=${shareToken}`, '_blank');
+          } catch (err) {
+            console.error('Failed to open share link:', err);
+            alert('Failed to open share link. Please try again.');
+          }
+        } else if (action === 'email') {
+          showShareLink(doc);
+        } else if (action === 'sms') {
+          showShareLink(doc);
+        }
+      };
+    });
+
+    actions.appendChild(shareContainer);
 
     // Edit button
     const editBtn = document.createElement('button');
