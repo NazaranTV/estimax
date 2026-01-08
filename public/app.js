@@ -105,6 +105,52 @@ let currentSendId = null;
 let activeStatusFilter = 'all';
 let notifications = [];
 let showUnreadOnly = false;
+
+// Formatting helper functions
+const formatPhoneNumber = (phone) => {
+  if (!phone) return '';
+  // Remove all non-numeric characters
+  const cleaned = phone.replace(/\D/g, '');
+
+  // Format as XXX-XXX-XXXX
+  if (cleaned.length === 10) {
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  } else if (cleaned.length === 11 && cleaned[0] === '1') {
+    // Handle 1-XXX-XXX-XXXX format
+    return `1-${cleaned.slice(1, 4)}-${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+  }
+
+  // Return as-is if not 10 or 11 digits
+  return phone;
+};
+
+const formatAddress = (address) => {
+  if (!address) return '';
+
+  // Split by comma or newline
+  const parts = address.split(/[,\n]+/).map(part => part.trim()).filter(Boolean);
+
+  // Title case each part
+  const titleCaseInternal = (str) => {
+    return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+  };
+
+  // Format each part with proper capitalization
+  const formatted = parts.map(part => {
+    // Skip state abbreviations and ZIP codes
+    if (/^[A-Z]{2}$/.test(part.trim()) || /^\d{5}(-\d{4})?$/.test(part.trim())) {
+      return part.toUpperCase();
+    }
+    return titleCaseInternal(part);
+  });
+
+  return formatted.join(', ');
+};
+
+const titleCase = (text) => {
+  if (!text) return '';
+  return text.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+};
 let unreadCount = 0;
 
 // Status filter options
@@ -1817,9 +1863,9 @@ const renderClients = () => {
 
     // Build contact items in order: phone, email, billing address
     const contactItems = [];
-    if (c.phone) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--phone">📞 ${c.phone}</div>`);
+    if (c.phone) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--phone">📞 ${formatPhoneNumber(c.phone)}</div>`);
     if (c.email) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--email">✉️ ${c.email}</div>`);
-    if (c.billingAddress) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--address">📍 ${c.billingAddress}</div>`);
+    if (c.billingAddress) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--address">📍 ${formatAddress(c.billingAddress)}</div>`);
 
     card.innerHTML = `
       <div class="client-card__header">
@@ -2048,51 +2094,6 @@ const closeClientModal = () => {
   document.getElementById('clientForm').reset();
   document.getElementById('clientStatus').textContent = '';
   currentClientEdit = null;
-};
-
-// Formatting helper functions
-const formatPhoneNumber = (phone) => {
-  // Remove all non-numeric characters
-  const cleaned = phone.replace(/\D/g, '');
-
-  // Format as XXX-XXX-XXXX
-  if (cleaned.length === 10) {
-    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  } else if (cleaned.length === 11 && cleaned[0] === '1') {
-    // Handle 1-XXX-XXX-XXXX format
-    return `1-${cleaned.slice(1, 4)}-${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
-  }
-
-  // Return as-is if not 10 or 11 digits
-  return phone;
-};
-
-const formatAddress = (address) => {
-  if (!address) return '';
-
-  // Split by comma or newline
-  const parts = address.split(/[,\n]+/).map(part => part.trim()).filter(Boolean);
-
-  // Title case each part
-  const titleCase = (str) => {
-    return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
-  };
-
-  // Format each part with proper capitalization
-  const formatted = parts.map(part => {
-    // Skip state abbreviations and ZIP codes
-    if (/^[A-Z]{2}$/.test(part.trim()) || /^\d{5}(-\d{4})?$/.test(part.trim())) {
-      return part.toUpperCase();
-    }
-    return titleCase(part);
-  });
-
-  return formatted.join(', ');
-};
-
-const titleCase = (text) => {
-  if (!text) return '';
-  return text.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 };
 
 document.getElementById('closeClientModal').addEventListener('click', closeClientModal);
