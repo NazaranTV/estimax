@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Document - Estimax</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .share-view {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .share-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-normal);
+    }
+    .share-content {
+      background: #211F2D;
+      border: 1px solid #33323E;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .doc-header {
+      margin-bottom: 32px;
+    }
+    .doc-meta-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .doc-meta-item {
+      padding: 12px;
+      background: #13111C;
+      border-radius: var(--radius-sm);
+    }
+    .doc-meta-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .doc-meta-value {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .line-items-table {
+      width: 100%;
+      margin-top: 24px;
+      border-collapse: collapse;
+    }
+    .line-items-table th {
+      text-align: left;
+      padding: 12px 8px;
+      border-bottom: 1px solid var(--border-normal);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .line-items-table td {
+      padding: 12px 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    .line-items-table tr:last-child td {
+      border-bottom: none;
+    }
+    .totals-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 2px solid var(--border-normal);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .total-row {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      min-width: 250px;
+      justify-content: space-between;
+    }
+    .total-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .total-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .total-row.grand-total .total-label {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .total-row.grand-total .total-value {
+      font-size: 24px;
+      color: var(--accent-primary);
+    }
+    @media (max-width: 768px) {
+      .share-view {
+        margin: 20px auto;
+        padding: 0 16px;
+      }
+      .share-content {
+        padding: 20px;
+      }
+      .doc-meta-row {
+        grid-template-columns: 1fr;
+      }
+      .line-items-table {
+        font-size: 12px;
+      }
+      .line-items-table th,
+      .line-items-table td {
+        padding: 8px 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="share-view">
+    <div class="share-header">
+      <h1 id="docTitle">Loading...</h1>
+      <p class="meta" id="docMeta"></p>
+    </div>
+
+    <div class="share-content" id="docContent">
+      <div id="loadingMessage">
+        <p class="meta" style="text-align: center;">Loading document...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = new URLSearchParams(window.location.search).get('token');
+
+    if (!token) {
+      document.getElementById('docTitle').textContent = 'Invalid Link';
+      document.getElementById('loadingMessage').innerHTML = '<p class="meta" style="text-align: center; color: var(--error);">This share link is invalid.</p>';
+    } else {
+      loadDocument();
+    }
+
+    async function loadDocument() {
+      try {
+        const res = await fetch(`/api/share/${token}`);
+        if (!res.ok) {
+          throw new Error('Document not found');
+        }
+        const doc = await res.json();
+        renderDocument(doc);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('docTitle').textContent = 'Not Found';
+        document.getElementById('loadingMessage').innerHTML = '<p class="meta" style="text-align: center; color: var(--error);">This document could not be found or the share link has expired.</p>';
+      }
+    }
+
+    function renderDocument(doc) {
+      document.getElementById('docTitle').textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} #${doc.poNumber}`;
+      document.getElementById('docMeta').textContent = `For ${doc.clientName}`;
+
+      const lineItems = doc.lineItems || [];
+
+      document.getElementById('docContent').innerHTML = `
+        <div class="doc-header">
+          <div class="eyebrow">${doc.type.toUpperCase()}</div>
+          <h2>${doc.clientName}</h2>
+          ${doc.projectName ? `<p class="meta">${doc.projectName}</p>` : ''}
+        </div>
+
+        <div class="doc-meta-row">
+          <div class="doc-meta-item">
+            <div class="doc-meta-label">PO Number</div>
+            <div class="doc-meta-value">${doc.poNumber || '—'}</div>
+          </div>
+          ${doc.type === 'invoice' && doc.dueDate ? `
+            <div class="doc-meta-item">
+              <div class="doc-meta-label">Due Date</div>
+              <div class="doc-meta-value">${new Date(doc.dueDate).toLocaleDateString()}</div>
+            </div>
+          ` : ''}
+          ${doc.type === 'estimate' && doc.validUntil ? `
+            <div class="doc-meta-item">
+              <div class="doc-meta-label">Valid Until</div>
+              <div class="doc-meta-value">${new Date(doc.validUntil).toLocaleDateString()}</div>
+            </div>
+          ` : ''}
+        </div>
+
+        ${doc.clientEmail || doc.clientPhone || doc.serviceAddress ? `
+          <div class="doc-meta-row">
+            ${doc.clientEmail ? `
+              <div class="doc-meta-item">
+                <div class="doc-meta-label">Email</div>
+                <div class="doc-meta-value">${doc.clientEmail}</div>
+              </div>
+            ` : ''}
+            ${doc.clientPhone ? `
+              <div class="doc-meta-item">
+                <div class="doc-meta-label">Phone</div>
+                <div class="doc-meta-value">${doc.clientPhone}</div>
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+
+        ${doc.serviceAddress ? `
+          <div class="doc-meta-item" style="margin-bottom: 16px;">
+            <div class="doc-meta-label">Service Address</div>
+            <div class="doc-meta-value">${doc.serviceAddress.replace(/\n/g, '<br>')}</div>
+          </div>
+        ` : ''}
+
+        ${lineItems.length > 0 ? `
+          <table class="line-items-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th style="text-align: right;">Qty</th>
+                <th style="text-align: right;">Rate</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lineItems.map(item => `
+                <tr>
+                  <td>
+                    ${item.description}
+                    ${item.notes ? `<br><span style="font-size: 12px; color: var(--text-tertiary);">${item.notes}</span>` : ''}
+                  </td>
+                  <td style="text-align: right;">${item.qty}</td>
+                  <td style="text-align: right;">$${Number(item.rate).toFixed(2)}</td>
+                  <td style="text-align: right;">$${(item.qty * item.rate + (item.markup || 0)).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        ` : '<p class="meta">No line items</p>'}
+
+        <div class="totals-section">
+          <div class="total-row">
+            <span class="total-label">Subtotal</span>
+            <span class="total-value">$${Number(doc.subtotal).toFixed(2)}</span>
+          </div>
+          <div class="total-row grand-total">
+            <span class="total-label">Total</span>
+            <span class="total-value">$${Number(doc.total).toFixed(2)}</span>
+          </div>
+        </div>
+
+        ${doc.notes ? `
+          <div class="doc-meta-item" style="margin-top: 24px;">
+            <div class="doc-meta-label">Notes</div>
+            <div class="doc-meta-value">${doc.notes.replace(/\n/g, '<br>')}</div>
+          </div>
+        ` : ''}
+      `;
+    }
+  </script>
+</body>
+</html>

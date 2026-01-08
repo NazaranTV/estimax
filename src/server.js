@@ -109,6 +109,22 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+// Public share view endpoint (no auth required)
+app.get('/api/share/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { rows } = await pool.query(
+      'SELECT * FROM documents WHERE share_token = $1',
+      [token]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Share link not found' });
+    res.json(toCamel(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load shared document' });
+  }
+});
+
 app.get('/api/documents', async (req, res) => {
   try {
     const { type } = req.query;
@@ -318,6 +334,30 @@ app.post('/api/documents/:id/send', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to mark as sent' });
+  }
+});
+
+// Generate share token
+app.post('/api/documents/:id/share-token', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const crypto = require('crypto');
+    const shareToken = crypto.randomBytes(32).toString('hex');
+
+    const { rows } = await pool.query(
+      `
+      UPDATE documents
+      SET share_token = $2, updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `,
+      [id, shareToken],
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json(toCamel(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to generate share token' });
   }
 });
 
