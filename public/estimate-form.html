@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style-form.css">
 </head>
 <body>
   <div class="page">
@@ -25,17 +26,20 @@
       </div>
     </nav>
 
-    <div class="card" style="max-width: 1200px; margin: 40px auto;">
-      <div class="modal__header">
-        <h3 id="formTitle">Create estimate</h3>
-        <button class="btn small ghost" id="closeBtn">Close</button>
+    <div class="form-container">
+      <div class="form-header">
+        <div>
+          <p class="eyebrow">ESTIMATE</p>
+          <h2 id="formTitle">Create estimate</h2>
+        </div>
+        <button class="btn ghost" id="closeBtn">Close</button>
       </div>
 
-      <form id="docForm">
-        <div class="client-select">
-          <div class="client-select__top">
-            <label>Client</label>
-          </div>
+      <form id="docForm" class="estimate-form">
+        <!-- Client Information Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Client Information</h3>
+
           <button type="button" class="btn-client-selector" id="openClientSelectorBtn">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9 10C11.2091 10 13 8.20914 13 6C13 3.79086 11.2091 2 9 2C6.79086 2 5 3.79086 5 6C5 8.20914 6.79086 10 9 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -43,52 +47,97 @@
             </svg>
             <span id="selectedClientName">Select saved client</span>
           </button>
+
+          <div class="grid three">
+            <div class="form-field">
+              <label>Client name</label>
+              <input name="clientName" required placeholder="Jane Smith Construction">
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input name="clientEmail" type="email" placeholder="client@email.com">
+            </div>
+            <div class="form-field">
+              <label>Phone</label>
+              <input name="clientPhone" placeholder="(555) 123-4567">
+            </div>
+          </div>
+
+          <div class="grid two">
+            <div class="form-field">
+              <label>Billing address</label>
+              <input name="clientBillingAddress" placeholder="Street, City, State, ZIP">
+            </div>
+            <div class="form-field">
+              <label>Service address</label>
+              <textarea name="serviceAddress" rows="2" placeholder="Where the work will be performed"></textarea>
+            </div>
+          </div>
+
+          <button type="button" class="btn small" id="saveAsNewClient">Save as New Client</button>
         </div>
 
-        <div class="grid three">
-          <label>Client name<input name="clientName" required placeholder="Jane Smith Construction"></label>
-          <label>Email<input name="clientEmail" type="email" placeholder="client@email.com"></label>
-          <label>Phone<input name="clientPhone" placeholder="(555) 123-4567"></label>
-        </div>
+        <!-- Project Details Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Project Details</h3>
 
-        <div class="grid three">
-          <label>Billing address<input name="clientBillingAddress" placeholder="Street, City, State, ZIP"></label>
-          <label>Project Name<input name="projectName" placeholder="Kitchen remodel"></label>
-          <div>
-            <div style="font-size: 14px; font-weight: 500; line-height: 1.5; height: 24px; margin: 0;">&nbsp;</div>
-            <button type="button" class="btn small primary" id="saveAsNewClient" style="width:100%;margin-top:8px;margin-bottom:0;padding:14px 16px;height:auto;">Save as New Client</button>
+          <div class="grid three">
+            <div class="form-field">
+              <label>Project name</label>
+              <input name="projectName" placeholder="Kitchen remodel">
+            </div>
+            <div class="form-field">
+              <label>PO number</label>
+              <input name="poNumber" placeholder="Auto-generated if blank">
+            </div>
+            <div class="form-field date-estimate">
+              <label>Valid until</label>
+              <input name="validUntil" type="date">
+            </div>
+            <div class="form-field date-invoice" style="display: none;">
+              <label>Due date</label>
+              <input name="dueDate" type="date">
+            </div>
           </div>
         </div>
 
-        <div class="grid two">
-          <label>Service Address<textarea name="serviceAddress" rows="2" placeholder="Where the work will be performed"></textarea></label>
+        <!-- Line Items Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Line Items</h3>
+          <div id="lineItems" class="line-items-container"></div>
+          <button type="button" class="btn-add-item" id="addLineItem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Line Item
+          </button>
         </div>
 
-        <div class="grid three">
-          <label>PO Number<input name="poNumber" placeholder="Auto-generated if blank"></label>
-          <label class="date-estimate">Valid until<input name="validUntil" type="date"></label>
-          <label class="date-invoice" style="display: none;">Due date<input name="dueDate" type="date"></label>
-        </div>
-
-        <div class="line-items">
-          <div class="line-items__header">
-            <p>Line items</p>
+        <!-- Summary Section -->
+        <div class="form-section">
+          <div class="estimate-summary">
+            <div class="summary-row">
+              <span class="summary-label">Subtotal</span>
+              <span class="summary-value" id="subtotal">$0.00</span>
+            </div>
+            <div class="summary-row summary-row--total">
+              <span class="summary-label">Total</span>
+              <span class="summary-value" id="total">$0.00</span>
+            </div>
           </div>
-          <div id="lineItems"></div>
-          <button type="button" class="btn-add-item" id="addLineItem">+ Add Line Item</button>
         </div>
 
-        <div class="totals">
-          <div><p>Subtotal</p><strong id="subtotal">$0.00</strong></div>
-          <div><p>Total</p><strong id="total">$0.00</strong></div>
+        <!-- Notes Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Notes</h3>
+          <textarea name="notes" rows="4" placeholder="Scope, payment terms, or scheduling notes"></textarea>
         </div>
 
-        <label>Notes<textarea name="notes" rows="3" placeholder="Scope, payment terms, or scheduling notes"></textarea></label>
-
-        <div class="form__actions">
-          <button class="btn primary" type="submit" id="submitBtn">Save</button>
-          <button class="btn ghost" type="button" id="resetForm">Clear</button>
-          <span id="formStatus" class="muted"></span>
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button class="btn primary large" type="submit" id="submitBtn">Save Estimate</button>
+          <button class="btn ghost" type="button" id="resetForm">Clear Form</button>
+          <span id="formStatus" class="form-status"></span>
         </div>
       </form>
     </div>

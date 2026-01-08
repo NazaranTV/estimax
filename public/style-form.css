@@ -1,0 +1,228 @@
+/* Estimate Form Styling - Railway Design */
+
+.form-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-header h2 {
+  margin-top: 4px;
+}
+
+.estimate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.form-section {
+  background: #181622;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.form-section__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field label {
+  margin-bottom: 0;
+}
+
+/* Line Items Container */
+.line-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.line-item {
+  background: #211F2D;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  transition: var(--transition);
+}
+
+.line-item:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: #252330;
+}
+
+.line-item__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.line-item__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.line-item__description {
+  flex: 1;
+  min-width: 200px;
+}
+
+.line-item__rate,
+.line-item__qty,
+.line-item__markup {
+  width: 100px;
+}
+
+.line-item__notes {
+  width: 100%;
+  margin-top: 8px;
+  resize: vertical;
+}
+
+.line-total {
+  margin-left: auto;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 8px 16px;
+  background: rgba(124, 58, 237, 0.1);
+  border-radius: var(--radius-sm);
+}
+
+/* Estimate Summary */
+.estimate-summary {
+  background: #211F2D;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  max-width: 400px;
+  margin-left: auto;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row--total {
+  padding-top: 16px;
+  margin-top: 8px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.summary-row--total .summary-label {
+  font-size: 16px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.summary-row--total .summary-value {
+  font-size: 24px;
+  color: var(--accent-primary);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-status {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-container {
+    padding: 16px 0;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .grid.three {
+    grid-template-columns: 1fr;
+  }
+
+  .grid.two {
+    grid-template-columns: 1fr;
+  }
+
+  .line-item__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .line-item__rate,
+  .line-item__qty,
+  .line-item__markup {
+    width: 100%;
+  }
+
+  .line-total {
+    margin-left: 0;
+  }
+
+  .estimate-summary {
+    max-width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-status {
+    margin-left: 0;
+    text-align: center;
+  }
+}
