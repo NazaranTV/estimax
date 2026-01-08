@@ -1815,10 +1815,11 @@ const renderClients = () => {
     const card = document.createElement('div');
     card.className = 'client-card';
 
-    // Build contact items
+    // Build contact items in order: phone, email, billing address
     const contactItems = [];
-    if (c.email) contactItems.push(`<div class="client-card__contact-item">${c.email}</div>`);
-    if (c.phone) contactItems.push(`<div class="client-card__contact-item">${c.phone}</div>`);
+    if (c.phone) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--phone">📞 ${c.phone}</div>`);
+    if (c.email) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--email">✉️ ${c.email}</div>`);
+    if (c.billingAddress) contactItems.push(`<div class="client-card__contact-item client-card__contact-item--address">📍 ${c.billingAddress}</div>`);
 
     card.innerHTML = `
       <div class="client-card__header">
@@ -1829,12 +1830,6 @@ const renderClients = () => {
       ${contactItems.length > 0 ? `
         <div class="client-card__contact">
           ${contactItems.join('')}
-        </div>
-      ` : ''}
-
-      ${c.billingAddress ? `
-        <div class="client-card__billing">
-          📍 ${c.billingAddress}
         </div>
       ` : ''}
 
@@ -1861,7 +1856,6 @@ const editClient = (client) => {
   form.email.value = client.email || '';
   form.phone.value = client.phone || '';
   form.company.value = client.company || '';
-  form.billingEmail.value = client.billingEmail || '';
   form.billingAddress.value = client.billingAddress || '';
   form.notes.value = client.notes || '';
   openClientModal();

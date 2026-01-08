@@ -800,29 +800,6 @@ label {
   white-space: nowrap;
 }
 
-.client-card__contact-item::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--text-tertiary);
-  flex-shrink: 0;
-}
-
-.client-card__billing {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  padding: 6px 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: var(--radius-sm);
-  border-left: 2px solid rgba(124, 58, 237, 0.3);
-  max-width: 250px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
 .client-card__notes {
   font-size: 11px;
   color: var(--text-muted);
