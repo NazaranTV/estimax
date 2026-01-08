@@ -1034,19 +1034,19 @@ const renderList = () => {
         ? `Due ${new Date(doc.dueDate).toLocaleDateString()}`
         : 'No due date';
     card.innerHTML = `
-      <div class="doc-card-clickable">
-        <p class="eyebrow">${doc.type}</p>
-        <h4>${doc.clientName}</h4>
-        <p class="meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'}</p>
+      <div class="doc-card__info">
+        <div class="eyebrow">${doc.type.toUpperCase()}</div>
+        <div class="doc-card__title">${doc.clientName}</div>
+        <div class="doc-card__meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'}</div>
       </div>
-      <div class="value">${currency(doc.total)}</div>
-      <div class="actions"></div>
+      <div class="doc-card__total">${currency(doc.total)}</div>
+      <div class="doc-card__actions"></div>
     `;
 
     // Make the card clickable to open view
-    card.querySelector('.doc-card-clickable').onclick = () => openClientView(doc);
+    card.onclick = () => openClientView(doc);
 
-    const actions = card.querySelector('.actions');
+    const actions = card.querySelector('.doc-card__actions');
     actions.appendChild(statusPill(doc));
     if (doc.status !== 'sent') {
       const sendBtn = document.createElement('button');
