@@ -1786,26 +1786,68 @@ const populateClientPicker = () => {
 
 const renderClients = () => {
   const container = document.getElementById('clientsList');
+  const searchInput = document.getElementById('clientsSearchInput');
+  const searchTerm = searchInput?.value.toLowerCase() || '';
+
   if (!clients.length) {
     container.innerHTML = '<p class="muted">No clients yet. Add one to reuse across estimates and invoices.</p>';
     return;
   }
+
+  // Filter clients based on search term
+  const filteredClients = clients.filter((c) => {
+    if (!searchTerm) return true;
+    return (
+      c.name?.toLowerCase().includes(searchTerm) ||
+      c.company?.toLowerCase().includes(searchTerm) ||
+      c.email?.toLowerCase().includes(searchTerm) ||
+      c.phone?.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  if (filteredClients.length === 0) {
+    container.innerHTML = '<p class="muted">No clients match your search.</p>';
+    return;
+  }
+
   container.innerHTML = '';
-  clients.forEach((c) => {
+  filteredClients.forEach((c) => {
     const card = document.createElement('div');
     card.className = 'client-card';
+
+    // Build contact items
+    const contactItems = [];
+    if (c.email) contactItems.push(`<div class="client-card__contact-item">${c.email}</div>`);
+    if (c.phone) contactItems.push(`<div class="client-card__contact-item">${c.phone}</div>`);
+
     card.innerHTML = `
-      <div>
-        <h4>${c.name}</h4>
-        <p class="meta">${[c.company, c.email, c.phone].filter(Boolean).join(' · ') || 'No contact info'}</p>
-        ${c.billingEmail || c.billingAddress ? `<p class="meta">Billing: ${[c.billingEmail, c.billingAddress].filter(Boolean).join(' · ')}</p>` : ''}
-        ${c.notes ? `<p class="muted">${c.notes}</p>` : ''}
+      <div class="client-card__header">
+        <div class="client-card__info">
+          <div class="client-card__name">${c.name}</div>
+          ${c.company ? `<div class="client-card__company">${c.company}</div>` : ''}
+        </div>
       </div>
-      <div class="client-actions">
-        <button class="btn small ghost" data-action="edit">Edit</button>
+
+      ${contactItems.length > 0 ? `
+        <div class="client-card__contact">
+          ${contactItems.join('')}
+        </div>
+      ` : ''}
+
+      ${c.billingAddress ? `
+        <div class="client-card__billing">
+          📍 ${c.billingAddress}
+        </div>
+      ` : ''}
+
+      ${c.notes ? `<div class="client-card__notes">${c.notes}</div>` : ''}
+
+      <div class="client-card__actions">
+        <button class="btn small" data-action="edit">Edit</button>
         <button class="btn small ghost" data-action="delete" style="color: #ef4444;">Delete</button>
       </div>
     `;
+
     card.querySelector('[data-action="edit"]').onclick = () => editClient(c);
     card.querySelector('[data-action="delete"]').onclick = () => deleteClient(c.id);
     container.appendChild(card);
@@ -2826,6 +2868,7 @@ const deleteMaterial = async (id) => {
 // Search event listeners
 document.getElementById('itemsSearchInput')?.addEventListener('input', renderItemsView);
 document.getElementById('materialsSearchInput')?.addEventListener('input', renderMaterialsView);
+document.getElementById('clientsSearchInput')?.addEventListener('input', renderClients);
 
 // bootstrap UI
 addLineItemRow();
