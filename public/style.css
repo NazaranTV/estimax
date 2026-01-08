@@ -152,11 +152,11 @@ h4 {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(9, 9, 11, 0.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--border-normal);
+  background: #211F2D;
+  border-bottom: 1px solid #33323E;
   padding: 0;
   margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .nav__inner {
@@ -1062,6 +1062,7 @@ label {
 
   .doc-card__actions .btn {
     min-width: 0;
+    width: auto;
     padding: 8px 12px;
     font-size: 13px;
   }
@@ -1069,6 +1070,7 @@ label {
   .doc-card__actions .pill {
     grid-column: 1 / -1;
     justify-content: center;
+    width: 100%;
   }
 
   .summary {
@@ -1080,7 +1082,7 @@ label {
     align-items: stretch;
   }
 
-  .btn {
+  .btn:not(.doc-card__actions .btn):not(.client-card__actions .btn):not(.item-card__actions .btn):not(.material-card__actions .btn) {
     width: 100%;
   }
 
