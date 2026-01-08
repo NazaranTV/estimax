@@ -307,8 +307,85 @@ const openClientView = (doc) => {
     </div>
   `;
   clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview`;
+
+  // Check if document has any materials
+  const hasMaterials = (doc.lineItems || []).some(li => (li.materials || []).length > 0);
+  const materialsBtn = document.getElementById('showMaterialsList');
+  if (hasMaterials) {
+    materialsBtn.style.display = 'block';
+    materialsBtn.onclick = () => showMaterialsListView(doc);
+  } else {
+    materialsBtn.style.display = 'none';
+  }
+
   clientViewModal.classList.remove('hidden');
   logDebug(`Opened client preview for ${doc.type} #${doc.id}`);
+};
+
+const showMaterialsListView = (doc) => {
+  // Collect all materials from all line items
+  const allMaterials = [];
+  (doc.lineItems || []).forEach((li) => {
+    (li.materials || []).forEach((mat) => {
+      allMaterials.push({
+        lineItem: li.description || 'Untitled Item',
+        ...mat
+      });
+    });
+  });
+
+  clientViewBody.innerHTML = `
+    <div style="display: block;">
+      <div style="padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 24px;">
+        <h2 style="font-size: 20px; font-weight: 700;">Materials List</h2>
+        <p style="font-size: 13px; color: var(--muted); margin-top: 8px;">All materials used in this ${doc.type}</p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead style="border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
+          <tr>
+            <th style="padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Line Item</th>
+            <th style="padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Material</th>
+            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 70px;">Rate</th>
+            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 45px;">Qty</th>
+            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 70px;">Markup</th>
+            <th style="padding: 10px 4px; text-align: right; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 85px;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${allMaterials.map((mat) => {
+            const matTotal = ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0);
+            return `
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <td style="padding: 12px 4px; color: var(--muted); font-size: 12px;">${mat.lineItem}</td>
+                <td style="padding: 12px 4px; font-weight: 600; font-size: 14px;">${mat.name || 'Unnamed Material'}</td>
+                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${currency(mat.rate || 0)}</td>
+                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${mat.qty || 0}</td>
+                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${currency(mat.markup || 0)}</td>
+                <td style="padding: 12px 4px; text-align: right; font-weight: 600; font-size: 14px;">${currency(matTotal)}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid rgba(255, 255, 255, 0.2);">
+        <div style="display: flex; justify-content: flex-end;">
+          <div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 14px; font-weight: 700; min-width: 200px;">
+            <span>TOTAL MATERIALS</span>
+            <span>${currency(allMaterials.reduce((sum, mat) => sum + ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0), 0))}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <button class="btn small" onclick="document.getElementById('showMaterialsList').click()">← Back to Document</button>
+      </div>
+    </div>
+  `;
+  clientViewTitle.textContent = 'Materials List';
+  materialsBtn.onclick = () => openClientView(doc);
+  materialsBtn.textContent = 'Back to Document';
 };
 
 const closeClientViewModal = () => clientViewModal.classList.add('hidden');
@@ -685,12 +762,15 @@ const renderMaterialsSection = (row) => {
         rate: Number(mRow.querySelector('[data-field="m-rate"]').value) || 0,
         markup: Number(mRow.querySelector('[data-field="m-markup"]').value) || 0,
       };
+      // Update line item total
+      if (row.updateLineTotal) row.updateLineTotal();
       recalcTotals();
     };
     mRow.querySelectorAll('input').forEach((input) => input.addEventListener('input', sync));
     mRow.querySelector('button').onclick = () => {
       row.materialsData.splice(idx, 1);
       renderMaterialsSection(row);
+      if (row.updateLineTotal) row.updateLineTotal();
       recalcTotals();
     };
     materialsWrap.appendChild(mRow);
@@ -739,18 +819,26 @@ const addLineItemRow = (item = {}) => {
       <textarea placeholder="Item description" data-field="notes" class="line-item__notes" rows="3">${item.notes || ''}</textarea>
     </div>
   `;
-  const updateLineTotal = () => {
+  row.updateLineTotal = () => {
     const qty = Number(row.querySelector('[data-field="qty"]').value) || 0;
     const rate = Number(row.querySelector('[data-field="rate"]').value) || 0;
     const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
-    const total = (qty * rate) + markup;
+    const itemTotal = (qty * rate) + markup;
+
+    // Add materials cost
+    const materialsTotal = (row.materialsData || []).reduce((sum, mat) => {
+      const matMarkup = mat.markup || 0;
+      return sum + ((mat.qty * mat.rate) + matMarkup);
+    }, 0);
+
+    const total = itemTotal + materialsTotal;
     row.querySelector('[data-field="lineTotal"]').textContent = currency(total);
   };
 
   row.querySelectorAll('input, textarea').forEach((input) =>
     input.addEventListener('input', () => {
       recalcTotals();
-      updateLineTotal();
+      row.updateLineTotal();
     }),
   );
   row.querySelector('[data-action="remove"]').addEventListener('click', () => {
@@ -804,8 +892,9 @@ const addLineItemRow = (item = {}) => {
     }
   });
 
-  updateLineTotal();
+  row.updateLineTotal();
   lineItemsEl.appendChild(row);
+  renderMaterialsSection(row);
 };
 
 document.getElementById('addLineItem').addEventListener('click', () => addLineItemRow());
@@ -821,7 +910,8 @@ const readLineItems = () => {
       const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
       const notes = row.querySelector('[data-field="notes"]')?.value?.trim() || '';
       const photoData = row.dataset.photo || '';
-      return { description, qty, rate, markup, notes, photoData };
+      const materials = row.materialsData || [];
+      return { description, qty, rate, markup, notes, photoData, materials };
     })
     .filter((item) => item.description || item.qty || item.rate);
 };
@@ -830,7 +920,15 @@ const recalcTotals = () => {
   const items = readLineItems();
   const subtotal = items.reduce((sum, item) => {
     const markup = item.markup || 0;
-    return sum + ((item.qty * item.rate) + markup);
+    const itemTotal = (item.qty * item.rate) + markup;
+
+    // Add materials cost
+    const materialsTotal = (item.materials || []).reduce((matSum, mat) => {
+      const matMarkup = mat.markup || 0;
+      return matSum + ((mat.qty * mat.rate) + matMarkup);
+    }, 0);
+
+    return sum + itemTotal + materialsTotal;
   }, 0);
   const total = subtotal;
   subtotalEl.textContent = currency(subtotal);
@@ -2109,14 +2207,14 @@ const renderMaterialsView = () => {
     categoryHeader.className = 'category-header';
     categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 8px; user-select: none;';
     categoryHeader.innerHTML = `
-      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s;">▼</span>
+      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s; transform: rotate(-90deg);">▼</span>
       <span style="font-weight: 600; font-size: 14px;">${category}</span>
       <span class="muted" style="font-size: 12px; margin-left: auto;">${materialsByCategory[category].length} material${materialsByCategory[category].length === 1 ? '' : 's'}</span>
     `;
 
     const categoryContent = document.createElement('div');
     categoryContent.className = 'category-content';
-    categoryContent.style.cssText = 'display: block; padding-left: 16px;';
+    categoryContent.style.cssText = 'display: none; padding-left: 16px;';
 
     // Sort materials within category alphabetically by name
     materialsByCategory[category].sort((a, b) => {
@@ -2143,8 +2241,7 @@ const renderMaterialsView = () => {
         </div>
 
         <div class="material-card__details">
-          <div class="material-card__detail">💰 Price: ${currency(m.defaultRate || 0)}</div>
-          <div class="material-card__detail">📊 Unit Rate: ${currency(unitRate)}</div>
+          <div class="material-card__detail">💵 Unit Rate: ${currency(unitRate)}</div>
           <div class="material-card__detail">📈 Markup: ${m.defaultMarkup || 0}%</div>
         </div>
 
@@ -2236,14 +2333,14 @@ const renderItemsView = () => {
     categoryHeader.className = 'category-header';
     categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 8px; user-select: none;';
     categoryHeader.innerHTML = `
-      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s;">▼</span>
+      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s; transform: rotate(-90deg);">▼</span>
       <span style="font-weight: 600; font-size: 14px;">${category}</span>
       <span class="muted" style="font-size: 12px; margin-left: auto;">${itemsByCategory[category].length} item${itemsByCategory[category].length === 1 ? '' : 's'}</span>
     `;
 
     const categoryContent = document.createElement('div');
     categoryContent.className = 'category-content';
-    categoryContent.style.cssText = 'display: block; padding-left: 16px;';
+    categoryContent.style.cssText = 'display: none; padding-left: 16px;';
 
     // Sort items within category alphabetically by name
     itemsByCategory[category].sort((a, b) => {
@@ -2270,8 +2367,7 @@ const renderItemsView = () => {
         </div>
 
         <div class="item-card__details">
-          <div class="item-card__detail">💰 Rate: ${currency(i.defaultRate || 0)}</div>
-          <div class="item-card__detail">📊 Unit Rate: ${currency(unitRate)}</div>
+          <div class="item-card__detail">💵 Unit Rate: ${currency(unitRate)}</div>
           <div class="item-card__detail">📈 Markup: ${i.defaultMarkup || 0}%</div>
         </div>
 
