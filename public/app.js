@@ -2086,11 +2086,11 @@ const renderMaterialsView = () => {
   categories.forEach(category => {
     const categorySection = document.createElement('div');
     categorySection.className = 'category-section';
-    categorySection.style.marginBottom = '24px';
+    categorySection.style.marginBottom = '12px';
 
     const categoryHeader = document.createElement('div');
     categoryHeader.className = 'category-header';
-    categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 12px; user-select: none;';
+    categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 8px; user-select: none;';
     categoryHeader.innerHTML = `
       <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s;">▼</span>
       <span style="font-weight: 600; font-size: 14px;">${category}</span>
@@ -2099,7 +2099,7 @@ const renderMaterialsView = () => {
 
     const categoryContent = document.createElement('div');
     categoryContent.className = 'category-content';
-    categoryContent.style.display = 'block';
+    categoryContent.style.cssText = 'display: block; padding-left: 16px;';
 
     // Sort materials within category alphabetically by name
     materialsByCategory[category].sort((a, b) => {
@@ -2191,11 +2191,11 @@ const renderItemsView = () => {
   categories.forEach(category => {
     const categorySection = document.createElement('div');
     categorySection.className = 'category-section';
-    categorySection.style.marginBottom = '24px';
+    categorySection.style.marginBottom = '12px';
 
     const categoryHeader = document.createElement('div');
     categoryHeader.className = 'category-header';
-    categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 12px; user-select: none;';
+    categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 8px; user-select: none;';
     categoryHeader.innerHTML = `
       <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s;">▼</span>
       <span style="font-weight: 600; font-size: 14px;">${category}</span>
@@ -2204,7 +2204,7 @@ const renderItemsView = () => {
 
     const categoryContent = document.createElement('div');
     categoryContent.className = 'category-content';
-    categoryContent.style.display = 'block';
+    categoryContent.style.cssText = 'display: block; padding-left: 16px;';
 
     // Sort items within category alphabetically by name
     itemsByCategory[category].sort((a, b) => {
@@ -3030,6 +3030,11 @@ const editMaterial = (material) => {
   form.defaultQty.value = material.defaultQty || 1;
   form.defaultRate.value = material.defaultRate || 0;
   form.defaultMarkup.value = material.defaultMarkup || 0;
+
+  // Calculate and display unit rate
+  const qty = Number(material.defaultQty) || 1;
+  const rate = Number(material.defaultRate) || 0;
+  form.unitRate.value = qty > 0 ? (rate / qty).toFixed(2) : '0.00';
 
   // Store the ID for updating
   form.dataset.editId = material.id;
@@ -4079,5 +4084,118 @@ const setupSwipeNavigation = () => {
 
 // Initialize swipe navigation
 setupSwipeNavigation();
+
+// Unit rate calculator for materials form
+const materialForm = document.getElementById('materialForm');
+if (materialForm) {
+  const qtyInput = materialForm.querySelector('input[name="defaultQty"]');
+  const priceInput = materialForm.querySelector('input[name="defaultRate"]');
+  const unitRateInput = materialForm.querySelector('input[name="unitRate"]');
+
+  function calculateUnitRate() {
+    const qty = Number(qtyInput.value) || 1;
+    const price = Number(priceInput.value) || 0;
+    const unitRate = qty > 0 ? (price / qty).toFixed(2) : '0.00';
+    unitRateInput.value = unitRate;
+  }
+
+  qtyInput.addEventListener('input', calculateUnitRate);
+  priceInput.addEventListener('input', calculateUnitRate);
+}
+
+// Category autocomplete functionality
+function setupAutocomplete(inputEl, dataSource) {
+  const dropdown = inputEl.parentElement.querySelector('.autocomplete-dropdown');
+  if (!dropdown) return;
+
+  let selectedIndex = -1;
+
+  inputEl.addEventListener('input', () => {
+    const value = inputEl.value.trim().toLowerCase();
+
+    if (!value) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    // Get unique categories from data source
+    const categories = [...new Set(dataSource.map(item => item.category).filter(Boolean))];
+    const filtered = categories.filter(cat => cat.toLowerCase().includes(value));
+
+    if (filtered.length === 0) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    // Render dropdown items
+    dropdown.innerHTML = '';
+    filtered.forEach((cat, index) => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.textContent = cat;
+      item.addEventListener('click', () => {
+        inputEl.value = cat;
+        dropdown.classList.add('hidden');
+      });
+      dropdown.appendChild(item);
+    });
+
+    dropdown.classList.remove('hidden');
+    selectedIndex = -1;
+  });
+
+  // Keyboard navigation
+  inputEl.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+      updateSelection(items, selectedIndex);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = Math.max(selectedIndex - 1, 0);
+      updateSelection(items, selectedIndex);
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      items[selectedIndex].click();
+    } else if (e.key === 'Tab' && selectedIndex >= 0 && !dropdown.classList.contains('hidden')) {
+      e.preventDefault();
+      items[selectedIndex].click();
+    } else if (e.key === 'Escape') {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!inputEl.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+}
+
+function updateSelection(items, index) {
+  items.forEach((item, i) => {
+    if (i === index) {
+      item.classList.add('selected');
+      item.scrollIntoView({ block: 'nearest' });
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+// Setup autocomplete for item and material category fields
+const itemCategoryInput = document.querySelector('#itemForm input[name="category"]');
+const materialCategoryInput = document.querySelector('#materialForm input[name="category"]');
+
+if (itemCategoryInput) {
+  setupAutocomplete(itemCategoryInput, items);
+}
+
+if (materialCategoryInput) {
+  setupAutocomplete(materialCategoryInput, materials);
+}
 
 } // End of initApp function
