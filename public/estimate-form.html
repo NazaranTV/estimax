@@ -151,8 +151,10 @@
         <h3>Select client</h3>
         <button class="btn small ghost" id="closeClientSelectorModal">Close</button>
       </div>
-      <input id="searchClients" type="text" placeholder="Search clients by name, email, or company" style="width:100%;margin-bottom:16px;padding:12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:#f8fafc;font-size:14px;">
-      <div id="clientSelectorList" class="client-list"></div>
+      <div class="modal__body">
+        <input id="searchClients" type="text" placeholder="Search clients by name, email, or company" class="search-input">
+        <div id="clientSelectorList" class="modal-list"></div>
+      </div>
     </div>
   </div>
 
@@ -164,18 +166,40 @@
         <h3>Add client</h3>
         <button class="btn small ghost" id="closeClientModal">Close</button>
       </div>
-      <form id="clientForm">
-        <label>Name<input name="name" required placeholder="Client name"></label>
-        <label>Email<input name="email" type="email" placeholder="email@example.com"></label>
-        <label>Phone<input name="phone" placeholder="(555) 123-4567"></label>
-        <label>Company<input name="company" placeholder="Company"></label>
-        <label>Billing address<textarea name="billingAddress" rows="2" placeholder="Street, City, State, ZIP"></textarea></label>
-        <label>Notes<textarea name="notes" rows="3" placeholder="Notes"></textarea></label>
-        <div class="form__actions">
-          <button type="submit" class="btn primary">Save client</button>
-          <span id="clientStatus" class="muted"></span>
-        </div>
-      </form>
+      <div class="modal__body">
+        <form id="clientForm" class="modal-form">
+          <div class="form-field">
+            <label>Name</label>
+            <input name="name" required placeholder="Client name">
+          </div>
+          <div class="grid two">
+            <div class="form-field">
+              <label>Email</label>
+              <input name="email" type="email" placeholder="email@example.com">
+            </div>
+            <div class="form-field">
+              <label>Phone</label>
+              <input name="phone" placeholder="(555) 123-4567">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Company</label>
+            <input name="company" placeholder="Company">
+          </div>
+          <div class="form-field">
+            <label>Billing address</label>
+            <textarea name="billingAddress" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+          </div>
+          <div class="form-field">
+            <label>Notes</label>
+            <textarea name="notes" rows="3" placeholder="Additional notes"></textarea>
+          </div>
+          <div class="modal-form__actions">
+            <button type="submit" class="btn primary large">Save Client</button>
+            <span id="clientStatus" class="form-status"></span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -187,8 +211,10 @@
         <h3>Select item</h3>
         <button class="btn small ghost" id="closeItemModal">Close</button>
       </div>
-      <input id="searchItems" type="text" placeholder="Search items" style="width:100%;margin-bottom:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:#f8fafc;">
-      <div id="itemsList" class="client-list"></div>
+      <div class="modal__body">
+        <input id="searchItems" type="text" placeholder="Search items" class="search-input">
+        <div id="itemsList" class="modal-list"></div>
+      </div>
     </div>
   </div>
 
@@ -200,8 +226,9 @@
         <h3>Select material</h3>
         <button class="btn small ghost" id="closeMaterialModal">Close</button>
       </div>
-      <input id="searchMaterials" type="text" placeholder="Search materials" style="width:100%;margin-bottom:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:#f8fafc;">
-      <div id="materialsPickerList" class="client-list"></div>
+      <div class="modal__body">
+        <input id="searchMaterials" type="text" placeholder="Search materials" class="search-input">
+        <div id="materialsPickerList" class="modal-list"></div>
     </div>
   </div>
 
