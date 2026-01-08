@@ -1851,6 +1851,13 @@ const renderClients = () => {
     );
   });
 
+  // Sort alphabetically by name
+  filteredClients.sort((a, b) => {
+    const nameA = (a.name || '').toLowerCase();
+    const nameB = (b.name || '').toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
   if (filteredClients.length === 0) {
     container.innerHTML = '<p class="muted">No clients match your search.</p>';
     return;
