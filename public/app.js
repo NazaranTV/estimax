@@ -1047,36 +1047,38 @@ const renderList = () => {
     card.onclick = () => openClientView(doc);
 
     const actions = card.querySelector('.doc-card__actions');
+
+    // Status pill first (spans full width)
     actions.appendChild(statusPill(doc));
-    if (doc.status !== 'sent') {
-      const sendBtn = document.createElement('button');
-      sendBtn.className = 'btn small';
-      sendBtn.textContent = 'Send';
-      sendBtn.onclick = (e) => {
-        e.stopPropagation();
-        markSent(doc.id);
-      };
-      actions.appendChild(sendBtn);
-    }
-    if (doc.status !== 'paid') {
-      const paidBtn = document.createElement('button');
-      paidBtn.className = 'btn small ghost';
-      paidBtn.textContent = 'Mark paid';
-      paidBtn.onclick = (e) => {
-        e.stopPropagation();
-        updateStatus(doc.id, 'paid');
-      };
-      actions.appendChild(paidBtn);
-    }
+
+    // Share button with direct link opening
     const shareBtn = document.createElement('button');
     shareBtn.className = 'btn small ghost';
     shareBtn.textContent = 'Share';
-    shareBtn.onclick = (e) => {
+    shareBtn.onclick = async (e) => {
       e.stopPropagation();
-      showShareLink(doc);
+      try {
+        // Generate share token if it doesn't exist
+        let shareToken = doc.shareToken;
+        if (!shareToken) {
+          const res = await fetch(`/api/documents/${doc.id}/share-token`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+          if (!res.ok) throw new Error('Failed to generate share token');
+          const updated = await res.json();
+          shareToken = updated.shareToken;
+        }
+        // Open share link in new tab
+        window.open(`/share.html?token=${shareToken}`, '_blank');
+      } catch (err) {
+        console.error('Failed to open share link:', err);
+        alert('Failed to open share link. Please try again.');
+      }
     };
     actions.appendChild(shareBtn);
 
+    // Edit button
     const loadBtn = document.createElement('button');
     loadBtn.className = 'btn small ghost';
     loadBtn.textContent = 'Edit';
@@ -1201,6 +1203,9 @@ const renderTypeList = () => {
 
     const actions = card.querySelector('.doc-card__actions');
 
+    // Status pill first (spans full width)
+    actions.appendChild(statusPill(doc));
+
     // Add Invoice button for estimates
     if (doc.type === 'estimate') {
       const invoiceBtn = document.createElement('button');
@@ -1216,123 +1221,43 @@ const renderTypeList = () => {
     // Add Payments button for invoices
     if (doc.type === 'invoice') {
       const paymentsBtn = document.createElement('button');
-      paymentsBtn.className = 'btn small ghost';
+      paymentsBtn.className = 'btn small';
       paymentsBtn.textContent = 'Payments';
       paymentsBtn.onclick = (e) => {
         e.stopPropagation();
         openPaymentsModal(doc);
       };
       actions.appendChild(paymentsBtn);
-
-      // Add "Convert to Estimate" button for invoices that were converted from estimates
-      if (doc.convertedFromEstimate) {
-        const convertBtn = document.createElement('button');
-        convertBtn.className = 'btn small ghost';
-        convertBtn.textContent = 'Convert to Estimate';
-        convertBtn.onclick = (e) => {
-          e.stopPropagation();
-          const card = e.target.closest('.doc-card');
-          createEstimateFromInvoice(doc, card);
-        };
-        actions.appendChild(convertBtn);
-      }
     }
 
-    const sendBtn = document.createElement('div');
-    sendBtn.className = 'dropdown-container';
-    sendBtn.innerHTML = `
-      <button class="btn small ghost dropdown-trigger">Share ▼</button>
-      <div class="dropdown-menu hidden">
-        <button class="dropdown-item" data-action="view">View</button>
-        <button class="dropdown-item" data-action="print">Print</button>
-        <button class="dropdown-item" data-action="email">Email</button>
-        <button class="dropdown-item" data-action="sms">SMS</button>
-      </div>
-    `;
-
-    const trigger = sendBtn.querySelector('.dropdown-trigger');
-    const menu = sendBtn.querySelector('.dropdown-menu');
-
-    trigger.onclick = (e) => {
+    // Share button with direct link opening
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'btn small ghost';
+    shareBtn.textContent = 'Share';
+    shareBtn.onclick = async (e) => {
       e.stopPropagation();
-      // Close all other dropdown menus (both regular and status)
-      document.querySelectorAll('.dropdown-menu, .status-dropdown-menu').forEach(m => {
-        if (m !== menu) {
-          m.classList.add('hidden');
+      try {
+        // Generate share token if it doesn't exist
+        let shareToken = doc.shareToken;
+        if (!shareToken) {
+          const res = await fetch(`/api/documents/${doc.id}/share-token`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+          if (!res.ok) throw new Error('Failed to generate share token');
+          const updated = await res.json();
+          shareToken = updated.shareToken;
         }
-      });
-      // Toggle current menu
-      menu.classList.toggle('hidden');
-
-      // Position dropdown to avoid going off-screen
-      if (!menu.classList.contains('hidden')) {
-        const rect = trigger.getBoundingClientRect();
-        const menuHeight = menu.offsetHeight;
-        const viewportHeight = window.innerHeight;
-        const spaceBelow = viewportHeight - rect.bottom;
-
-        if (spaceBelow < menuHeight + 20) {
-          // Not enough space below, position above
-          menu.style.top = 'auto';
-          menu.style.bottom = 'calc(100% + 4px)';
-        } else {
-          // Enough space below, position normally
-          menu.style.top = 'calc(100% + 4px)';
-          menu.style.bottom = 'auto';
-        }
+        // Open share link in new tab
+        window.open(`/share.html?token=${shareToken}`, '_blank');
+      } catch (err) {
+        console.error('Failed to open share link:', err);
+        alert('Failed to open share link. Please try again.');
       }
     };
+    actions.appendChild(shareBtn);
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!sendBtn.contains(e.target)) {
-        menu.classList.add('hidden');
-      }
-    });
-
-    // Handle dropdown actions
-    sendBtn.querySelectorAll('[data-action]').forEach(btn => {
-      btn.onclick = async (e) => {
-        e.stopPropagation();
-        menu.classList.add('hidden');
-        const action = btn.dataset.action;
-
-        if (action === 'view') {
-          // Show share link modal
-          showShareLink(doc);
-        } else if (action === 'print') {
-          printDocument(doc);
-        } else if (action === 'email') {
-          // Send via email
-          try {
-            const response = await fetch(`/api/documents/${doc.id}/send`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ sendMethod: 'email' }),
-            });
-
-            if (!response.ok) {
-              const error = await response.json();
-              throw new Error(error.error || 'Failed to send email');
-            }
-
-            alert(`Email sent successfully to ${doc.clientEmail || 'client'}!`);
-            await loadDocuments();
-          } catch (error) {
-            console.error('Email error:', error);
-            alert(`Failed to send email: ${error.message}`);
-          }
-        } else {
-          // SMS - just mark as sent
-          await markSent(doc.id);
-          alert(`Prepared to ${action}`);
-          await loadDocuments();
-        }
-      };
-    });
-
-    actions.appendChild(sendBtn);
-
+    // Edit button
     const editBtn = document.createElement('button');
     editBtn.className = 'btn small ghost';
     editBtn.textContent = 'Edit';
@@ -1342,22 +1267,12 @@ const renderTypeList = () => {
     };
     actions.appendChild(editBtn);
 
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'btn small ghost';
-    copyBtn.textContent = 'Copy';
-    copyBtn.onclick = (e) => {
-      e.stopPropagation();
-      copyDocument(doc);
-    };
-    actions.appendChild(copyBtn);
-
-    actions.appendChild(statusPill(doc));
-
-    // Add delete button
+    // Delete button
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn-remove';
+    deleteBtn.className = 'btn small ghost';
     deleteBtn.textContent = '−';
     deleteBtn.title = 'Delete';
+    deleteBtn.style.color = '#ef4444';
     deleteBtn.onclick = (e) => {
       e.stopPropagation();
       deleteDocument(doc.id, doc.type);
