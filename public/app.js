@@ -2006,6 +2006,13 @@ const renderMaterialsView = () => {
     (m.description || '').toLowerCase().includes(searchTerm)
   );
 
+  // Sort alphabetically by name
+  filteredMaterials.sort((a, b) => {
+    const nameA = (a.name || '').toLowerCase();
+    const nameB = (b.name || '').toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
   if (!filteredMaterials.length) {
     container.innerHTML = searchTerm
       ? '<p class="muted">No materials match your search.</p>'
@@ -2015,17 +2022,23 @@ const renderMaterialsView = () => {
 
   filteredMaterials.forEach((m) => {
     const card = document.createElement('div');
-    card.className = 'client-card';
+    card.className = 'material-card';
     card.innerHTML = `
-      <div>
-        <h4>${m.name}</h4>
-        <p class="meta">${m.description || 'No description'}</p>
-        <p class="meta">Qty ${m.defaultQty || 1} · Rate ${currency(m.defaultRate || 0)} · Markup ${m.defaultMarkup || 0}%</p>
+      <div class="material-card__header">
+        <div class="material-card__name">${m.name}</div>
+        ${m.description ? `<div class="material-card__description">${m.description}</div>` : ''}
       </div>
-      <div class="card-actions">
-        <button class="btn small ghost" data-action="edit" data-id="${m.id}">Edit</button>
-        <button class="btn small ghost" data-action="duplicate" data-id="${m.id}">Duplicate</button>
-        <button class="btn small ghost" data-action="delete" data-id="${m.id}" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Delete</button>
+
+      <div class="material-card__details">
+        <div class="material-card__detail">📦 Qty: ${m.defaultQty || 1}</div>
+        <div class="material-card__detail">💰 Rate: ${currency(m.defaultRate || 0)}</div>
+        <div class="material-card__detail">📈 Markup: ${m.defaultMarkup || 0}%</div>
+      </div>
+
+      <div class="material-card__actions">
+        <button class="btn small" data-action="edit">Edit</button>
+        <button class="btn small ghost" data-action="duplicate">Duplicate</button>
+        <button class="btn small ghost" data-action="delete" style="color: #ef4444;">Delete</button>
       </div>
     `;
 
@@ -2047,6 +2060,13 @@ const renderItemsView = () => {
     (i.description || '').toLowerCase().includes(searchTerm)
   );
 
+  // Sort alphabetically by name
+  filteredItems.sort((a, b) => {
+    const nameA = (a.name || '').toLowerCase();
+    const nameB = (b.name || '').toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
   if (!filteredItems.length) {
     itemsListView.innerHTML = searchTerm
       ? '<p class="muted">No items match your search.</p>'
@@ -2056,17 +2076,23 @@ const renderItemsView = () => {
 
   filteredItems.forEach((i) => {
     const card = document.createElement('div');
-    card.className = 'client-card';
+    card.className = 'item-card';
     card.innerHTML = `
-      <div>
-        <h4>${i.name}</h4>
-        <p class="meta">${i.description || 'No description'}</p>
-        <p class="meta">Qty ${i.defaultQty || 1} · Rate ${currency(i.defaultRate || 0)} · Markup ${i.defaultMarkup || 0}%</p>
+      <div class="item-card__header">
+        <div class="item-card__name">${i.name}</div>
+        ${i.description ? `<div class="item-card__description">${i.description}</div>` : ''}
       </div>
-      <div class="card-actions">
-        <button class="btn small ghost" data-action="edit" data-id="${i.id}">Edit</button>
-        <button class="btn small ghost" data-action="duplicate" data-id="${i.id}">Duplicate</button>
-        <button class="btn small ghost" data-action="delete" data-id="${i.id}" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Delete</button>
+
+      <div class="item-card__details">
+        <div class="item-card__detail">📦 Qty: ${i.defaultQty || 1}</div>
+        <div class="item-card__detail">💰 Rate: ${currency(i.defaultRate || 0)}</div>
+        <div class="item-card__detail">📈 Markup: ${i.defaultMarkup || 0}%</div>
+      </div>
+
+      <div class="item-card__actions">
+        <button class="btn small" data-action="edit">Edit</button>
+        <button class="btn small ghost" data-action="duplicate">Duplicate</button>
+        <button class="btn small ghost" data-action="delete" style="color: #ef4444;">Delete</button>
       </div>
     `;
 
