@@ -1053,6 +1053,30 @@ const renderList = () => {
     pill.style.gridColumn = '1 / -1';
     actions.appendChild(pill);
 
+    // Add Invoice button for estimates
+    if (doc.type === 'estimate') {
+      const invoiceBtn = document.createElement('button');
+      invoiceBtn.className = 'btn small';
+      invoiceBtn.textContent = 'Invoice';
+      invoiceBtn.onclick = (e) => {
+        e.stopPropagation();
+        createInvoiceFromEstimate(doc, card);
+      };
+      actions.appendChild(invoiceBtn);
+    }
+
+    // Add Payments button for invoices
+    if (doc.type === 'invoice') {
+      const paymentsBtn = document.createElement('button');
+      paymentsBtn.className = 'btn small';
+      paymentsBtn.textContent = 'Payments';
+      paymentsBtn.onclick = (e) => {
+        e.stopPropagation();
+        openPaymentsModal(doc);
+      };
+      actions.appendChild(paymentsBtn);
+    }
+
     // Share dropdown with View/Email/SMS
     const shareContainer = document.createElement('div');
     shareContainer.className = 'dropdown-container';
@@ -1125,6 +1149,18 @@ const renderList = () => {
       window.location.href = `/${doc.type}-form.html?id=${doc.id}`;
     };
     actions.appendChild(loadBtn);
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn small ghost';
+    deleteBtn.textContent = '−';
+    deleteBtn.title = 'Delete';
+    deleteBtn.style.color = '#ef4444';
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      deleteDocument(doc.id, doc.type);
+    };
+    actions.appendChild(deleteBtn);
 
     listEl.appendChild(card);
   });
