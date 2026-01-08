@@ -321,6 +321,32 @@ h4 {
   cursor: not-allowed;
 }
 
+/* Custom form buttons */
+.btn-client-selector,
+.btn-add-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #211F2D;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.btn-client-selector:hover,
+.btn-add-item:hover {
+  background: #272532;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
 /* Input fields */
 input,
 select,

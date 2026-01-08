@@ -11,15 +11,18 @@
 </head>
 <body>
   <div class="page">
-    <nav class="pill-nav" id="topNav">
-      <button data-view="overview">Overview</button>
-      <button data-view="estimates" class="active">Estimates</button>
-      <button data-view="invoices">Invoices</button>
-      <button data-view="clients">Clients</button>
-      <button data-view="items">Items</button>
-      <button data-view="materials">Materials</button>
-      <button data-view="ai">AI</button>
-      <button data-view="settings">Settings</button>
+    <nav class="nav">
+      <div class="nav__inner" id="topNav">
+        <button class="nav__item" data-view="overview">Overview</button>
+        <button class="nav__item active" data-view="estimates">Estimates</button>
+        <button class="nav__item" data-view="invoices">Invoices</button>
+        <button class="nav__item" data-view="clients">Clients</button>
+        <button class="nav__item" data-view="items">Items</button>
+        <button class="nav__item" data-view="materials">Materials</button>
+        <button class="nav__item" data-view="ai">AI</button>
+        <button class="nav__item" data-view="notifications" id="notificationsTab">Notifications</button>
+        <button class="nav__item" data-view="settings">Settings</button>
+      </div>
     </nav>
 
     <div class="card" style="max-width: 1200px; margin: 40px auto;">
