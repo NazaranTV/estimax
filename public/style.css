@@ -347,6 +347,53 @@ h4 {
   border-color: rgba(255, 255, 255, 0.15);
 }
 
+/* Line item buttons */
+.btn-drag-handle,
+.btn-remove,
+.btn-item-list,
+.btn-upload-photo,
+.btn-save-as-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #211F2D;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-drag-handle:hover,
+.btn-remove:hover,
+.btn-item-list:hover,
+.btn-upload-photo:hover,
+.btn-save-as-item:hover {
+  background: #272532;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-drag-handle {
+  cursor: grab;
+  padding: 8px;
+}
+
+.btn-drag-handle:active {
+  cursor: grabbing;
+}
+
+.btn-remove {
+  padding: 6px 12px;
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* Input fields */
 input,
 select,
