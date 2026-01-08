@@ -1187,19 +1187,19 @@ const renderTypeList = () => {
     }
 
     card.innerHTML = `
-      <div class="doc-card-clickable">
-        <p class="eyebrow">${doc.type} ${createdDate ? `· Created ${createdDate}` : ''}</p>
-        <h4>${doc.clientName}</h4>
-        <p class="meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'} · ${dateLabel}</p>
+      <div class="doc-card__info">
+        <div class="eyebrow">${doc.type.toUpperCase()} ${createdDate ? `· Created ${createdDate}` : ''}</div>
+        <div class="doc-card__title">${doc.clientName}</div>
+        <div class="doc-card__meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'} · ${dateLabel}</div>
       </div>
-      <div class="value">${amountDisplay}</div>
-      <div class="actions"></div>
+      <div class="doc-card__total">${amountDisplay}</div>
+      <div class="doc-card__actions"></div>
     `;
 
     // Make the card clickable to open view
-    card.querySelector('.doc-card-clickable').onclick = () => openClientView(doc);
+    card.onclick = () => openClientView(doc);
 
-    const actions = card.querySelector('.actions');
+    const actions = card.querySelector('.doc-card__actions');
 
     // Add Invoice button for estimates
     if (doc.type === 'estimate') {
@@ -1298,12 +1298,8 @@ const renderTypeList = () => {
         const action = btn.dataset.action;
 
         if (action === 'view') {
-          // Open client view in new tab
-          if (doc.shareToken) {
-            window.open(`/view/${doc.shareToken}`, '_blank');
-          } else {
-            alert('No share link available for this document');
-          }
+          // Show share link modal
+          showShareLink(doc);
         } else if (action === 'print') {
           printDocument(doc);
         } else if (action === 'email') {
