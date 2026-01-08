@@ -256,8 +256,8 @@ h4 {
   font-size: 14px;
   font-weight: 500;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-normal);
-  background: var(--bg-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #211F2D;
   color: var(--text-primary);
   cursor: pointer;
   transition: var(--transition);
@@ -266,8 +266,8 @@ h4 {
 }
 
 .btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
+  background: #272532;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .btn:active {
@@ -298,11 +298,12 @@ h4 {
 
 .btn.ghost {
   background: transparent;
-  border-color: var(--border-subtle);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .btn.ghost:hover {
-  background: var(--bg-hover);
+  background: #211F2D;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .btn.small {
