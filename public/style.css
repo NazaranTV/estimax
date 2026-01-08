@@ -613,7 +613,11 @@ label {
 /* Dropdown for Share button */
 .dropdown-container {
   position: relative;
-  display: inline-block;
+  display: block;
+}
+
+.dropdown-container .btn {
+  width: 100%;
 }
 
 .dropdown-menu {
