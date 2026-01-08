@@ -742,6 +742,7 @@ label {
   transition: var(--transition);
   cursor: pointer;
   min-height: 70px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
 .client-card:hover {
