@@ -2050,6 +2050,51 @@ const closeClientModal = () => {
   currentClientEdit = null;
 };
 
+// Formatting helper functions
+const formatPhoneNumber = (phone) => {
+  // Remove all non-numeric characters
+  const cleaned = phone.replace(/\D/g, '');
+
+  // Format as XXX-XXX-XXXX
+  if (cleaned.length === 10) {
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  } else if (cleaned.length === 11 && cleaned[0] === '1') {
+    // Handle 1-XXX-XXX-XXXX format
+    return `1-${cleaned.slice(1, 4)}-${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+  }
+
+  // Return as-is if not 10 or 11 digits
+  return phone;
+};
+
+const formatAddress = (address) => {
+  if (!address) return '';
+
+  // Split by comma or newline
+  const parts = address.split(/[,\n]+/).map(part => part.trim()).filter(Boolean);
+
+  // Title case each part
+  const titleCase = (str) => {
+    return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+  };
+
+  // Format each part with proper capitalization
+  const formatted = parts.map(part => {
+    // Skip state abbreviations and ZIP codes
+    if (/^[A-Z]{2}$/.test(part.trim()) || /^\d{5}(-\d{4})?$/.test(part.trim())) {
+      return part.toUpperCase();
+    }
+    return titleCase(part);
+  });
+
+  return formatted.join(', ');
+};
+
+const titleCase = (text) => {
+  if (!text) return '';
+  return text.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+};
+
 document.getElementById('closeClientModal').addEventListener('click', closeClientModal);
 document.getElementById('addClientFromForm').addEventListener('click', openClientModal);
 document.getElementById('addClientFromClients').addEventListener('click', openClientModal);
@@ -2061,17 +2106,43 @@ document.getElementById('clientPicker').addEventListener('change', (e) => {
   if (id) applyClientToForm(id);
 });
 
+// Add auto-formatting to phone input
+const phoneInput = document.querySelector('#clientForm input[name="phone"]');
+phoneInput.addEventListener('blur', (e) => {
+  e.target.value = formatPhoneNumber(e.target.value);
+});
+
+// Add auto-formatting to billing address
+const addressInput = document.querySelector('#clientForm textarea[name="billingAddress"]');
+addressInput.addEventListener('blur', (e) => {
+  e.target.value = formatAddress(e.target.value);
+});
+
+// Add auto-formatting to name (title case)
+const nameInput = document.querySelector('#clientForm input[name="name"]');
+nameInput.addEventListener('blur', (e) => {
+  e.target.value = titleCase(e.target.value);
+});
+
+// Add auto-formatting to company (title case)
+const companyInput = document.querySelector('#clientForm input[name="company"]');
+companyInput.addEventListener('blur', (e) => {
+  e.target.value = titleCase(e.target.value);
+});
+
 document.getElementById('clientForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const status = document.getElementById('clientStatus');
   status.textContent = 'Saving...';
   const form = e.target;
+
+  // Format data before saving
   const payload = {
-    name: form.name.value.trim(),
-    email: form.email.value.trim(),
-    phone: form.phone.value.trim(),
-    company: form.company.value.trim(),
-    billingAddress: form.billingAddress.value.trim(),
+    name: titleCase(form.name.value.trim()),
+    email: form.email.value.trim().toLowerCase(),
+    phone: formatPhoneNumber(form.phone.value.trim()),
+    company: titleCase(form.company.value.trim()),
+    billingAddress: formatAddress(form.billingAddress.value.trim()),
     notes: form.notes.value.trim(),
   };
   try {
