@@ -490,15 +490,15 @@ app.get('/api/items', async (_req, res) => {
 
 app.post('/api/items', async (req, res) => {
   try {
-    const { name, description, defaultQty, defaultRate, defaultMarkup } = req.body;
+    const { name, description, category, defaultQty, defaultRate, defaultMarkup } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
     const { rows } = await pool.query(
       `
-      INSERT INTO items (name, description, default_qty, default_rate, default_markup)
-      VALUES ($1,$2,$3,$4,$5)
+      INSERT INTO items (name, description, category, default_qty, default_rate, default_markup)
+      VALUES ($1,$2,$3,$4,$5,$6)
       RETURNING *
     `,
-      [name, description || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
+      [name, description || null, category || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
     );
     res.status(201).json(toCamel(rows[0]));
   } catch (err) {
@@ -510,19 +510,20 @@ app.post('/api/items', async (req, res) => {
 app.put('/api/items/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, defaultQty, defaultRate, defaultMarkup } = req.body;
+    const { name, description, category, defaultQty, defaultRate, defaultMarkup } = req.body;
     const { rows } = await pool.query(
       `
       UPDATE items SET
         name = COALESCE($1, name),
         description = COALESCE($2, description),
-        default_qty = COALESCE($3, default_qty),
-        default_rate = COALESCE($4, default_rate),
-        default_markup = COALESCE($5, default_markup)
-      WHERE id = $6
+        category = $3,
+        default_qty = COALESCE($4, default_qty),
+        default_rate = COALESCE($5, default_rate),
+        default_markup = COALESCE($6, default_markup)
+      WHERE id = $7
       RETURNING *
     `,
-      [name || null, description || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id],
+      [name || null, description || null, category || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id],
     );
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(toCamel(rows[0]));
@@ -616,15 +617,15 @@ app.get('/api/materials', async (_req, res) => {
 
 app.post('/api/materials', async (req, res) => {
   try {
-    const { name, description, defaultQty, defaultRate, defaultMarkup } = req.body;
+    const { name, description, category, defaultQty, defaultRate, defaultMarkup } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
     const { rows } = await pool.query(
       `
-      INSERT INTO materials (name, description, default_qty, default_rate, default_markup)
-      VALUES ($1,$2,$3,$4,$5)
+      INSERT INTO materials (name, description, category, default_qty, default_rate, default_markup)
+      VALUES ($1,$2,$3,$4,$5,$6)
       RETURNING *
     `,
-      [name, description || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
+      [name, description || null, category || null, defaultQty || 1, defaultRate || 0, defaultMarkup || 0],
     );
     res.status(201).json(toCamel(rows[0]));
   } catch (err) {
@@ -636,19 +637,20 @@ app.post('/api/materials', async (req, res) => {
 app.put('/api/materials/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, defaultQty, defaultRate, defaultMarkup } = req.body;
+    const { name, description, category, defaultQty, defaultRate, defaultMarkup } = req.body;
     const { rows } = await pool.query(
       `
       UPDATE materials SET
         name = COALESCE($1, name),
         description = COALESCE($2, description),
-        default_qty = COALESCE($3, default_qty),
-        default_rate = COALESCE($4, default_rate),
-        default_markup = COALESCE($5, default_markup)
-      WHERE id = $6
+        category = $3,
+        default_qty = COALESCE($4, default_qty),
+        default_rate = COALESCE($5, default_rate),
+        default_markup = COALESCE($6, default_markup)
+      WHERE id = $7
       RETURNING *
     `,
-      [name || null, description || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id],
+      [name || null, description || null, category || null, defaultQty || null, defaultRate || null, defaultMarkup || null, id],
     );
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(toCamel(rows[0]));

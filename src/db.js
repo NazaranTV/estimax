@@ -93,6 +93,18 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    -- Add category column to items if it doesn't exist (migration for existing databases)
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='items' AND column_name='category'
+      ) THEN
+        ALTER TABLE items ADD COLUMN category TEXT;
+        CREATE INDEX idx_items_category ON items(category);
+      END IF;
+    END $$;
+
     CREATE TABLE IF NOT EXISTS materials (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
@@ -102,6 +114,18 @@ async function initDb() {
       default_markup NUMERIC(6,2) DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    -- Add category column to materials if it doesn't exist (migration for existing databases)
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='materials' AND column_name='category'
+      ) THEN
+        ALTER TABLE materials ADD COLUMN category TEXT;
+        CREATE INDEX idx_materials_category ON materials(category);
+      END IF;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS payments (
       id SERIAL PRIMARY KEY,
