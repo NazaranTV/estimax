@@ -1034,19 +1034,19 @@ const renderList = () => {
         ? `Due ${new Date(doc.dueDate).toLocaleDateString()}`
         : 'No due date';
     card.innerHTML = `
-      <div class="doc-card-clickable">
-        <p class="eyebrow">${doc.type}</p>
-        <h4>${doc.clientName}</h4>
-        <p class="meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'}</p>
+      <div class="doc-card__info">
+        <div class="eyebrow">${doc.type.toUpperCase()}</div>
+        <div class="doc-card__title">${doc.clientName}</div>
+        <div class="doc-card__meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'}</div>
       </div>
-      <div class="value">${currency(doc.total)}</div>
-      <div class="actions"></div>
+      <div class="doc-card__total">${currency(doc.total)}</div>
+      <div class="doc-card__actions"></div>
     `;
 
     // Make the card clickable to open view
-    card.querySelector('.doc-card-clickable').onclick = () => openClientView(doc);
+    card.onclick = () => openClientView(doc);
 
-    const actions = card.querySelector('.actions');
+    const actions = card.querySelector('.doc-card__actions');
     actions.appendChild(statusPill(doc));
     if (doc.status !== 'sent') {
       const sendBtn = document.createElement('button');
@@ -3795,5 +3795,55 @@ if (logoutBtn) {
     }
   });
 }
+
+// Mobile swipe navigation between tabs
+const setupSwipeNavigation = () => {
+  const views = ['overview', 'estimates', 'invoices', 'clients', 'items', 'materials', 'ai', 'notifications', 'settings'];
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let touchStartY = 0;
+  let touchEndY = 0;
+  const minSwipeDistance = 50; // minimum distance for a swipe to register
+
+  const handleSwipe = () => {
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    // Only trigger if horizontal swipe is dominant (not scrolling vertically)
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
+      const currentIndex = views.indexOf(activeView);
+
+      if (diffX < 0 && currentIndex < views.length - 1) {
+        // Swipe left - next tab
+        switchView(views[currentIndex + 1]);
+      } else if (diffX > 0 && currentIndex > 0) {
+        // Swipe right - previous tab
+        switchView(views[currentIndex - 1]);
+      }
+    }
+  };
+
+  document.body.addEventListener('touchstart', (e) => {
+    // Don't interfere with touches on inputs, buttons, or modals
+    if (e.target.closest('input, textarea, select, button, .modal:not(.hidden)')) {
+      return;
+    }
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  document.body.addEventListener('touchend', (e) => {
+    // Don't interfere with touches on inputs, buttons, or modals
+    if (e.target.closest('input, textarea, select, button, .modal:not(.hidden)')) {
+      return;
+    }
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+  }, { passive: true });
+};
+
+// Initialize swipe navigation
+setupSwipeNavigation();
 
 } // End of initApp function
