@@ -1068,6 +1068,15 @@ const renderList = () => {
       };
       actions.appendChild(paidBtn);
     }
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'btn small ghost';
+    shareBtn.textContent = 'Share';
+    shareBtn.onclick = (e) => {
+      e.stopPropagation();
+      showShareLink(doc);
+    };
+    actions.appendChild(shareBtn);
+
     const loadBtn = document.createElement('button');
     loadBtn.className = 'btn small ghost';
     loadBtn.textContent = 'Edit';
@@ -1178,19 +1187,19 @@ const renderTypeList = () => {
     }
 
     card.innerHTML = `
-      <div class="doc-card-clickable">
-        <p class="eyebrow">${doc.type} ${createdDate ? `· Created ${createdDate}` : ''}</p>
-        <h4>${doc.clientName}</h4>
-        <p class="meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'} · ${dateLabel}</p>
+      <div class="doc-card__info">
+        <div class="eyebrow">${doc.type.toUpperCase()} ${createdDate ? `· Created ${createdDate}` : ''}</div>
+        <div class="doc-card__title">${doc.clientName}</div>
+        <div class="doc-card__meta">PO ${doc.poNumber || '—'} · ${doc.projectName || 'No project'} · ${dateLabel}</div>
       </div>
-      <div class="value">${amountDisplay}</div>
-      <div class="actions"></div>
+      <div class="doc-card__total">${amountDisplay}</div>
+      <div class="doc-card__actions"></div>
     `;
 
     // Make the card clickable to open view
-    card.querySelector('.doc-card-clickable').onclick = () => openClientView(doc);
+    card.onclick = () => openClientView(doc);
 
-    const actions = card.querySelector('.actions');
+    const actions = card.querySelector('.doc-card__actions');
 
     // Add Invoice button for estimates
     if (doc.type === 'estimate') {
@@ -1289,12 +1298,8 @@ const renderTypeList = () => {
         const action = btn.dataset.action;
 
         if (action === 'view') {
-          // Open client view in new tab
-          if (doc.shareToken) {
-            window.open(`/view/${doc.shareToken}`, '_blank');
-          } else {
-            alert('No share link available for this document');
-          }
+          // Show share link modal
+          showShareLink(doc);
         } else if (action === 'print') {
           printDocument(doc);
         } else if (action === 'email') {
@@ -3795,6 +3800,83 @@ if (logoutBtn) {
     }
   });
 }
+
+// Share link functionality
+const showShareLink = async (doc) => {
+  try {
+    // Generate share token if it doesn't exist
+    let shareToken = doc.shareToken;
+    if (!shareToken) {
+      const res = await fetch(`/api/documents/${doc.id}/share-token`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to generate share token');
+      const updated = await res.json();
+      shareToken = updated.shareToken;
+    }
+
+    const shareUrl = `${window.location.origin}/share.html?token=${shareToken}`;
+
+    // Show modal with share link
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal__backdrop"></div>
+      <div class="modal__content">
+        <div class="modal__header">
+          <h3>Share Link</h3>
+          <button class="btn small ghost" id="closeShareModal">Close</button>
+        </div>
+        <div class="modal__body">
+          <p class="meta" style="margin-bottom: 16px;">Share this link with your client to view the ${doc.type}:</p>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="shareLinkInput" value="${shareUrl}" readonly style="flex: 1; font-size: 13px; font-family: monospace;">
+            <button class="btn primary" id="copyShareLink">Copy</button>
+          </div>
+          <p class="meta" style="margin-top: 12px; font-size: 12px; color: var(--text-tertiary);">
+            Anyone with this link can view this document. Keep it secure.
+          </p>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close modal handlers
+    modal.querySelector('.modal__backdrop').onclick = () => {
+      modal.remove();
+    };
+    modal.querySelector('#closeShareModal').onclick = () => {
+      modal.remove();
+    };
+
+    // Copy link handler
+    modal.querySelector('#copyShareLink').onclick = () => {
+      const input = modal.querySelector('#shareLinkInput');
+      input.select();
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        const btn = modal.querySelector('#copyShareLink');
+        btn.textContent = 'Copied!';
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy link. Please copy manually.');
+      });
+    };
+
+    // Auto-select on click
+    modal.querySelector('#shareLinkInput').onclick = function() {
+      this.select();
+    };
+
+  } catch (err) {
+    console.error('Failed to generate share link:', err);
+    alert('Failed to generate share link. Please try again.');
+  }
+};
 
 // Mobile swipe navigation between tabs
 const setupSwipeNavigation = () => {
