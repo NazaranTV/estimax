@@ -415,18 +415,45 @@
         <h3>Add client</h3>
         <button class="btn small ghost" id="closeClientModal">Close</button>
       </div>
-      <form id="clientForm">
-        <label>Name<input name="name" required placeholder="Client name"></label>
-        <label>Email<input name="email" type="email" placeholder="email@example.com"></label>
-        <label>Phone<input name="phone" placeholder="(555) 123-4567"></label>
-        <label>Company<input name="company" placeholder="Company"></label>
-        <label>Billing address<textarea name="billingAddress" rows="2" placeholder="Street, City, State, ZIP"></textarea></label>
-        <label>Notes<textarea name="notes" rows="3" placeholder="Notes"></textarea></label>
-        <div class="form__actions">
-          <button type="submit" class="btn primary">Save client</button>
-          <span id="clientStatus" class="muted"></span>
-        </div>
-      </form>
+      <div class="modal__body">
+        <form id="clientForm" class="modal-form">
+          <div class="form-field">
+            <label>Name</label>
+            <input name="name" required placeholder="Client name">
+          </div>
+
+          <div class="grid two">
+            <div class="form-field">
+              <label>Email</label>
+              <input name="email" type="email" placeholder="email@example.com">
+            </div>
+            <div class="form-field">
+              <label>Phone</label>
+              <input name="phone" placeholder="(555) 123-4567">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Company</label>
+            <input name="company" placeholder="Company">
+          </div>
+
+          <div class="form-field">
+            <label>Billing address</label>
+            <textarea name="billingAddress" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label>Notes</label>
+            <textarea name="notes" rows="3" placeholder="Notes"></textarea>
+          </div>
+
+          <div class="form__actions">
+            <button type="submit" class="btn primary">Save client</button>
+            <span id="clientStatus" class="muted"></span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
