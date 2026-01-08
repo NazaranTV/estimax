@@ -51,6 +51,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body {
@@ -1025,11 +1026,11 @@ label {
     grid-template-columns: 1fr;
   }
 
-  /* Document cards - stack vertically on mobile */
+  /* Document cards - compact mobile layout */
   .doc-card {
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: 8px;
+    padding: 12px 16px;
     min-height: auto;
     align-items: stretch;
   }
@@ -1039,21 +1040,35 @@ label {
     width: 100%;
   }
 
+  .doc-card__meta {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
   .doc-card__total {
-    font-size: 24px;
+    font-size: 20px;
     text-align: left;
+    margin-top: 4px;
   }
 
   .doc-card__actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     width: 100%;
     margin-left: 0;
     gap: 6px;
-    flex-wrap: wrap;
+    margin-top: 4px;
   }
 
   .doc-card__actions .btn {
-    flex: 1;
     min-width: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .doc-card__actions .pill {
+    grid-column: 1 / -1;
+    justify-content: center;
   }
 
   .summary {
