@@ -1822,10 +1822,8 @@ const renderClients = () => {
 
     card.innerHTML = `
       <div class="client-card__header">
-        <div class="client-card__info">
-          <div class="client-card__name">${c.name}</div>
-          ${c.company ? `<div class="client-card__company">${c.company}</div>` : ''}
-        </div>
+        <div class="client-card__name">${c.name}</div>
+        ${c.company ? `<div class="client-card__company">${c.company}</div>` : ''}
       </div>
 
       ${contactItems.length > 0 ? `
