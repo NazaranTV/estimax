@@ -2037,7 +2037,6 @@ document.getElementById('clientForm').addEventListener('submit', async (e) => {
     email: form.email.value.trim(),
     phone: form.phone.value.trim(),
     company: form.company.value.trim(),
-    billingEmail: form.billingEmail.value.trim(),
     billingAddress: form.billingAddress.value.trim(),
     notes: form.notes.value.trim(),
   };
