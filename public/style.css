@@ -1029,6 +1029,85 @@ label {
   .btn {
     width: 100%;
   }
+
+  /* Client cards - stack vertically on mobile */
+  .client-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    min-height: auto;
+  }
+
+  .client-card__header {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .client-card__contact {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .client-card__contact-item {
+    width: 100%;
+  }
+
+  .client-card__notes {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .client-card__actions {
+    width: 100%;
+    margin-left: 0;
+    gap: 8px;
+  }
+
+  .client-card__actions .btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Item and Material cards - stack vertically on mobile */
+  .item-card,
+  .material-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    min-height: auto;
+  }
+
+  .item-card__header,
+  .material-card__header {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .item-card__details,
+  .material-card__details {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .item-card__detail,
+  .material-card__detail {
+    width: 100%;
+  }
+
+  .item-card__actions,
+  .material-card__actions {
+    width: 100%;
+    margin-left: 0;
+    gap: 8px;
+  }
+
+  .item-card__actions .btn,
+  .material-card__actions .btn {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 /* Scrollbar styling */
