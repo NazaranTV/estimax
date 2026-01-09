@@ -244,12 +244,11 @@ const openClientView = (doc) => {
 
     // Generate materials HTML if any exist for this line item
     const materialsHtml = (li.materials && li.materials.length > 0) ? `
-      <div style="margin-top: 8px; padding: 8px; background: rgba(124, 58, 237, 0.08); border-left: 2px solid var(--accent-primary); border-radius: 4px;">
-        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-tertiary); margin-bottom: 6px;">Materials:</div>
+      <div style="margin-top: 6px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.15);">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 4px;">Materials:</div>
         ${li.materials.map(mat => {
-          const matTotal = ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0);
-          return `<div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 3px;">
-            • ${mat.name || 'Unnamed'} - Qty: ${mat.qty || 0} @ ${currency(mat.rate || 0)} ${mat.markup ? `+ ${currency(mat.markup)} markup` : ''} = ${currency(matTotal)}
+          return `<div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; line-height: 1.4;">
+            • ${mat.name || 'Unnamed'} (Qty: ${mat.qty || 0})
           </div>`;
         }).join('')}
       </div>
@@ -328,6 +327,7 @@ const openClientView = (doc) => {
   const previewInvoiceBtn = document.getElementById('previewInvoiceBtn');
   const previewEditBtn = document.getElementById('previewEditBtn');
   const previewDeleteBtn = document.getElementById('previewDeleteBtn');
+  const previewShareView = document.getElementById('previewShareView');
   const previewShareEmail = document.getElementById('previewShareEmail');
   const previewShareSMS = document.getElementById('previewShareSMS');
   const previewShareMaterials = document.getElementById('previewShareMaterials');
@@ -351,7 +351,7 @@ const openClientView = (doc) => {
   // Edit button
   previewEditBtn.onclick = () => {
     closeClientViewModal();
-    openEditForm(doc);
+    window.location.href = `/${doc.type}-form.html?id=${doc.id}`;
   };
 
   // Delete button
@@ -377,6 +377,28 @@ const openClientView = (doc) => {
       shareDropdown.style.display = 'none';
     }
   });
+
+  // Share View - Open share link in new tab
+  previewShareView.onclick = async () => {
+    shareDropdown.classList.add('hidden');
+    shareDropdown.style.display = 'none';
+    try {
+      let shareToken = doc.shareToken;
+      if (!shareToken) {
+        const res = await fetch(`/api/documents/${doc.id}/share-token`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        if (!res.ok) throw new Error('Failed to generate share token');
+        const updated = await res.json();
+        shareToken = updated.shareToken;
+      }
+      window.open(`/share.html?token=${shareToken}`, '_blank');
+    } catch (err) {
+      console.error('Failed to open share link:', err);
+      alert('Failed to open share link. Please try again.');
+    }
+  };
 
   // Share Email
   previewShareEmail.onclick = () => {
@@ -426,7 +448,43 @@ const showMaterialsListView = (doc, printable = false) => {
   // If printable mode, open in new window
   if (printable) {
     const printWindow = window.open('', '_blank');
-    const materialsTotal = allMaterials.reduce((sum, mat) => sum + ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0), 0);
+
+    // Group materials by line item
+    const materialsByLineItem = {};
+    (doc.lineItems || []).forEach((li) => {
+      if (li.materials && li.materials.length > 0) {
+        const lineItemName = li.description || 'Untitled Item';
+        if (!materialsByLineItem[lineItemName]) {
+          materialsByLineItem[lineItemName] = [];
+        }
+        materialsByLineItem[lineItemName].push(...li.materials);
+      }
+    });
+
+    let materialsHtml = '';
+    for (const [lineItem, materials] of Object.entries(materialsByLineItem)) {
+      materialsHtml += `
+        <div style="margin-bottom: 32px;">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #000;">${lineItem}</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="padding: 8px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ddd;">Material</th>
+                <th style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ddd; width: 100px;">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${materials.map((mat) => `
+                <tr>
+                  <td style="padding: 10px 4px; border-bottom: 1px solid #f0f0f0; font-size: 14px;">${mat.name || 'Unnamed Material'}</td>
+                  <td style="padding: 10px 4px; border-bottom: 1px solid #f0f0f0; text-align: center; font-size: 14px;">${mat.qty || 0}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -442,12 +500,7 @@ const showMaterialsListView = (doc, printable = false) => {
             line-height: 1.6;
           }
           h1 { font-size: 24px; margin-bottom: 8px; }
-          h2 { font-size: 18px; margin-bottom: 24px; color: #666; }
-          table { width: 100%; border-collapse: collapse; margin-top: 24px; }
-          thead { border-bottom: 2px solid #000; }
-          th { padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-          td { padding: 12px 4px; border-bottom: 1px solid #ddd; font-size: 14px; }
-          .total { border-top: 2px solid #000; padding-top: 16px; margin-top: 16px; text-align: right; font-size: 18px; font-weight: 700; }
+          h2 { font-size: 18px; margin-bottom: 24px; color: #666; font-weight: 400; }
           @media print {
             body { padding: 20px; }
           }
@@ -456,36 +509,7 @@ const showMaterialsListView = (doc, printable = false) => {
       <body>
         <h1>Materials List</h1>
         <h2>${doc.type === 'estimate' ? 'Estimate' : 'Invoice'} #${doc.poNumber || '—'} - ${doc.clientName}</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Line Item</th>
-              <th>Material</th>
-              <th style="text-align: center;">Rate</th>
-              <th style="text-align: center;">Qty</th>
-              <th style="text-align: center;">Markup</th>
-              <th style="text-align: right;">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${allMaterials.map((mat) => {
-              const matTotal = ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0);
-              return `
-                <tr>
-                  <td>${mat.lineItem}</td>
-                  <td><strong>${mat.name || 'Unnamed Material'}</strong></td>
-                  <td style="text-align: center;">$${(mat.rate || 0).toFixed(2)}</td>
-                  <td style="text-align: center;">${mat.qty || 0}</td>
-                  <td style="text-align: center;">$${(mat.markup || 0).toFixed(2)}</td>
-                  <td style="text-align: right;"><strong>$${matTotal.toFixed(2)}</strong></td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-        <div class="total">
-          TOTAL MATERIALS: $${materialsTotal.toFixed(2)}
-        </div>
+        ${materialsHtml}
         <script>
           window.onload = function() {
             window.print();
