@@ -801,15 +801,20 @@ const renderMaterialsList = () => {
 
     const createBtn = document.getElementById('createNewMaterialBtn');
     if (createBtn) {
-      createBtn.onclick = () => {
+      createBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         closeMaterialModal();
-        openMaterialCreateModal();
-        if (term) {
-          // Pre-fill the name field if user was searching
-          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-          if (nameInput) nameInput.value = term;
-        }
-      };
+        // Use setTimeout to ensure modal close animation completes
+        setTimeout(() => {
+          openMaterialCreateModal();
+          if (term) {
+            // Pre-fill the name field if user was searching
+            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+            if (nameInput) nameInput.value = term;
+          }
+        }, 50);
+      });
     }
     return;
   }
@@ -840,12 +845,17 @@ const renderMaterialsList = () => {
 
     const createBtn = document.getElementById('createNewMaterialTopBtn');
     if (createBtn) {
-      createBtn.onclick = () => {
+      createBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         closeMaterialModal();
-        openMaterialCreateModal();
-        const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-        if (nameInput) nameInput.value = term;
-      };
+        // Use setTimeout to ensure modal close animation completes
+        setTimeout(() => {
+          openMaterialCreateModal();
+          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+          if (nameInput) nameInput.value = term;
+        }, 50);
+      });
     }
   }
 
