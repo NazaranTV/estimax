@@ -2227,15 +2227,17 @@ const renderMaterialsList = () => {
     const categoryHeader = document.createElement('div');
     categoryHeader.className = 'category-header';
     categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 8px; user-select: none;';
+    // Auto-expand categories when searching
+    const shouldExpand = term.length > 0;
     categoryHeader.innerHTML = `
-      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s; transform: rotate(-90deg);">▼</span>
+      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s; transform: rotate(${shouldExpand ? '0deg' : '-90deg'});">▼</span>
       <span style="font-weight: 600; font-size: 14px;">${category}</span>
       <span class="muted" style="font-size: 12px; margin-left: auto;">${materialsByCategory[category].length} material${materialsByCategory[category].length === 1 ? '' : 's'}</span>
     `;
 
     const categoryContent = document.createElement('div');
     categoryContent.className = 'category-content';
-    categoryContent.style.cssText = 'display: none; padding-left: 16px;';
+    categoryContent.style.cssText = `display: ${shouldExpand ? 'block' : 'none'}; padding-left: 16px;`;
 
     // Sort materials within category alphabetically by name
     materialsByCategory[category].sort((a, b) => {
@@ -2268,7 +2270,20 @@ const renderMaterialsList = () => {
           });
           renderMaterialsSection(currentLineForMaterials);
           recalcTotals();
-          closeMaterialModal();
+
+          // Show success message and clear search, but keep modal open
+          const btn = card.querySelector('button');
+          const originalText = btn.textContent;
+          btn.textContent = '✓ Added';
+          btn.style.background = '#10b981';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+          }, 1500);
+
+          // Clear search and refresh list
+          searchMaterialsInput.value = '';
+          renderMaterialsList();
         }
       };
       categoryContent.appendChild(card);
