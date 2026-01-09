@@ -255,37 +255,10 @@ const openClientView = (doc) => {
   }).join('');
 
   clientViewBody.innerHTML = `
-    <div style="display: flex; gap: 16px;">
-      <!-- Left Action Bar -->
-      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 140px;">
-        <button class="btn primary" onclick="window.location.href='/${doc.type}-form.html?id=${doc.id}'" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600;">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
-            <path d="M10 1L13 4L5 12H2V9L10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          EDIT
-        </button>
-        <button class="btn" id="emailDocBtn_${doc.id}" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600; background: #10b981;">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
-            <path d="M13 1L1 6.5L5.5 8.5L7.5 13L13 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          EMAIL
-        </button>
-        ${doc.type === 'invoice' ? `
-        <button class="btn ghost" onclick="window.openPaymentsModal?.(${doc.id})" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600;">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
-            <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M1 6H13" stroke="currentColor" stroke-width="1.5"/>
-          </svg>
-          PAYMENTS
-        </button>
-        ` : ''}
-      </div>
-
-      <!-- Main Content -->
-      <div style="flex: 1;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
-          <div>
-            <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Bill To</h4>
+    <div style="display: block;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
+        <div>
+          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Bill To</h4>
           <p style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">${doc.clientName}</p>
           ${doc.clientEmail ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientEmail}</p>` : ''}
           ${doc.clientPhone ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientPhone}</p>` : ''}
@@ -334,13 +307,7 @@ const openClientView = (doc) => {
       </div>
     </div>
   `;
-  clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview`;
-
-  // Setup email button handler
-  const emailBtn = document.getElementById(`emailDocBtn_${doc.id}`);
-  if (emailBtn) {
-    emailBtn.onclick = () => openSend(doc);
-  }
+  clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview - Contractor View`;
 
   // Check if document has any materials
   const hasMaterials = (doc.lineItems || []).some(li => (li.materials || []).length > 0);
