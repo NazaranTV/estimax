@@ -768,15 +768,16 @@ const renderMaterialsList = () => {
         if (currentLineForMaterials) {
           currentLineForMaterials.materialsData = currentLineForMaterials.materialsData || [];
 
-          // If material has a default quantity, calculate unit rate
+          // If material has a default quantity, calculate unit rate and unit markup
           const defaultQty = m.defaultQty || 1;
           const unitRate = defaultQty > 1 ? Math.round(((m.defaultRate || 0) / defaultQty) * 100) / 100 : (m.defaultRate || 0);
+          const unitMarkup = defaultQty > 1 ? Math.round(((m.defaultMarkup || 0) / defaultQty) * 100) / 100 : (m.defaultMarkup || 0);
 
           currentLineForMaterials.materialsData.push({
             name: m.name,
             qty: 1,  // Always default to quantity of 1
             rate: unitRate,
-            markup: m.defaultMarkup || 0,
+            markup: unitMarkup,
           });
           renderMaterialsSection(currentLineForMaterials);
           recalcTotals();
