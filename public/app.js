@@ -1275,7 +1275,7 @@ const renderList = () => {
     // Delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn small ghost';
-    deleteBtn.textContent = '−';
+    deleteBtn.textContent = 'Delete';
     deleteBtn.title = 'Delete';
     deleteBtn.style.color = '#ef4444';
     deleteBtn.onclick = (e) => {
@@ -1504,7 +1504,7 @@ const renderTypeList = () => {
     // Delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn small ghost';
-    deleteBtn.textContent = '−';
+    deleteBtn.textContent = 'Delete';
     deleteBtn.title = 'Delete';
     deleteBtn.style.color = '#ef4444';
     deleteBtn.onclick = (e) => {

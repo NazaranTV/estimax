@@ -1151,6 +1151,14 @@ label {
     font-size: 13px;
   }
 
+  .doc-card__actions .dropdown-container {
+    width: 100%;
+  }
+
+  .doc-card__actions .dropdown-container .btn {
+    width: 100%;
+  }
+
   .doc-card__actions .pill {
     grid-column: 1 / -1;
     justify-content: center;
@@ -1223,6 +1231,14 @@ label {
     min-width: 0;
     width: 100%;
     gap: 4px;
+  }
+
+  .item-card__name,
+  .material-card__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
 
   .item-card__description,
