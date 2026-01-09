@@ -85,6 +85,11 @@ function openMaterialCreateModal() {
 
 function closeMaterialCreateModal() {
   materialCreateModal.classList.add('hidden');
+  document.getElementById('materialForm').reset();
+  document.getElementById('materialStatus').textContent = '';
+  // Reset unit rate field
+  const unitRateInput = document.querySelector('#materialForm input[name="unitRate"]');
+  if (unitRateInput) unitRateInput.value = '0.00';
 }
 
 function openClientModal() {
@@ -805,15 +810,16 @@ const renderMaterialsList = () => {
         e.preventDefault();
         e.stopPropagation();
         closeMaterialModal();
-        // Use setTimeout to ensure modal close animation completes
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           openMaterialCreateModal();
           if (term) {
             // Pre-fill the name field if user was searching
-            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-            if (nameInput) nameInput.value = term;
+            requestAnimationFrame(() => {
+              const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+              if (nameInput) nameInput.value = term;
+            });
           }
-        }, 50);
+        });
       });
     }
     return;
@@ -849,12 +855,13 @@ const renderMaterialsList = () => {
         e.preventDefault();
         e.stopPropagation();
         closeMaterialModal();
-        // Use setTimeout to ensure modal close animation completes
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           openMaterialCreateModal();
-          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-          if (nameInput) nameInput.value = term;
-        }, 50);
+          requestAnimationFrame(() => {
+            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+            if (nameInput) nameInput.value = term;
+          });
+        });
       });
     }
   }
@@ -1204,6 +1211,7 @@ document.getElementById('materialForm').addEventListener('submit', async (e) => 
   const payload = {
     name: form.name.value.trim(),
     description: form.description.value.trim(),
+    category: form.category ? form.category.value.trim() : '',
     defaultQty: Number(form.defaultQty.value) || 1,
     defaultRate: Number(form.defaultRate.value) || 0,
     defaultMarkup: Number(form.defaultMarkup.value) || 0,
@@ -1236,12 +1244,122 @@ document.getElementById('materialForm').addEventListener('submit', async (e) => 
   });
 });
 
+// Unit rate calculation for material form
+const materialForm = document.getElementById('materialForm');
+if (materialForm) {
+  const qtyInput = materialForm.querySelector('input[name="defaultQty"]');
+  const priceInput = materialForm.querySelector('input[name="defaultRate"]');
+  const unitRateInput = materialForm.querySelector('input[name="unitRate"]');
+
+  if (qtyInput && priceInput && unitRateInput) {
+    function calculateUnitRate() {
+      const qty = Number(qtyInput.value) || 1;
+      const price = Number(priceInput.value) || 0;
+      const unitRate = qty > 0 ? (price / qty).toFixed(2) : '0.00';
+      unitRateInput.value = unitRate;
+    }
+
+    qtyInput.addEventListener('input', calculateUnitRate);
+    priceInput.addEventListener('input', calculateUnitRate);
+    calculateUnitRate(); // Initial calculation
+  }
+}
+
+// Category autocomplete functionality for material form
+function setupAutocomplete(inputEl, dataSource) {
+  const dropdown = inputEl.parentElement.querySelector('.autocomplete-dropdown');
+  if (!dropdown) return;
+
+  let selectedIndex = -1;
+
+  inputEl.addEventListener('input', () => {
+    const value = inputEl.value.trim().toLowerCase();
+
+    if (!value) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    // Get unique categories from data source
+    const categories = [...new Set(dataSource.map(item => item.category).filter(Boolean))];
+    const filtered = categories.filter(cat => cat.toLowerCase().includes(value));
+
+    if (filtered.length === 0) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    // Render dropdown items
+    dropdown.innerHTML = '';
+    filtered.forEach((cat, index) => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.textContent = cat;
+      item.addEventListener('click', () => {
+        inputEl.value = cat;
+        dropdown.classList.add('hidden');
+      });
+      dropdown.appendChild(item);
+    });
+
+    dropdown.classList.remove('hidden');
+    selectedIndex = -1;
+  });
+
+  // Keyboard navigation
+  inputEl.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+      updateSelection(items, selectedIndex);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = Math.max(selectedIndex - 1, 0);
+      updateSelection(items, selectedIndex);
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      items[selectedIndex].click();
+    } else if (e.key === 'Tab' && selectedIndex >= 0 && !dropdown.classList.contains('hidden')) {
+      e.preventDefault();
+      items[selectedIndex].click();
+    } else if (e.key === 'Escape') {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!inputEl.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  function updateSelection(items, index) {
+    items.forEach((item, i) => {
+      if (i === index) {
+        item.classList.add('selected');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+  }
+}
+
 // Initialize
 (async () => {
   formTitle.textContent = editingId ? `Update ${docType}` : `Create ${docType}`;
   await loadClients();
   await loadItems();
   await loadMaterials();
+
+  // Setup category autocomplete for material form
+  const materialCategoryInput = document.querySelector('#materialForm input[name="category"]');
+  if (materialCategoryInput) {
+    setupAutocomplete(materialCategoryInput, materials);
+  }
 
   if (editingId) {
     await loadDocument();
