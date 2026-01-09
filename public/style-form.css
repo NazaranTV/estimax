@@ -67,9 +67,11 @@
   margin-bottom: 16px;
 }
 
+.line-items-table-header .th-remove,
 .line-items-table-header .th-quantity,
 .line-items-table-header .th-rate,
-.line-items-table-header .th-markup {
+.line-items-table-header .th-markup,
+.line-items-table-header .th-drag {
   text-align: center;
 }
 

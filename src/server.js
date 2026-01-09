@@ -68,6 +68,7 @@ const sanitizeLineItems = (items = []) =>
           markup: Number(item.markup) || 0,
           notes: item.notes?.toString().trim() || '',
           photoData: item.photoData || '',
+          materials: Array.isArray(item.materials) ? item.materials : [],
         }))
         .filter((item) => item.description || item.qty || item.rate)
     : [];
