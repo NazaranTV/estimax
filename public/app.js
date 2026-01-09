@@ -478,6 +478,54 @@ const openClientView = (doc) => {
 };
 
 const showMaterialsListView = (doc) => {
+  // Add print styles
+  let printStyles = document.getElementById('materialsPrintStyles');
+  if (!printStyles) {
+    printStyles = document.createElement('style');
+    printStyles.id = 'materialsPrintStyles';
+    printStyles.textContent = `
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #clientViewModal, #clientViewModal * {
+          visibility: visible;
+        }
+        #clientViewModal {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          background: white !important;
+          color: black !important;
+        }
+        #clientViewModal .modal__backdrop {
+          display: none !important;
+        }
+        #clientViewModal .modal__content {
+          box-shadow: none !important;
+          max-width: 100% !important;
+          max-height: none !important;
+          overflow: visible !important;
+          background: white !important;
+          color: black !important;
+        }
+        #clientViewModal .modal__header {
+          display: none !important;
+        }
+        #clientViewBody {
+          background: white !important;
+          color: black !important;
+        }
+        #clientViewBody * {
+          background: white !important;
+          color: black !important;
+        }
+      }
+    `;
+    document.head.appendChild(printStyles);
+  }
+
   // Group materials by line item
   const lineItemsWithMaterials = (doc.lineItems || [])
     .filter(li => (li.materials || []).length > 0)
@@ -487,24 +535,28 @@ const showMaterialsListView = (doc) => {
     }));
 
   const materialsHtml = lineItemsWithMaterials.map(li => `
-    <div style="margin-bottom: 32px;">
-      <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">${li.description}</h3>
-      <ul style="list-style: none; padding: 0; margin: 0;">
+    <div style="margin-bottom: 24px; page-break-inside: avoid;">
+      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">${li.description}</h3>
+      <div style="margin-top: 8px;">
         ${li.materials.map(mat => `
-          <li style="padding: 8px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-            <span style="font-size: 14px;">${mat.name || 'Unnamed Material'}</span>
-            <span style="font-size: 14px; color: var(--muted);">Qty: ${Number(mat.qty) || 0}</span>
-          </li>
+          <div style="padding: 6px 0; display: flex; align-items: center; border-bottom: 1px dashed #999;">
+            <span style="font-size: 13px; flex: 1;">${mat.name || 'Unnamed Material'}</span>
+            <span style="font-size: 13px; margin-left: 12px; white-space: nowrap;">Qty: ${Number(mat.qty) || 0}</span>
+          </div>
         `).join('')}
-      </ul>
+      </div>
     </div>
   `).join('');
 
   clientViewBody.innerHTML = `
     <div style="display: block;">
-      <div style="padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 24px;">
-        <h2 style="font-size: 20px; font-weight: 700;">Materials List</h2>
-        <p style="font-size: 13px; color: var(--muted); margin-top: 8px;">All materials used in this ${doc.type}</p>
+      <div style="padding-bottom: 16px; margin-bottom: 20px; border-bottom: 2px solid #000;">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Materials List</h2>
+        <div style="font-size: 12px; margin-top: 4px;">
+          ${doc.poNumber ? `<div><strong>PO #:</strong> ${doc.poNumber}</div>` : ''}
+          ${doc.projectName ? `<div><strong>Project:</strong> ${doc.projectName}</div>` : ''}
+          ${doc.serviceAddress ? `<div><strong>Address:</strong> ${doc.serviceAddress}</div>` : ''}
+        </div>
       </div>
 
       ${materialsHtml}
