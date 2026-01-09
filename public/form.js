@@ -772,12 +772,17 @@ const renderMaterialsList = () => {
     if (createBtn) {
       createBtn.onclick = () => {
         closeMaterialModal();
-        openMaterialCreateModal();
-        if (term) {
-          // Pre-fill the name field if user was searching
-          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-          if (nameInput) nameInput.value = term;
-        }
+        // Small delay to ensure modal closes before opening new one
+        setTimeout(() => {
+          openMaterialCreateModal();
+          if (term) {
+            // Pre-fill the name field if user was searching
+            setTimeout(() => {
+              const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+              if (nameInput) nameInput.value = term;
+            }, 50);
+          }
+        }, 50);
       };
     }
     return;
@@ -811,9 +816,14 @@ const renderMaterialsList = () => {
     if (createBtn) {
       createBtn.onclick = () => {
         closeMaterialModal();
-        openMaterialCreateModal();
-        const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-        if (nameInput) nameInput.value = term;
+        // Small delay to ensure modal closes before opening new one
+        setTimeout(() => {
+          openMaterialCreateModal();
+          setTimeout(() => {
+            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+            if (nameInput) nameInput.value = term;
+          }, 50);
+        }, 50);
       };
     }
   }
@@ -851,13 +861,17 @@ const renderMaterialsList = () => {
       const card = document.createElement('div');
       card.className = 'client-card';
       card.style.marginBottom = '8px';
+
+      // Check if this material is already added to the current line item
+      const isAdded = currentLineForMaterials?.materialsData?.some(mat => mat.name === m.name) || false;
+
       card.innerHTML = `
         <div>
           <h4>${m.name}</h4>
           <p class="meta">${m.description || 'No description'}</p>
           <p class="meta">Qty ${m.defaultQty || 1} · Rate ${currency(m.defaultRate || 0)} · Markup ${m.defaultMarkup || 0}%</p>
         </div>
-        <button class="btn small ghost" data-material-id="${m.id}">Use</button>
+        <button class="btn small ghost" data-material-id="${m.id}" style="${isAdded ? 'border: 2px solid #10b981; color: #10b981;' : ''}">${isAdded ? 'Added' : 'Add'}</button>
       `;
       card.querySelector('button').onclick = () => {
         if (currentLineForMaterials) {
@@ -877,19 +891,20 @@ const renderMaterialsList = () => {
           recalcTotals();
           markFormAsChanged();
 
-          // Show success message and clear search, but keep modal open
-          const btn = card.querySelector('button');
-          const originalText = btn.textContent;
-          btn.textContent = '✓ Added';
-          btn.style.background = '#10b981';
-          setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = '';
-          }, 1500);
+          // Show notification popup
+          showNotification(`${m.name} added to estimate`);
 
-          // Clear search and refresh list
-          searchMaterialsInput.value = '';
-          renderMaterialsList();
+          // Update button state to "Added" with green outline
+          const btn = card.querySelector('button');
+          btn.textContent = 'Added';
+          btn.style.border = '2px solid #10b981';
+          btn.style.color = '#10b981';
+
+          // Clear search and refresh list to update all button states
+          setTimeout(() => {
+            searchMaterialsInput.value = '';
+            renderMaterialsList();
+          }, 100);
         }
       };
       categoryContent.appendChild(card);
@@ -1160,6 +1175,7 @@ document.getElementById('materialForm').addEventListener('submit', async (e) => 
   const payload = {
     name: form.name.value.trim(),
     description: form.description.value.trim(),
+    category: form.category.value.trim() || null,
     defaultQty: Number(form.defaultQty.value) || 1,
     defaultRate: Number(form.defaultRate.value) || 0,
     defaultMarkup: Number(form.defaultMarkup.value) || 0,
@@ -1171,14 +1187,184 @@ document.getElementById('materialForm').addEventListener('submit', async (e) => 
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Failed to save material');
+    const newMaterial = await res.json();
     await loadMaterials();
     materialStatus.textContent = '';
+    form.reset();
     closeMaterialCreateModal();
+
+    // If we're adding from the material picker, reopen it and show the new material
+    if (currentLineForMaterials) {
+      openMaterialModal();
+    }
   } catch (err) {
     console.error(err);
     materialStatus.textContent = 'Could not save material';
   }
 });
+
+// Show notification popup
+function showNotification(message, duration = 2000) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.cssText = `
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(16, 185, 129, 0.95);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    animation: slideDown 0.3s ease-out;
+  `;
+
+  // Add animation styles
+  if (!document.querySelector('#notificationStyles')) {
+    const style = document.createElement('style');
+    style.id = 'notificationStyles';
+    style.textContent = `
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.body.appendChild(notification);
+
+  // Fade out and remove
+  setTimeout(() => {
+    notification.style.animation = 'fadeOut 0.3s ease-out';
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, duration);
+}
+
+// Setup unit rate calculation for material form
+function setupUnitRateCalculation() {
+  const form = document.getElementById('materialForm');
+  const qtyInput = form.querySelector('input[name="defaultQty"]');
+  const priceInput = form.querySelector('input[name="defaultRate"]');
+  const unitRateInput = form.querySelector('input[name="unitRate"]');
+
+  if (!qtyInput || !priceInput || !unitRateInput) return;
+
+  function calculateUnitRate() {
+    const qty = Number(qtyInput.value) || 0;
+    const price = Number(priceInput.value) || 0;
+    const unitRate = qty > 0 ? (price / qty).toFixed(2) : '0.00';
+    unitRateInput.value = unitRate;
+  }
+
+  qtyInput.addEventListener('input', calculateUnitRate);
+  priceInput.addEventListener('input', calculateUnitRate);
+}
+
+// Category autocomplete functionality
+function setupAutocomplete(inputEl, dataSource) {
+  const dropdown = inputEl.parentElement.querySelector('.autocomplete-dropdown');
+  if (!dropdown) return;
+
+  let selectedIndex = -1;
+
+  inputEl.addEventListener('input', () => {
+    const value = inputEl.value.trim().toLowerCase();
+
+    if (!value) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    // Get unique categories from data source
+    const categories = [...new Set(dataSource.map(item => item.category).filter(Boolean))];
+    const filtered = categories.filter(cat => cat.toLowerCase().includes(value));
+
+    if (filtered.length === 0) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+
+    // Render dropdown items
+    dropdown.innerHTML = '';
+    filtered.forEach((cat, index) => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.textContent = cat;
+      item.addEventListener('click', () => {
+        inputEl.value = cat;
+        dropdown.classList.add('hidden');
+      });
+      dropdown.appendChild(item);
+    });
+
+    dropdown.classList.remove('hidden');
+    selectedIndex = -1;
+  });
+
+  // Keyboard navigation
+  inputEl.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+      updateAutocompleteSelection(items, selectedIndex);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = Math.max(selectedIndex - 1, 0);
+      updateAutocompleteSelection(items, selectedIndex);
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      items[selectedIndex].click();
+    } else if (e.key === 'Tab' && selectedIndex >= 0 && !dropdown.classList.contains('hidden')) {
+      e.preventDefault();
+      items[selectedIndex].click();
+    } else if (e.key === 'Escape') {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!inputEl.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+}
+
+function updateAutocompleteSelection(items, index) {
+  items.forEach((item, i) => {
+    if (i === index) {
+      item.classList.add('selected');
+      item.scrollIntoView({ block: 'nearest' });
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
 
 // Modal backdrop clicks
 [itemModal, materialModal, itemCreateModal, materialCreateModal, clientModal, clientSelectorModal].forEach(modal => {
@@ -1209,6 +1395,13 @@ document.getElementById('materialForm').addEventListener('submit', async (e) => 
   }
 
   recalcTotals();
+
+  // Setup autocomplete and unit rate calculation for material form
+  const materialCategoryInput = document.querySelector('#materialForm input[name="category"]');
+  if (materialCategoryInput) {
+    setupAutocomplete(materialCategoryInput, materials);
+  }
+  setupUnitRateCalculation();
 
   // Enable change tracking after initial load
   setTimeout(() => {
