@@ -767,10 +767,15 @@ const renderMaterialsList = () => {
       card.querySelector('button').onclick = () => {
         if (currentLineForMaterials) {
           currentLineForMaterials.materialsData = currentLineForMaterials.materialsData || [];
+
+          // If material has a default quantity, calculate unit rate
+          const defaultQty = m.defaultQty || 1;
+          const unitRate = defaultQty > 1 ? (m.defaultRate || 0) / defaultQty : (m.defaultRate || 0);
+
           currentLineForMaterials.materialsData.push({
             name: m.name,
-            qty: m.defaultQty || 1,
-            rate: m.defaultRate || 0,
+            qty: 1,  // Always default to quantity of 1
+            rate: unitRate,
             markup: m.defaultMarkup || 0,
           });
           renderMaterialsSection(currentLineForMaterials);
