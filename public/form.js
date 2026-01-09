@@ -140,23 +140,30 @@ const renderMaterialsSection = (row) => {
   materialsWrap.style.setProperty('display', 'block', 'important');
   materialsWrap.innerHTML = '';
 
-  // Single header row with MATERIALS label, column headers, and Add button
+  // Single header row with column headers and Add button
   const headerRow = document.createElement('div');
-  headerRow.style.cssText = 'display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px;';
+  headerRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
 
-  const topRow = document.createElement('div');
-  topRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between;';
-  topRow.innerHTML = '<span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(124, 58, 237, 0.8);">Materials</span>';
+  const columnsRow = document.createElement('div');
+  columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; flex: 1;';
+  columnsRow.innerHTML = `
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Quantity</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Price</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Markup</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Total</span>
+    <span></span>
+  `;
 
   const addBtn = document.createElement('button');
   addBtn.className = 'btn small';
   addBtn.textContent = '+ Add';
   addBtn.type = 'button';
-  addBtn.style.cssText = 'padding: 4px 10px; font-size: 12px;';
+  addBtn.style.cssText = 'padding: 4px 10px; font-size: 12px; margin-left: 8px;';
   addBtn.onclick = () => openMaterialModal(row);
-  topRow.appendChild(addBtn);
 
-  headerRow.appendChild(topRow);
+  headerRow.appendChild(columnsRow);
+  headerRow.appendChild(addBtn);
 
   if (!row.materialsData || !row.materialsData.length) {
     materialsWrap.appendChild(headerRow);
@@ -168,18 +175,6 @@ const renderMaterialsSection = (row) => {
     return;
   }
 
-  // Column headers on same row structure
-  const columnsRow = document.createElement('div');
-  columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; padding: 0 4px 4px 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
-  columnsRow.innerHTML = `
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Quantity</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Price</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Markup</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Total</span>
-    <span></span>
-  `;
-  headerRow.appendChild(columnsRow);
   materialsWrap.appendChild(headerRow);
 
   const materialsTable = document.createElement('div');
@@ -363,9 +358,9 @@ const addLineItemRow = (item = {}) => {
       <div class="line-item__pricing">
         <div class="line-item__field">
           <label class="line-item__label">Price</label>
-          <div style="position: relative; display: flex; align-items: center;">
-            <span style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 14px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
-            <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate" style="padding-left: 20px;">
+          <div style="position: relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
+            <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate" style="padding-left: 24px;">
           </div>
         </div>
         <div class="line-item__field">
