@@ -255,8 +255,8 @@ const openClientView = (doc) => {
       materialsTotal += mTotal;
 
       return `
-        <div style="display: grid; grid-template-columns: 2fr 60px 60px 60px 70px; gap: 8px; padding: 6px 8px; background: rgba(124, 58, 237, 0.08); border-radius: 4px; font-size: 12px; margin-bottom: 4px;">
-          <div style="color: rgba(124, 58, 237, 0.9);">${m.name || 'Unnamed Material'}</div>
+        <div style="display: grid; grid-template-columns: 2fr 60px 60px 60px 70px; gap: 8px; padding: 6px 8px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; font-size: 12px; margin-bottom: 4px;">
+          <div>${m.name || 'Unnamed Material'}</div>
           <div style="text-align: center; color: var(--muted);">${mQty}</div>
           <div style="text-align: center; color: var(--muted);">${currency(mRate)}</div>
           <div style="text-align: center; color: var(--muted);">${Math.round(m.markup || 0)}%</div>
@@ -274,7 +274,7 @@ const openClientView = (doc) => {
           ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; margin-bottom: 8px;">${li.notes}</div>` : ''}
           ${(li.materials || []).length > 0 ? `
             <div style="margin-top: 8px;">
-              <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 60px 60px 60px 70px; gap: 8px; padding: 0 8px;">
+              <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 60px 60px 60px 70px; gap: 8px; padding: 0 8px;">
                 <span>Material</span>
                 <span style="text-align: center;">Qty</span>
                 <span style="text-align: center;">Rate</span>
@@ -372,29 +372,67 @@ const openClientView = (doc) => {
     actionButtonsContainer.appendChild(paymentsBtn);
   }
 
-  // Add Share button
-  const shareBtn = document.createElement('button');
-  shareBtn.className = 'btn small';
-  shareBtn.textContent = 'Share';
-  shareBtn.onclick = async () => {
-    try {
-      let shareToken = doc.shareToken;
-      if (!shareToken) {
-        const res = await fetch(`/api/documents/${doc.id}/share-token`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-        if (!res.ok) throw new Error('Failed to generate share token');
-        const updated = await res.json();
-        shareToken = updated.shareToken;
-      }
-      window.open(`/share.html?token=${shareToken}`, '_blank');
-    } catch (err) {
-      console.error('Failed to open share link:', err);
-      alert('Failed to open share link. Please try again.');
-    }
+  // Add Share dropdown
+  const shareContainer = document.createElement('div');
+  shareContainer.className = 'dropdown-container';
+  shareContainer.style.position = 'relative';
+  shareContainer.innerHTML = `
+    <button class="btn small ghost dropdown-trigger">Share ▼</button>
+    <div class="dropdown-menu hidden">
+      <button class="dropdown-item" data-action="view">View</button>
+      <button class="dropdown-item" data-action="email">Email</button>
+      <button class="dropdown-item" data-action="sms">SMS</button>
+    </div>
+  `;
+
+  const trigger = shareContainer.querySelector('.dropdown-trigger');
+  const menu = shareContainer.querySelector('.dropdown-menu');
+
+  trigger.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+      if (m !== menu) m.classList.add('hidden');
+    });
+    menu.classList.toggle('hidden');
   };
-  actionButtonsContainer.appendChild(shareBtn);
+
+  document.addEventListener('click', (e) => {
+    if (!shareContainer.contains(e.target)) {
+      menu.classList.add('hidden');
+    }
+  });
+
+  shareContainer.querySelectorAll('[data-action]').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      menu.classList.add('hidden');
+      const action = btn.dataset.action;
+
+      if (action === 'view') {
+        // Open share link directly in new tab
+        try {
+          let shareToken = doc.shareToken;
+          if (!shareToken) {
+            const res = await fetch(`/api/documents/${doc.id}/share-token`, {
+              method: 'POST',
+              credentials: 'include'
+            });
+            if (!res.ok) throw new Error('Failed to generate share token');
+            const updated = await res.json();
+            shareToken = updated.shareToken;
+          }
+          window.open(`/share.html?token=${shareToken}`, '_blank');
+        } catch (err) {
+          console.error('Failed to open share link:', err);
+          alert('Failed to open share link. Please try again.');
+        }
+      } else if (action === 'email' || action === 'sms') {
+        showShareLink(doc);
+      }
+    };
+  });
+
+  actionButtonsContainer.appendChild(shareContainer);
 
   // Add Materials List button (if materials exist)
   const hasMaterials = (doc.lineItems || []).some(li => (li.materials || []).length > 0);
@@ -440,16 +478,27 @@ const openClientView = (doc) => {
 };
 
 const showMaterialsListView = (doc) => {
-  // Collect all materials from all line items
-  const allMaterials = [];
-  (doc.lineItems || []).forEach((li) => {
-    (li.materials || []).forEach((mat) => {
-      allMaterials.push({
-        lineItem: li.description || 'Untitled Item',
-        ...mat
-      });
-    });
-  });
+  // Group materials by line item
+  const lineItemsWithMaterials = (doc.lineItems || [])
+    .filter(li => (li.materials || []).length > 0)
+    .map(li => ({
+      description: li.description || 'Untitled Item',
+      materials: li.materials
+    }));
+
+  const materialsHtml = lineItemsWithMaterials.map(li => `
+    <div style="margin-bottom: 32px;">
+      <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">${li.description}</h3>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        ${li.materials.map(mat => `
+          <li style="padding: 8px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+            <span style="font-size: 14px;">${mat.name || 'Unnamed Material'}</span>
+            <span style="font-size: 14px; color: var(--muted);">Qty: ${Number(mat.qty) || 0}</span>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `).join('');
 
   clientViewBody.innerHTML = `
     <div style="display: block;">
@@ -458,50 +507,7 @@ const showMaterialsListView = (doc) => {
         <p style="font-size: 13px; color: var(--muted); margin-top: 8px;">All materials used in this ${doc.type}</p>
       </div>
 
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead style="border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
-          <tr>
-            <th style="padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Line Item</th>
-            <th style="padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Material</th>
-            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 70px;">Rate</th>
-            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 45px;">Qty</th>
-            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 70px;">Markup</th>
-            <th style="padding: 10px 4px; text-align: right; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 85px;">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${allMaterials.map((mat) => {
-            const mQty = Number(mat.qty) || 0;
-            const mRate = Number(mat.rate) || 0;
-            const mMarkup = (Number(mat.markup) || 0) / 100;
-            const matTotal = (mQty * mRate) * (1 + mMarkup);
-            return `
-              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                <td style="padding: 12px 4px; color: var(--muted); font-size: 12px;">${mat.lineItem}</td>
-                <td style="padding: 12px 4px; font-weight: 600; font-size: 14px;">${mat.name || 'Unnamed Material'}</td>
-                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${currency(mRate)}</td>
-                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${mQty}</td>
-                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${Math.round(mat.markup || 0)}%</td>
-                <td style="padding: 12px 4px; text-align: right; font-weight: 600; font-size: 14px;">${currency(matTotal)}</td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-
-      <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid rgba(255, 255, 255, 0.2);">
-        <div style="display: flex; justify-content: flex-end;">
-          <div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 14px; font-weight: 700; min-width: 200px;">
-            <span>TOTAL MATERIALS</span>
-            <span>${currency(allMaterials.reduce((sum, mat) => {
-              const mQty = Number(mat.qty) || 0;
-              const mRate = Number(mat.rate) || 0;
-              const mMarkup = (Number(mat.markup) || 0) / 100;
-              return sum + ((mQty * mRate) * (1 + mMarkup));
-            }, 0))}</span>
-          </div>
-        </div>
-      </div>
+      ${materialsHtml}
     </div>
   `;
   clientViewTitle.textContent = 'Materials List';
@@ -510,9 +516,18 @@ const showMaterialsListView = (doc) => {
   const actionButtonsContainer = document.getElementById('previewActionButtons');
   actionButtonsContainer.innerHTML = '';
 
+  // Add Print button
+  const printBtn = document.createElement('button');
+  printBtn.className = 'btn small';
+  printBtn.textContent = 'Print';
+  printBtn.onclick = () => {
+    window.print();
+  };
+  actionButtonsContainer.appendChild(printBtn);
+
   // Add Back to Document button
   const backBtn = document.createElement('button');
-  backBtn.className = 'btn small';
+  backBtn.className = 'btn small ghost';
   backBtn.textContent = '← Back to Document';
   backBtn.onclick = () => openClientView(doc);
   actionButtonsContainer.appendChild(backBtn);
