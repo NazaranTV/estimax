@@ -547,10 +547,12 @@ const recalcTotals = () => {
     // Calculate base item cost
     let itemTotal = item.qty * item.rate;
 
-    // Add materials costs (materials have markup, line items don't)
+    // Add materials costs (materials have markup as percentage, line items don't)
     if (item.materials && item.materials.length > 0) {
       const materialsCost = item.materials.reduce((mSum, m) => {
-        return mSum + ((m.qty * m.rate) + (m.markup || 0));
+        const baseCost = m.qty * m.rate;
+        const markupPercent = (m.markup || 0) / 100;
+        return mSum + (baseCost * (1 + markupPercent));
       }, 0);
       itemTotal += materialsCost;
     }
