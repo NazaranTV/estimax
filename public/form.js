@@ -300,9 +300,12 @@ const checkItemDuplicate = (row) => {
 const updateLineTotal = (row) => {
   const qty = Number(row.querySelector('[data-field="qty"]').value) || 0;
   const rate = Number(row.querySelector('[data-field="rate"]').value) || 0;
+  const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
 
-  // Base line item total (no markup on line items)
-  let total = qty * rate;
+  // Base line item total with markup percentage
+  const baseTotal = qty * rate;
+  const markupAmount = baseTotal * (markup / 100);
+  let total = baseTotal + markupAmount;
 
   // Add all material costs (materials use markup as percentage)
   if (row.materialsData && row.materialsData.length > 0) {
@@ -327,71 +330,74 @@ const addLineItemRow = (item = {}) => {
   row.className = 'line-item';
   row.materialsData = item.materials || [];
   if (item.photoData) row.dataset.photo = item.photoData;
+
+  const markup = item.markup ?? '';
+  const initialTotal = (item.qty || 0) * (item.rate || 0) * (1 + ((item.markup || 0) / 100));
+
   row.innerHTML = `
     <div class="line-item__content">
-      <!-- Row 1: Main Controls -->
-      <div class="line-item__header">
-        <button type="button" class="btn-drag-handle" title="Drag to reorder" draggable="true">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="16" height="2" rx="1" fill="currentColor"/>
-            <rect y="7" width="16" height="2" rx="1" fill="currentColor"/>
-            <rect y="14" width="16" height="2" rx="1" fill="currentColor"/>
+      <!-- Table Row Layout -->
+      <div class="line-item__table-row">
+        <button type="button" class="btn-remove-circle" data-action="remove" title="Remove line item">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </button>
-        <input placeholder="Item description" value="${item.description || ''}" data-field="description" class="line-item__description">
-        <button type="button" data-action="choose-item" class="btn-item-list">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/>
-            <rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/>
-            <rect x="2" y="11" width="12" height="2" rx="1" fill="currentColor"/>
-          </svg>
-          <span>Item List</span>
-        </button>
-        <button type="button" class="btn-remove" data-action="remove" title="Remove line item">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
 
-      <!-- Row 2: Pricing Grid with Labels -->
-      <div class="line-item__pricing">
-        <div class="line-item__field">
-          <label class="line-item__label">Price</label>
-          <div style="position: relative;">
-            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
-            <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate" style="padding-left: 24px;">
-          </div>
-        </div>
-        <div class="line-item__field">
-          <label class="line-item__label">Quantity</label>
-          <input type="number" step="1" placeholder="1" value="${item.qty ?? ''}" data-field="qty">
-        </div>
-        <div class="line-item__field">
-          <label class="line-item__label">Photo</label>
-          <button type="button" data-action="photo" class="btn-upload-photo">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M2 11L5 8L7 10L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="5" cy="5" r="1" fill="currentColor"/>
+        <div class="line-item__description-col">
+          <input placeholder="Item Name" value="${item.description || ''}" data-field="description" class="line-item__description">
+          <button type="button" data-action="choose-item" class="btn-item-list-icon" title="Choose from Items">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="10" height="2" rx="1" fill="currentColor"/>
+              <rect x="2" y="6" width="10" height="2" rx="1" fill="currentColor"/>
+              <rect x="2" y="10" width="10" height="2" rx="1" fill="currentColor"/>
             </svg>
-            <span>Add Photo</span>
           </button>
         </div>
-        <div class="line-item__field">
-          <label class="line-item__label">Total</label>
-          <div class="line-total" data-field="lineTotal">${currency((item.qty || 0) * (item.rate || 0))}</div>
+
+        <div style="position: relative;">
+          <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: rgba(255, 255, 255, 0.4); pointer-events: none;">$</span>
+          <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate" class="line-item__rate" style="padding-left: 20px;">
         </div>
+
+        <div style="position: relative;">
+          <input type="number" step="0.01" placeholder="0" value="${markup}" data-field="markup" class="line-item__markup" style="padding-right: 20px;">
+          <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: rgba(255, 255, 255, 0.4); pointer-events: none;">%</span>
+        </div>
+
+        <input type="number" step="1" placeholder="1" value="${item.qty ?? ''}" data-field="qty" class="line-item__qty">
+
+        <div class="line-item__tax-col">Tax</div>
+
+        <div class="line-total" data-field="lineTotal">${currency(initialTotal)}</div>
+
+        <button type="button" class="btn-drag-handle" title="Drag to reorder" draggable="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="14" height="2" rx="1" fill="currentColor"/>
+            <rect y="6" width="14" height="2" rx="1" fill="currentColor"/>
+            <rect y="12" width="14" height="2" rx="1" fill="currentColor"/>
+          </svg>
+        </button>
       </div>
 
-      <!-- Row 3: Notes and Actions -->
-      <div class="line-item__footer">
-        <textarea placeholder="Additional notes or details" data-field="notes" class="line-item__notes" rows="2">${item.notes || ''}</textarea>
-        <button type="button" data-action="save-as-item" class="btn-save-item">
+      <!-- Description Text Row -->
+      <div class="line-item__details-row">
+        <textarea placeholder="Item description and details" data-field="notes" class="line-item__notes" rows="2">${item.notes || ''}</textarea>
+      </div>
+
+      <!-- Photo Button Row -->
+      <div class="line-item__actions-row">
+        <button type="button" data-action="photo" class="btn-upload-photo">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7 2V12M2 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M1.5 10L4.5 7L6.5 9L10.5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="4.5" cy="4.5" r="1" fill="currentColor"/>
           </svg>
-          <span>Save to Items</span>
+          <span>UPLOAD PHOTOS</span>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.5;">
+            <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M7 4V10M4 7H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -432,60 +438,6 @@ const addLineItemRow = (item = {}) => {
       reader.readAsDataURL(file);
     };
     input.click();
-  });
-
-  row.querySelector('[data-action="save-as-item"]').addEventListener('click', async () => {
-    // Get current line item data
-    const description = row.querySelector('[data-field="description"]').value.trim();
-    const notes = row.querySelector('[data-field="notes"]')?.value?.trim() || '';
-    const qty = Number(row.querySelector('[data-field="qty"]').value) || 1;
-    const rate = Number(row.querySelector('[data-field="rate"]').value) || 0;
-    const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
-
-    // Validate required fields
-    if (!description) {
-      alert('Please enter an item name before saving.');
-      return;
-    }
-
-    // Show saving feedback
-    const btn = row.querySelector('[data-action="save-as-item"]');
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    btn.disabled = true;
-
-    // Create new item
-    const payload = {
-      name: description,
-      description: notes,
-      defaultQty: qty,
-      defaultRate: rate,
-      defaultMarkup: markup,
-    };
-
-    try {
-      const res = await fetch('/api/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error('Failed to save item');
-
-      // Reload items list
-      await loadItems();
-
-      // Show success feedback
-      setTimeout(() => {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-      }, 1500);
-    } catch (err) {
-      console.error(err);
-      alert('Could not save item. Please try again.');
-      btn.innerHTML = originalHTML;
-      btn.disabled = false;
-    }
   });
 
   if (item.photoData) {
@@ -533,10 +485,11 @@ const readLineItems = () => {
       const description = row.querySelector('[data-field="description"]').value.trim();
       const qty = Number(row.querySelector('[data-field="qty"]').value) || 0;
       const rate = Number(row.querySelector('[data-field="rate"]').value) || 0;
+      const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
       const notes = row.querySelector('[data-field="notes"]')?.value?.trim() || '';
       const photoData = row.dataset.photo || '';
       const materials = row.materialsData || [];
-      return { description, qty, rate, notes, photoData, materials };
+      return { description, qty, rate, markup, notes, photoData, materials };
     })
     .filter((item) => item.description || item.qty || item.rate);
 };
@@ -547,7 +500,12 @@ const recalcTotals = () => {
   const subtotal = rows.reduce((sum, row) => {
     const qty = Number(row.querySelector('[data-field="qty"]')?.value) || 0;
     const rate = Number(row.querySelector('[data-field="rate"]')?.value) || 0;
-    let lineTotal = qty * rate;
+    const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
+
+    // Calculate line item total with markup percentage
+    const baseTotal = qty * rate;
+    const markupAmount = baseTotal * (markup / 100);
+    let lineTotal = baseTotal + markupAmount;
 
     // Add materials costs from row.materialsData (already includes percentage markup)
     if (row.materialsData && row.materialsData.length > 0) {
