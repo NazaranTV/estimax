@@ -148,10 +148,10 @@ const renderMaterialsSection = (row) => {
   columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; flex: 1; align-items: center;';
   columnsRow.innerHTML = `
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Quantity</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Price</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Markup</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Total</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Quantity</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Price</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Markup</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: right; display: block;">Total</span>
     <span></span>
   `;
 
@@ -198,7 +198,7 @@ const renderMaterialsSection = (row) => {
         <input type="number" step="1" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" style="padding: 4px 16px 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
         <span style="position: absolute; right: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">%</span>
       </div>
-      <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500;">$${materialTotal.toFixed(2)}</div>
+      <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500; text-align: right;">$${materialTotal.toFixed(2)}</div>
       <button type="button" class="btn small ghost" style="padding: 4px 6px; font-size: 11px; color: #ef4444;">✕</button>
     `;
     // Set the material name value after creating the element to avoid HTML escaping issues
@@ -496,6 +496,15 @@ const addLineItemRow = (item = {}) => {
   checkItemDuplicate(row);
   lineItemsEl.appendChild(row);
   renderMaterialsSection(row);
+
+  // Auto-resize notes textarea after it's in the DOM
+  setTimeout(() => {
+    const notesTextarea = row.querySelector('[data-field="notes"]');
+    if (notesTextarea) {
+      notesTextarea.style.height = 'auto';
+      notesTextarea.style.height = notesTextarea.scrollHeight + 'px';
+    }
+  }, 0);
 };
 
 const readLineItems = () => {
@@ -741,15 +750,105 @@ const renderItemsList = () => {
 const renderMaterialsList = () => {
   const term = (searchMaterialsInput.value || '').toLowerCase();
   materialsPickerList.innerHTML = '';
-  materials
-    .filter(
-      (m) =>
-        m.name.toLowerCase().includes(term) ||
-        (m.description || '').toLowerCase().includes(term),
-    )
-    .forEach((m) => {
+
+  const filteredMaterials = materials.filter(
+    (m) =>
+      m.name.toLowerCase().includes(term) ||
+      (m.description || '').toLowerCase().includes(term) ||
+      (m.category || '').toLowerCase().includes(term),
+  );
+
+  if (!filteredMaterials.length) {
+    // Show "Create New Material" option when no results
+    const noResultsDiv = document.createElement('div');
+    noResultsDiv.style.cssText = 'padding: 20px; text-align: center;';
+    noResultsDiv.innerHTML = `
+      <p class="muted" style="margin-bottom: 16px;">${term ? 'No materials match your search.' : 'No materials yet.'}</p>
+      ${term ? `<button class="btn small" id="createNewMaterialBtn">+ Create "${term}"</button>` : '<button class="btn small" id="createNewMaterialBtn">+ Create New Material</button>'}
+    `;
+    materialsPickerList.appendChild(noResultsDiv);
+
+    const createBtn = document.getElementById('createNewMaterialBtn');
+    if (createBtn) {
+      createBtn.onclick = () => {
+        closeMaterialModal();
+        openMaterialCreateModal();
+        if (term) {
+          // Pre-fill the name field if user was searching
+          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+          if (nameInput) nameInput.value = term;
+        }
+      };
+    }
+    return;
+  }
+
+  // Group materials by category
+  const materialsByCategory = {};
+  filteredMaterials.forEach(m => {
+    const category = m.category || 'Uncategorized';
+    if (!materialsByCategory[category]) {
+      materialsByCategory[category] = [];
+    }
+    materialsByCategory[category].push(m);
+  });
+
+  // Sort categories alphabetically, but put Uncategorized last
+  const categories = Object.keys(materialsByCategory).sort((a, b) => {
+    if (a === 'Uncategorized') return 1;
+    if (b === 'Uncategorized') return -1;
+    return a.localeCompare(b);
+  });
+
+  // Add "Create New Material" button at top when searching
+  if (term) {
+    const createDiv = document.createElement('div');
+    createDiv.style.cssText = 'padding: 12px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 12px;';
+    createDiv.innerHTML = `<button class="btn small ghost" id="createNewMaterialTopBtn">+ Create New Material</button>`;
+    materialsPickerList.appendChild(createDiv);
+
+    const createBtn = document.getElementById('createNewMaterialTopBtn');
+    if (createBtn) {
+      createBtn.onclick = () => {
+        closeMaterialModal();
+        openMaterialCreateModal();
+        const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+        if (nameInput) nameInput.value = term;
+      };
+    }
+  }
+
+  // Render each category
+  categories.forEach(category => {
+    const categorySection = document.createElement('div');
+    categorySection.className = 'category-section';
+    categorySection.style.marginBottom = '12px';
+
+    const categoryHeader = document.createElement('div');
+    categoryHeader.className = 'category-header';
+    categoryHeader.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #211F2D; border-radius: 8px; cursor: pointer; margin-bottom: 8px; user-select: none;';
+    categoryHeader.innerHTML = `
+      <span class="category-toggle" style="font-size: 14px; transition: transform 0.2s; transform: rotate(-90deg);">▼</span>
+      <span style="font-weight: 600; font-size: 14px;">${category}</span>
+      <span class="muted" style="font-size: 12px; margin-left: auto;">${materialsByCategory[category].length} material${materialsByCategory[category].length === 1 ? '' : 's'}</span>
+    `;
+
+    const categoryContent = document.createElement('div');
+    categoryContent.className = 'category-content';
+    categoryContent.style.cssText = 'display: none; padding-left: 16px;';
+
+    // Sort materials within category alphabetically by name
+    materialsByCategory[category].sort((a, b) => {
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+
+    // Add materials to category
+    materialsByCategory[category].forEach((m) => {
       const card = document.createElement('div');
       card.className = 'client-card';
+      card.style.marginBottom = '8px';
       card.innerHTML = `
         <div>
           <h4>${m.name}</h4>
@@ -778,8 +877,20 @@ const renderMaterialsList = () => {
           closeMaterialModal();
         }
       };
-      materialsPickerList.appendChild(card);
+      categoryContent.appendChild(card);
     });
+
+    // Toggle category collapse
+    categoryHeader.addEventListener('click', () => {
+      const isCollapsed = categoryContent.style.display === 'none';
+      categoryContent.style.display = isCollapsed ? 'block' : 'none';
+      categoryHeader.querySelector('.category-toggle').style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+    });
+
+    categorySection.appendChild(categoryHeader);
+    categorySection.appendChild(categoryContent);
+    materialsPickerList.appendChild(categorySection);
+  });
 };
 
 // Load document if editing
