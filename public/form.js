@@ -178,7 +178,7 @@ const renderMaterialsSection = (row) => {
   materialsTable.style.cssText = 'display: flex; flex-direction: column; gap: 4px; margin-top: 4px;';
 
   row.materialsData.forEach((m, idx) => {
-    const materialTotal = ((m.qty || 0) * (m.rate || 0)) + (m.markup || 0);
+    const materialTotal = ((Number(m.qty) || 0) * (Number(m.rate) || 0)) + (Number(m.markup) || 0);
     const mRow = document.createElement('div');
     mRow.className = 'material-row';
     mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 80px 80px 80px 60px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
