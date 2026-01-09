@@ -2253,12 +2253,11 @@ const renderMaterialsView = () => {
       card.className = 'material-card';
       card.style.marginBottom = '12px';
 
-      // Calculate unit rate and unit markup
+      // Calculate unit rate
       const qty = Number(m.defaultQty) || 1;
       const rate = Number(m.defaultRate) || 0;
       const markup = Number(m.defaultMarkup) || 0;
       const unitRate = qty > 0 ? rate / qty : 0;
-      const unitMarkup = qty > 0 ? markup / qty : 0;
 
       card.innerHTML = `
         <div class="material-card__header">
@@ -2268,7 +2267,7 @@ const renderMaterialsView = () => {
 
         <div class="material-card__details">
           <div class="material-card__detail">💵 Unit Rate: ${currency(unitRate)}</div>
-          <div class="material-card__detail">📈 Unit Markup: ${currency(unitMarkup)}</div>
+          <div class="material-card__detail">📈 Markup: ${markup}%</div>
         </div>
 
         <div class="material-card__actions">

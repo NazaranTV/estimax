@@ -186,7 +186,9 @@ const renderMaterialsSection = (row) => {
   materialsTable.style.cssText = 'display: flex; flex-direction: column; gap: 4px; margin-top: 4px;';
 
   row.materialsData.forEach((m, idx) => {
-    const materialTotal = ((Number(m.qty) || 0) * (Number(m.rate) || 0)) + (Number(m.markup) || 0);
+    const baseCost = (Number(m.qty) || 0) * (Number(m.rate) || 0);
+    const markupPercent = (Number(m.markup) || 0) / 100;
+    const materialTotal = baseCost * (1 + markupPercent);
     const mRow = document.createElement('div');
     mRow.className = 'material-row';
     mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
@@ -206,8 +208,10 @@ const renderMaterialsSection = (row) => {
         const markup = Number(mRow.querySelector('[data-field="m-markup"]').value) || 0;
         row.materialsData[idx] = { name, qty, rate, markup };
 
-        // Update the total display
-        const newTotal = (qty * rate) + markup;
+        // Update the total display (markup is percentage)
+        const baseCost = qty * rate;
+        const markupPercent = markup / 100;
+        const newTotal = baseCost * (1 + markupPercent);
         mRow.querySelector('[data-field="m-total"]').textContent = `$${newTotal.toFixed(2)}`;
 
         // Update line total first, then recalc totals
@@ -299,13 +303,16 @@ const updateLineTotal = (row) => {
   // Base line item total (no markup on line items)
   let total = qty * rate;
 
-  // Add all material costs (materials keep markup)
+  // Add all material costs (materials use markup as percentage)
   if (row.materialsData && row.materialsData.length > 0) {
     const materialsCost = row.materialsData.reduce((sum, m) => {
       const mQty = Number(m.qty) || 0;
       const mRate = Number(m.rate) || 0;
       const mMarkup = Number(m.markup) || 0;
-      return Number(sum) + (mQty * mRate + mMarkup);
+      const baseCost = mQty * mRate;
+      const markupPercent = mMarkup / 100;
+      const materialTotal = baseCost * (1 + markupPercent);
+      return Number(sum) + materialTotal;
     }, 0);
     total = Number(total) + Number(materialsCost);
   }
@@ -761,7 +768,7 @@ const renderMaterialsList = () => {
         <div>
           <h4>${m.name}</h4>
           <p class="meta">${m.description || 'No description'}</p>
-          <p class="meta">Qty ${m.defaultQty || 1} · Rate ${currency(m.defaultRate || 0)} · Markup ${currency(m.defaultMarkup || 0)}</p>
+          <p class="meta">Qty ${m.defaultQty || 1} · Rate ${currency(m.defaultRate || 0)} · Markup ${m.defaultMarkup || 0}%</p>
         </div>
         <button class="btn small ghost" data-material-id="${m.id}">Use</button>
       `;
@@ -769,16 +776,15 @@ const renderMaterialsList = () => {
         if (currentLineForMaterials) {
           currentLineForMaterials.materialsData = currentLineForMaterials.materialsData || [];
 
-          // If material has a default quantity, calculate unit rate and unit markup
+          // If material has a default quantity, calculate unit rate (markup is percentage, not divided)
           const defaultQty = m.defaultQty || 1;
           const unitRate = defaultQty > 1 ? Math.round(((m.defaultRate || 0) / defaultQty) * 100) / 100 : (m.defaultRate || 0);
-          const unitMarkup = defaultQty > 1 ? Math.round(((m.defaultMarkup || 0) / defaultQty) * 100) / 100 : (m.defaultMarkup || 0);
 
           currentLineForMaterials.materialsData.push({
             name: m.name,
             qty: 1,  // Always default to quantity of 1
             rate: unitRate,
-            markup: unitMarkup,
+            markup: m.defaultMarkup || 0,  // Markup is percentage, use as-is
           });
           renderMaterialsSection(currentLineForMaterials);
           recalcTotals();
