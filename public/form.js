@@ -140,13 +140,10 @@ const renderMaterialsSection = (row) => {
   materialsWrap.style.setProperty('display', 'block', 'important');
   materialsWrap.innerHTML = '';
 
-  // Single header row with column headers and Add button
+  // Header row with column headers
   const headerRow = document.createElement('div');
-  headerRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
-
-  const columnsRow = document.createElement('div');
-  columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; flex: 1; align-items: center;';
-  columnsRow.innerHTML = `
+  headerRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 80px; gap: 6px; align-items: center; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
+  headerRow.innerHTML = `
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Quantity</span>
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Price</span>
@@ -155,23 +152,17 @@ const renderMaterialsSection = (row) => {
     <span></span>
   `;
 
-  const addBtn = document.createElement('button');
-  addBtn.className = 'btn small';
-  addBtn.textContent = '+ Add';
-  addBtn.type = 'button';
-  addBtn.style.cssText = 'padding: 4px 10px; font-size: 12px; margin-left: 8px;';
-  addBtn.onclick = () => openMaterialModal(row);
-
-  headerRow.appendChild(columnsRow);
-  headerRow.appendChild(addBtn);
-
   if (!row.materialsData || !row.materialsData.length) {
     materialsWrap.appendChild(headerRow);
-    const empty = document.createElement('p');
-    empty.className = 'muted';
-    empty.style.cssText = 'font-size: 12px; margin: 0; opacity: 0.6;';
-    empty.textContent = 'No materials';
-    materialsWrap.appendChild(empty);
+    const emptyRow = document.createElement('div');
+    emptyRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 80px; gap: 6px; align-items: center; padding: 4px;';
+    emptyRow.innerHTML = `
+      <p class="muted" style="font-size: 12px; margin: 0; opacity: 0.6;">No materials</p>
+      <span></span><span></span><span></span><span></span>
+      <button type="button" class="btn small ghost" style="padding: 4px 8px; font-size: 11px; width: 100%;">+ Add</button>
+    `;
+    emptyRow.querySelector('button').onclick = () => openMaterialModal(row);
+    materialsWrap.appendChild(emptyRow);
     return;
   }
 
@@ -186,20 +177,20 @@ const renderMaterialsSection = (row) => {
     const materialTotal = baseCost * (1 + markupPercent);
     const mRow = document.createElement('div');
     mRow.className = 'material-row';
-    mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
+    mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 80px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
     mRow.innerHTML = `
       <input placeholder="Material" data-field="m-name" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="0" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="0" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; text-align: center;">
       <div style="position: relative; display: flex; align-items: center;">
         <span style="position: absolute; left: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
-        <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" style="padding: 4px 6px 4px 14px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
+        <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" style="padding: 4px 6px 4px 14px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%; text-align: center;">
       </div>
       <div style="position: relative; display: flex; align-items: center;">
-        <input type="number" step="1" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" style="padding: 4px 16px 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
+        <input type="number" step="1" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" style="padding: 4px 16px 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%; text-align: center;">
         <span style="position: absolute; right: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">%</span>
       </div>
       <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500; text-align: right;">$${materialTotal.toFixed(2)}</div>
-      <button type="button" class="btn small ghost" style="padding: 4px 6px; font-size: 11px; color: #ef4444;">✕</button>
+      <button type="button" class="btn small ghost" style="padding: 4px 8px; font-size: 11px; color: #ef4444; width: 100%;">Delete</button>
     `;
     // Set the material name value after creating the element to avoid HTML escaping issues
     mRow.querySelector('[data-field="m-name"]').value = m.name || '';
@@ -234,6 +225,16 @@ const renderMaterialsSection = (row) => {
   });
 
   materialsWrap.appendChild(materialsTable);
+
+  // Add "+ Add" button at the bottom
+  const addButtonRow = document.createElement('div');
+  addButtonRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 80px; gap: 6px; align-items: center; padding: 4px; margin-top: 4px;';
+  addButtonRow.innerHTML = `
+    <span></span><span></span><span></span><span></span><span></span>
+    <button type="button" class="btn small ghost" style="padding: 4px 8px; font-size: 11px; width: 100%;">+ Add</button>
+  `;
+  addButtonRow.querySelector('button').onclick = () => openMaterialModal(row);
+  materialsWrap.appendChild(addButtonRow);
 };
 
 const updatePhotoDisplay = (row) => {
@@ -771,18 +772,13 @@ const renderMaterialsList = () => {
     const createBtn = document.getElementById('createNewMaterialBtn');
     if (createBtn) {
       createBtn.onclick = () => {
+        openMaterialCreateModal();
+        if (term) {
+          // Pre-fill the name field if user was searching
+          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+          if (nameInput) nameInput.value = term;
+        }
         closeMaterialModal();
-        // Small delay to ensure modal closes before opening new one
-        setTimeout(() => {
-          openMaterialCreateModal();
-          if (term) {
-            // Pre-fill the name field if user was searching
-            setTimeout(() => {
-              const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-              if (nameInput) nameInput.value = term;
-            }, 50);
-          }
-        }, 50);
       };
     }
     return;
@@ -815,15 +811,10 @@ const renderMaterialsList = () => {
     const createBtn = document.getElementById('createNewMaterialTopBtn');
     if (createBtn) {
       createBtn.onclick = () => {
+        openMaterialCreateModal();
+        const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+        if (nameInput) nameInput.value = term;
         closeMaterialModal();
-        // Small delay to ensure modal closes before opening new one
-        setTimeout(() => {
-          openMaterialCreateModal();
-          setTimeout(() => {
-            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-            if (nameInput) nameInput.value = term;
-          }, 50);
-        }, 50);
       };
     }
   }
