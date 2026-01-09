@@ -200,7 +200,7 @@ const renderMaterialsSection = (row) => {
         <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" style="padding: 4px 6px 4px 14px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
       </div>
       <div style="position: relative; display: flex; align-items: center;">
-        <input type="number" step="0.01" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" style="padding: 4px 16px 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
+        <input type="number" step="1" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" style="padding: 4px 16px 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
         <span style="position: absolute; right: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">%</span>
       </div>
       <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500;">$${materialTotal.toFixed(2)}</div>
@@ -363,7 +363,10 @@ const addLineItemRow = (item = {}) => {
       <div class="line-item__pricing">
         <div class="line-item__field">
           <label class="line-item__label">Price</label>
-          <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate">
+          <div style="position: relative; display: flex; align-items: center;">
+            <span style="position: absolute; left: 8px; font-size: 14px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
+            <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate" style="padding-left: 20px;">
+          </div>
         </div>
         <div class="line-item__field">
           <label class="line-item__label">Quantity</label>
