@@ -140,10 +140,13 @@ const renderMaterialsSection = (row) => {
   materialsWrap.style.setProperty('display', 'block', 'important');
   materialsWrap.innerHTML = '';
 
-  const header = document.createElement('div');
-  header.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;';
-  header.innerHTML = '<span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(124, 58, 237, 0.8);">Materials</span>';
-  materialsWrap.appendChild(header);
+  // Single header row with MATERIALS label, column headers, and Add button
+  const headerRow = document.createElement('div');
+  headerRow.style.cssText = 'display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px;';
+
+  const topRow = document.createElement('div');
+  topRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between;';
+  topRow.innerHTML = '<span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(124, 58, 237, 0.8);">Materials</span>';
 
   const addBtn = document.createElement('button');
   addBtn.className = 'btn small';
@@ -151,9 +154,12 @@ const renderMaterialsSection = (row) => {
   addBtn.type = 'button';
   addBtn.style.cssText = 'padding: 4px 10px; font-size: 12px;';
   addBtn.onclick = () => openMaterialModal(row);
-  header.appendChild(addBtn);
+  topRow.appendChild(addBtn);
+
+  headerRow.appendChild(topRow);
 
   if (!row.materialsData || !row.materialsData.length) {
+    materialsWrap.appendChild(headerRow);
     const empty = document.createElement('p');
     empty.className = 'muted';
     empty.style.cssText = 'font-size: 12px; margin: 0; opacity: 0.6;';
@@ -162,17 +168,18 @@ const renderMaterialsSection = (row) => {
     return;
   }
 
-  // Add column headers
-  const headersRow = document.createElement('div');
-  headersRow.style.cssText = 'display: grid; grid-template-columns: 2fr 80px 80px 80px 60px; gap: 6px; padding: 0 4px 4px 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
-  headersRow.innerHTML = `
+  // Column headers on same row structure
+  const columnsRow = document.createElement('div');
+  columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 80px 80px 80px 60px; gap: 6px; padding: 0 4px 4px 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
+  columnsRow.innerHTML = `
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Quantity</span>
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Price</span>
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Total</span>
     <span></span>
   `;
-  materialsWrap.appendChild(headersRow);
+  headerRow.appendChild(columnsRow);
+  materialsWrap.appendChild(headerRow);
 
   const materialsTable = document.createElement('div');
   materialsTable.style.cssText = 'display: flex; flex-direction: column; gap: 4px; margin-top: 4px;';
@@ -297,9 +304,9 @@ const updateLineTotal = (row) => {
       const mQty = Number(m.qty) || 0;
       const mRate = Number(m.rate) || 0;
       const mMarkup = Number(m.markup) || 0;
-      return sum + (mQty * mRate + mMarkup);
+      return Number(sum) + (mQty * mRate + mMarkup);
     }, 0);
-    total += materialsCost;
+    total = Number(total) + Number(materialsCost);
   }
 
   row.querySelector('[data-field="lineTotal"]').textContent = currency(total);
