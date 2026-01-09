@@ -129,7 +129,7 @@ const renderMaterialsSection = (row) => {
   if (!materialsWrap) {
     materialsWrap = document.createElement('div');
     materialsWrap.className = 'materials-list';
-    materialsWrap.style.cssText = 'display: block !important; margin-top: 12px; padding: 12px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);';
+    materialsWrap.style.cssText = 'display: block !important; margin-top: 8px; padding: 8px 12px; background: rgba(124, 58, 237, 0.05); border-radius: 6px; border-left: 3px solid rgba(124, 58, 237, 0.5);';
     contentDiv.appendChild(materialsWrap);
     console.log('Created new materials section', materialsWrap);
   }
@@ -141,39 +141,40 @@ const renderMaterialsSection = (row) => {
   materialsWrap.innerHTML = '';
 
   const header = document.createElement('div');
-  header.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;';
-  header.innerHTML = '<span style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-primary);">Materials</span>';
+  header.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;';
+  header.innerHTML = '<span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(124, 58, 237, 0.8);">Materials</span>';
   materialsWrap.appendChild(header);
 
   const addBtn = document.createElement('button');
   addBtn.className = 'btn small';
-  addBtn.textContent = '+ Add Material';
+  addBtn.textContent = '+ Add';
   addBtn.type = 'button';
+  addBtn.style.cssText = 'padding: 4px 10px; font-size: 12px;';
   addBtn.onclick = () => openMaterialModal(row);
   header.appendChild(addBtn);
 
   if (!row.materialsData || !row.materialsData.length) {
     const empty = document.createElement('p');
     empty.className = 'muted';
-    empty.style.cssText = 'font-size: 13px; margin-top: 8px;';
-    empty.textContent = 'No materials added';
+    empty.style.cssText = 'font-size: 12px; margin: 0; opacity: 0.6;';
+    empty.textContent = 'No materials';
     materialsWrap.appendChild(empty);
     return;
   }
 
   const materialsTable = document.createElement('div');
-  materialsTable.style.cssText = 'margin-top: 8px;';
+  materialsTable.style.cssText = 'display: flex; flex-direction: column; gap: 4px;';
 
   row.materialsData.forEach((m, idx) => {
     const mRow = document.createElement('div');
     mRow.className = 'material-row';
-    mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: center;';
+    mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 80px 80px 80px 60px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
     mRow.innerHTML = `
-      <input value="${m.name || ''}" placeholder="Material name" data-field="m-name" style="padding: 6px 8px; font-size: 13px;">
-      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="Qty" data-field="m-qty" style="padding: 6px 8px; font-size: 13px;">
-      <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="Rate" data-field="m-rate" style="padding: 6px 8px; font-size: 13px;">
-      <input type="number" step="1" value="${m.markup ?? ''}" placeholder="Markup" data-field="m-markup" style="padding: 6px 8px; font-size: 13px;">
-      <button type="button" class="btn small ghost" style="color: #ef4444;">Remove</button>
+      <input value="${m.name || ''}" placeholder="Material" data-field="m-name" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="Qty" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="Rate" data-field="m-rate" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <input type="number" step="1" value="${m.markup ?? ''}" placeholder="Markup" data-field="m-markup" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <button type="button" class="btn small ghost" style="padding: 4px 6px; font-size: 11px; color: #ef4444;">✕</button>
     `;
     mRow.querySelectorAll('input').forEach((input) => {
       input.addEventListener('input', () => {
