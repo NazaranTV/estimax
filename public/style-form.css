@@ -67,6 +67,16 @@
   margin-bottom: 16px;
 }
 
+.line-items-table-header .th-quantity,
+.line-items-table-header .th-rate,
+.line-items-table-header .th-markup {
+  text-align: center;
+}
+
+.line-items-table-header .th-total {
+  text-align: right;
+}
+
 /* Line Items Container */
 .line-items-container {
   display: flex;
