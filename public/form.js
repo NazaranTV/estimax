@@ -195,8 +195,14 @@ const renderMaterialsSection = (row) => {
     mRow.innerHTML = `
       <input value="${m.name || ''}" placeholder="Material" data-field="m-name" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
       <input type="number" step="1" value="${m.qty ?? ''}" placeholder="0" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <input type="number" step="0.01" value="${m.markup ?? ''}" placeholder="0.00" data-field="m-markup" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <div style="position: relative; display: flex; align-items: center;">
+        <span style="position: absolute; left: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
+        <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" style="padding: 4px 6px 4px 14px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
+      </div>
+      <div style="position: relative; display: flex; align-items: center;">
+        <input type="number" step="0.01" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" style="padding: 4px 16px 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
+        <span style="position: absolute; right: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">%</span>
+      </div>
       <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500;">$${materialTotal.toFixed(2)}</div>
       <button type="button" class="btn small ghost" style="padding: 4px 6px; font-size: 11px; color: #ef4444;">✕</button>
     `;
