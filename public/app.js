@@ -238,18 +238,56 @@ const openClientView = (doc) => {
       ? `Due Date: ${new Date(doc.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
       : '';
 
+  // Build line items with materials (contractor view)
   const lineItemsHtml = (doc.lineItems || []).map((li) => {
-    const markup = Number(li.markup) || 0;
-    const total = ((li.qty || 0) * (li.rate || 0)) + markup;
+    // Calculate line item total with markup as percentage
+    const baseTotal = (Number(li.qty) || 0) * (Number(li.rate) || 0);
+    const markupPercent = (Number(li.markup) || 0) / 100;
+    let lineTotal = baseTotal * (1 + markupPercent);
+
+    // Calculate materials total
+    let materialsTotal = 0;
+    const materialsHtml = (li.materials || []).map((m) => {
+      const mQty = Number(m.qty) || 0;
+      const mRate = Number(m.rate) || 0;
+      const mMarkup = (Number(m.markup) || 0) / 100;
+      const mTotal = (mQty * mRate) * (1 + mMarkup);
+      materialsTotal += mTotal;
+
+      return `
+        <div style="display: grid; grid-template-columns: 2fr 60px 60px 60px 70px; gap: 8px; padding: 6px 8px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; font-size: 12px; margin-bottom: 4px;">
+          <div>${m.name || 'Unnamed Material'}</div>
+          <div style="text-align: center; color: var(--muted);">${mQty}</div>
+          <div style="text-align: center; color: var(--muted);">${currency(mRate)}</div>
+          <div style="text-align: center; color: var(--muted);">${Math.round(m.markup || 0)}%</div>
+          <div style="text-align: right; font-weight: 500;">${currency(mTotal)}</div>
+        </div>
+      `;
+    }).join('');
+
+    lineTotal += materialsTotal;
+
     return `
       <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
         <td style="padding: 12px 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word;">
           <div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; word-wrap: break-word;">${li.description || 'Untitled Item'}</div>
-          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap;">${li.notes}</div>` : ''}
+          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; margin-bottom: 8px;">${li.notes}</div>` : ''}
+          ${(li.materials || []).length > 0 ? `
+            <div style="margin-top: 8px;">
+              <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 60px 60px 60px 70px; gap: 8px; padding: 0 8px;">
+                <span>Material</span>
+                <span style="text-align: center;">Qty</span>
+                <span style="text-align: center;">Rate</span>
+                <span style="text-align: center;">Markup</span>
+                <span style="text-align: right;">Total</span>
+              </div>
+              ${materialsHtml}
+            </div>
+          ` : ''}
         </td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${currency(li.rate || 0)}</td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${li.qty || 0}</td>
-        <td style="padding: 12px 4px; text-align: right; font-weight: 600; font-size: 14px; vertical-align: top;">${currency(total)}</td>
+        <td style="padding: 12px 4px; text-align: right; font-weight: 600; font-size: 14px; vertical-align: top;">${currency(lineTotal)}</td>
       </tr>
     `;
   }).join('');
@@ -297,8 +335,8 @@ const openClientView = (doc) => {
           ${dateLabel ? `<p style="font-size: 13px; color: var(--muted);">${dateLabel}</p>` : ''}
           ${doc.projectName ? `<p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Project: ${doc.projectName}</p>` : ''}
           ${doc.serviceAddress ? `<p style="font-size: 12px; color: var(--muted); margin-top: 3px;">Service: ${doc.serviceAddress}</p>` : ''}
-          </div>
         </div>
+      </div>
 
       <div style="margin-bottom: 24px;">
         <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
@@ -334,7 +372,7 @@ const openClientView = (doc) => {
       </div>
     </div>
   `;
-  clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview`;
+  clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview - Contractor View`;
 
   // Setup email button handler
   const emailBtn = document.getElementById(`emailDocBtn_${doc.id}`);
@@ -351,75 +389,129 @@ const openClientView = (doc) => {
   } else {
     materialsBtn.style.display = 'none';
   }
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'btn small ghost';
+  closeBtn.textContent = 'Close';
+  closeBtn.onclick = () => clientViewModal.classList.add('hidden');
+  actionButtonsContainer.appendChild(closeBtn);
 
   clientViewModal.classList.remove('hidden');
-  logDebug(`Opened client preview for ${doc.type} #${doc.id}`);
+  logDebug(`Opened contractor preview for ${doc.type} #${doc.id}`);
 };
 
 const showMaterialsListView = (doc) => {
-  // Collect all materials from all line items
-  const allMaterials = [];
-  (doc.lineItems || []).forEach((li) => {
-    (li.materials || []).forEach((mat) => {
-      allMaterials.push({
-        lineItem: li.description || 'Untitled Item',
-        ...mat
-      });
-    });
-  });
+  // Add print styles
+  let printStyles = document.getElementById('materialsPrintStyles');
+  if (!printStyles) {
+    printStyles = document.createElement('style');
+    printStyles.id = 'materialsPrintStyles';
+    printStyles.textContent = `
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #clientViewModal, #clientViewModal * {
+          visibility: visible;
+        }
+        #clientViewModal {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          background: white !important;
+          color: black !important;
+        }
+        #clientViewModal .modal__backdrop {
+          display: none !important;
+        }
+        #clientViewModal .modal__content {
+          box-shadow: none !important;
+          max-width: 100% !important;
+          max-height: none !important;
+          overflow: visible !important;
+          background: white !important;
+          color: black !important;
+        }
+        #clientViewModal .modal__header {
+          display: none !important;
+        }
+        #clientViewBody {
+          background: white !important;
+          color: black !important;
+        }
+        #clientViewBody * {
+          background: white !important;
+          color: black !important;
+        }
+      }
+    `;
+    document.head.appendChild(printStyles);
+  }
+
+  // Group materials by line item
+  const lineItemsWithMaterials = (doc.lineItems || [])
+    .filter(li => (li.materials || []).length > 0)
+    .map(li => ({
+      description: li.description || 'Untitled Item',
+      materials: li.materials
+    }));
+
+  const materialsHtml = lineItemsWithMaterials.map(li => `
+    <div style="margin-bottom: 24px; page-break-inside: avoid;">
+      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">${li.description}</h3>
+      <div style="margin-top: 8px;">
+        ${li.materials.map(mat => `
+          <div style="padding: 6px 0; display: flex; align-items: center; border-bottom: 1px dashed #999;">
+            <span style="font-size: 13px; flex: 1;">${mat.name || 'Unnamed Material'}</span>
+            <span style="font-size: 13px; margin-left: 12px; white-space: nowrap;">Qty: ${Number(mat.qty) || 0}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
 
   clientViewBody.innerHTML = `
     <div style="display: block;">
-      <div style="padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 24px;">
-        <h2 style="font-size: 20px; font-weight: 700;">Materials List</h2>
-        <p style="font-size: 13px; color: var(--muted); margin-top: 8px;">All materials used in this ${doc.type}</p>
-      </div>
-
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead style="border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
-          <tr>
-            <th style="padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Line Item</th>
-            <th style="padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Material</th>
-            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 70px;">Rate</th>
-            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 45px;">Qty</th>
-            <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 70px;">Markup</th>
-            <th style="padding: 10px 4px; text-align: right; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 85px;">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${allMaterials.map((mat) => {
-            const matTotal = ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0);
-            return `
-              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                <td style="padding: 12px 4px; color: var(--muted); font-size: 12px;">${mat.lineItem}</td>
-                <td style="padding: 12px 4px; font-weight: 600; font-size: 14px;">${mat.name || 'Unnamed Material'}</td>
-                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${currency(mat.rate || 0)}</td>
-                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${mat.qty || 0}</td>
-                <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px;">${currency(mat.markup || 0)}</td>
-                <td style="padding: 12px 4px; text-align: right; font-weight: 600; font-size: 14px;">${currency(matTotal)}</td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-
-      <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid rgba(255, 255, 255, 0.2);">
-        <div style="display: flex; justify-content: flex-end;">
-          <div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 14px; font-weight: 700; min-width: 200px;">
-            <span>TOTAL MATERIALS</span>
-            <span>${currency(allMaterials.reduce((sum, mat) => sum + ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0), 0))}</span>
-          </div>
+      <div style="padding-bottom: 16px; margin-bottom: 20px; border-bottom: 2px solid #000;">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Materials List</h2>
+        <div style="font-size: 12px; margin-top: 4px;">
+          ${doc.poNumber ? `<div><strong>PO #:</strong> ${doc.poNumber}</div>` : ''}
+          ${doc.projectName ? `<div><strong>Project:</strong> ${doc.projectName}</div>` : ''}
+          ${doc.serviceAddress ? `<div><strong>Address:</strong> ${doc.serviceAddress}</div>` : ''}
         </div>
       </div>
 
-      <div style="margin-top: 24px;">
-        <button class="btn small" onclick="document.getElementById('showMaterialsList').click()">← Back to Document</button>
-      </div>
+      ${materialsHtml}
     </div>
   `;
   clientViewTitle.textContent = 'Materials List';
-  materialsBtn.onclick = () => openClientView(doc);
-  materialsBtn.textContent = 'Back to Document';
+
+  // Update action buttons for materials list view
+  const actionButtonsContainer = document.getElementById('previewActionButtons');
+  actionButtonsContainer.innerHTML = '';
+
+  // Add Print button
+  const printBtn = document.createElement('button');
+  printBtn.className = 'btn small';
+  printBtn.textContent = 'Print';
+  printBtn.onclick = () => {
+    window.print();
+  };
+  actionButtonsContainer.appendChild(printBtn);
+
+  // Add Back to Document button
+  const backBtn = document.createElement('button');
+  backBtn.className = 'btn small ghost';
+  backBtn.textContent = '← Back to Document';
+  backBtn.onclick = () => openClientView(doc);
+  actionButtonsContainer.appendChild(backBtn);
+
+  // Add Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'btn small ghost';
+  closeBtn.textContent = 'Close';
+  closeBtn.onclick = () => clientViewModal.classList.add('hidden');
+  actionButtonsContainer.appendChild(closeBtn);
 };
 
 const closeClientViewModal = () => clientViewModal.classList.add('hidden');
@@ -1209,18 +1301,6 @@ const renderList = () => {
     pill.style.gridColumn = '1 / -1';
     actions.appendChild(pill);
 
-    // Add Invoice button for estimates
-    if (doc.type === 'estimate') {
-      const invoiceBtn = document.createElement('button');
-      invoiceBtn.className = 'btn small';
-      invoiceBtn.textContent = 'Invoice';
-      invoiceBtn.onclick = (e) => {
-        e.stopPropagation();
-        createInvoiceFromEstimate(doc, card);
-      };
-      actions.appendChild(invoiceBtn);
-    }
-
     // Add Payments button for invoices
     if (doc.type === 'invoice') {
       const paymentsBtn = document.createElement('button');
@@ -1233,68 +1313,15 @@ const renderList = () => {
       actions.appendChild(paymentsBtn);
     }
 
-    // Share dropdown with View/Email/SMS
-    const shareContainer = document.createElement('div');
-    shareContainer.className = 'dropdown-container';
-    shareContainer.innerHTML = `
-      <button class="btn small ghost dropdown-trigger">Share ▼</button>
-      <div class="dropdown-menu hidden">
-        <button class="dropdown-item" data-action="view">View</button>
-        <button class="dropdown-item" data-action="email">Email</button>
-        <button class="dropdown-item" data-action="sms">SMS</button>
-      </div>
-    `;
-
-    const trigger = shareContainer.querySelector('.dropdown-trigger');
-    const menu = shareContainer.querySelector('.dropdown-menu');
-
-    trigger.onclick = (e) => {
+    // View button - opens preview
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'btn small';
+    viewBtn.textContent = 'View';
+    viewBtn.onclick = (e) => {
       e.stopPropagation();
-      document.querySelectorAll('.dropdown-menu').forEach(m => {
-        if (m !== menu) m.classList.add('hidden');
-      });
-      menu.classList.toggle('hidden');
+      openClientView(doc);
     };
-
-    document.addEventListener('click', (e) => {
-      if (!shareContainer.contains(e.target)) {
-        menu.classList.add('hidden');
-      }
-    });
-
-    shareContainer.querySelectorAll('[data-action]').forEach(btn => {
-      btn.onclick = async (e) => {
-        e.stopPropagation();
-        menu.classList.add('hidden');
-        const action = btn.dataset.action;
-
-        if (action === 'view') {
-          // Open share link directly in new tab
-          try {
-            let shareToken = doc.shareToken;
-            if (!shareToken) {
-              const res = await fetch(`/api/documents/${doc.id}/share-token`, {
-                method: 'POST',
-                credentials: 'include'
-              });
-              if (!res.ok) throw new Error('Failed to generate share token');
-              const updated = await res.json();
-              shareToken = updated.shareToken;
-            }
-            window.open(`/share.html?token=${shareToken}`, '_blank');
-          } catch (err) {
-            console.error('Failed to open share link:', err);
-            alert('Failed to open share link. Please try again.');
-          }
-        } else if (action === 'email') {
-          showShareLink(doc);
-        } else if (action === 'sms') {
-          showShareLink(doc);
-        }
-      };
-    });
-
-    actions.appendChild(shareContainer);
+    actions.appendChild(viewBtn);
 
     // Edit button
     const loadBtn = document.createElement('button');
@@ -1305,18 +1332,6 @@ const renderList = () => {
       window.location.href = `/${doc.type}-form.html?id=${doc.id}`;
     };
     actions.appendChild(loadBtn);
-
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn small ghost';
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.title = 'Delete';
-    deleteBtn.style.color = '#ef4444';
-    deleteBtn.onclick = (e) => {
-      e.stopPropagation();
-      deleteDocument(doc.id, doc.type);
-    };
-    actions.appendChild(deleteBtn);
 
     listEl.appendChild(card);
   });

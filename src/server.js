@@ -75,8 +75,24 @@ const sanitizeLineItems = (items = []) =>
 
 const computeTotals = (items, taxRate = 0) => {
   const subtotal = items.reduce((sum, item) => {
-    const markup = Number(item.markup) || 0;
-    return sum + ((item.qty * item.rate) + markup);
+    // Base line item cost
+    const baseTotal = (Number(item.qty) || 0) * (Number(item.rate) || 0);
+    const markupPercent = (Number(item.markup) || 0) / 100;
+    const lineItemTotal = baseTotal * (1 + markupPercent);
+
+    // Calculate materials cost if any
+    let materialsCost = 0;
+    if (Array.isArray(item.materials) && item.materials.length > 0) {
+      materialsCost = item.materials.reduce((mSum, material) => {
+        const mQty = Number(material.qty) || 0;
+        const mRate = Number(material.rate) || 0;
+        const mMarkup = (Number(material.markup) || 0) / 100;
+        const materialTotal = (mQty * mRate) * (1 + mMarkup);
+        return mSum + materialTotal;
+      }, 0);
+    }
+
+    return sum + lineItemTotal + materialsCost;
   }, 0);
   const rate = Number(taxRate) || 0;
   const total = subtotal + subtotal * (rate / 100);
