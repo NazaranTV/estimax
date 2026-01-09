@@ -772,13 +772,17 @@ const renderMaterialsList = () => {
     const createBtn = document.getElementById('createNewMaterialBtn');
     if (createBtn) {
       createBtn.onclick = () => {
-        openMaterialCreateModal();
-        if (term) {
-          // Pre-fill the name field if user was searching
-          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-          if (nameInput) nameInput.value = term;
-        }
         closeMaterialModal();
+        requestAnimationFrame(() => {
+          openMaterialCreateModal();
+          requestAnimationFrame(() => {
+            if (term) {
+              // Pre-fill the name field if user was searching
+              const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+              if (nameInput) nameInput.value = term;
+            }
+          });
+        });
       };
     }
     return;
@@ -811,10 +815,14 @@ const renderMaterialsList = () => {
     const createBtn = document.getElementById('createNewMaterialTopBtn');
     if (createBtn) {
       createBtn.onclick = () => {
-        openMaterialCreateModal();
-        const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-        if (nameInput) nameInput.value = term;
         closeMaterialModal();
+        requestAnimationFrame(() => {
+          openMaterialCreateModal();
+          requestAnimationFrame(() => {
+            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+            if (nameInput) nameInput.value = term;
+          });
+        });
       };
     }
   }
