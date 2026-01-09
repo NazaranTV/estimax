@@ -241,17 +241,35 @@
               </tr>
             </thead>
             <tbody>
-              ${lineItems.map(item => `
-                <tr>
-                  <td>
-                    ${item.description}
-                    ${item.notes ? `<br><span style="font-size: 12px; color: var(--text-tertiary);">${item.notes}</span>` : ''}
-                  </td>
-                  <td style="text-align: right;">${item.qty}</td>
-                  <td style="text-align: right;">$${Number(item.rate).toFixed(2)}</td>
-                  <td style="text-align: right;">$${(item.qty * item.rate + (item.markup || 0)).toFixed(2)}</td>
-                </tr>
-              `).join('')}
+              ${lineItems.map(item => {
+                // Calculate base line item total with markup as percentage
+                const baseTotal = (Number(item.qty) || 0) * (Number(item.rate) || 0);
+                const markupPercent = (Number(item.markup) || 0) / 100;
+                let lineTotal = baseTotal * (1 + markupPercent);
+
+                // Add materials cost (but don't display materials - contractor only)
+                if (Array.isArray(item.materials) && item.materials.length > 0) {
+                  const materialsCost = item.materials.reduce((sum, m) => {
+                    const mQty = Number(m.qty) || 0;
+                    const mRate = Number(m.rate) || 0;
+                    const mMarkup = (Number(m.markup) || 0) / 100;
+                    return sum + (mQty * mRate * (1 + mMarkup));
+                  }, 0);
+                  lineTotal += materialsCost;
+                }
+
+                return `
+                  <tr>
+                    <td>
+                      ${item.description}
+                      ${item.notes ? `<br><span style="font-size: 12px; color: var(--text-tertiary);">${item.notes}</span>` : ''}
+                    </td>
+                    <td style="text-align: right;">${item.qty}</td>
+                    <td style="text-align: right;">$${Number(item.rate).toFixed(2)}</td>
+                    <td style="text-align: right;">$${lineTotal.toFixed(2)}</td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
           </table>
         ` : '<p class="meta">No line items</p>'}
