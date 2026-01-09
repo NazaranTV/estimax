@@ -731,7 +731,7 @@ const renderMaterialsSection = (row) => {
   if (!materialsWrap) {
     materialsWrap = document.createElement('div');
     materialsWrap.className = 'materials-list';
-    materialsWrap.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);';
+    materialsWrap.style.cssText = 'display: block !important; margin-top: 12px; padding: 12px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; border: 1px solid rgba(124, 58, 237, 0.3);';
     contentDiv.appendChild(materialsWrap);
     console.log('Created new materials section', materialsWrap);
   }
@@ -739,7 +739,7 @@ const renderMaterialsSection = (row) => {
     materialsWrap.style.display = 'none';
     return;
   }
-  materialsWrap.style.display = 'block';
+  materialsWrap.style.setProperty('display', 'block', 'important');
   materialsWrap.innerHTML = '';
 
   const header = document.createElement('div');
