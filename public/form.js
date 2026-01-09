@@ -483,6 +483,7 @@ const addLineItemRow = (item = {}) => {
   updateLineTotal(row);
   checkItemDuplicate(row);
   lineItemsEl.appendChild(row);
+  renderMaterialsSection(row);
 };
 
 const readLineItems = () => {
