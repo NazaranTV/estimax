@@ -729,6 +729,37 @@ app.delete('/api/payment-methods/:id', async (req, res) => {
   }
 });
 
+// Company Settings API
+app.get('/api/company-settings', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM company_settings LIMIT 1');
+    if (rows.length === 0) {
+      return res.json({ name: '', address: '', phone: '', email: '', logo: null });
+    }
+    res.json(toCamel(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load company settings' });
+  }
+});
+
+app.put('/api/company-settings', async (req, res) => {
+  try {
+    const { name, address, phone, email, logo } = req.body;
+    const { rows } = await pool.query(`
+      INSERT INTO company_settings (id, name, address, phone, email, logo, updated_at)
+      VALUES (1, $1, $2, $3, $4, $5, NOW())
+      ON CONFLICT (id) DO UPDATE
+      SET name = $1, address = $2, phone = $3, email = $4, logo = $5, updated_at = NOW()
+      RETURNING *
+    `, [name || '', address || '', phone || '', email || '', logo || null]);
+    res.json(toCamel(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save company settings' });
+  }
+});
+
 // Fallback to SPA index for any other route (except static files)
 app.get(/.*/, (req, res) => {
   // If it's a request for an HTML file in public, let express.static handle it

@@ -203,8 +203,21 @@ const renderMaterialsSection = (row) => {
 const updateLineTotal = (row) => {
   const qty = Number(row.querySelector('[data-field="qty"]').value) || 0;
   const rate = Number(row.querySelector('[data-field="rate"]').value) || 0;
-  const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
-  const total = (qty * rate) + markup;
+
+  // Base line item total (no markup on line items)
+  let total = qty * rate;
+
+  // Add all material costs (materials keep markup)
+  if (row.materialsData && row.materialsData.length > 0) {
+    const materialsCost = row.materialsData.reduce((sum, m) => {
+      const mQty = Number(m.qty) || 0;
+      const mRate = Number(m.rate) || 0;
+      const mMarkup = Number(m.markup) || 0;
+      return sum + (mQty * mRate + mMarkup);
+    }, 0);
+    total += materialsCost;
+  }
+
   row.querySelector('[data-field="lineTotal"]').textContent = currency(total);
 };
 
@@ -216,7 +229,8 @@ const addLineItemRow = (item = {}) => {
   if (item.photoData) row.dataset.photo = item.photoData;
   row.innerHTML = `
     <div class="line-item__content">
-      <div class="line-item__row">
+      <!-- Row 1: Main Controls -->
+      <div class="line-item__header">
         <button type="button" class="btn-drag-handle" title="Drag to reorder" draggable="true">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="16" height="2" rx="1" fill="currentColor"/>
@@ -224,36 +238,59 @@ const addLineItemRow = (item = {}) => {
             <rect y="14" width="16" height="2" rx="1" fill="currentColor"/>
           </svg>
         </button>
-        <button type="button" class="btn-remove" data-action="remove" title="Remove line item">−</button>
-        <input placeholder="Item Name" value="${item.description || ''}" data-field="description" class="line-item__description">
+        <input placeholder="Item description" value="${item.description || ''}" data-field="description" class="line-item__description">
         <button type="button" data-action="choose-item" class="btn-item-list">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/>
             <rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/>
             <rect x="2" y="11" width="12" height="2" rx="1" fill="currentColor"/>
           </svg>
-          Item List
+          <span>From Library</span>
         </button>
-        <input type="number" step="0.01" placeholder="Price" value="${item.rate ?? ''}" data-field="rate" class="line-item__rate">
-        <input type="number" step="1" placeholder="QTY" value="${item.qty ?? ''}" data-field="qty" class="line-item__qty">
-        <input type="number" step="0.01" placeholder="Markup" value="${item.markup ?? ''}" data-field="markup" class="line-item__markup">
-        <button type="button" data-action="photo" class="btn-upload-photo" title="Upload photos">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M3 14L7 10L10 13L15 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/>
-            <path d="M10 10L10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span class="plus-icon">+</span>
-        </button>
-        <button type="button" data-action="save-as-item" class="btn-save-as-item" title="Save as new item">
+        <button type="button" class="btn-remove" data-action="remove" title="Remove line item">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </button>
-        <div class="line-total" data-field="lineTotal">${currency((item.qty || 0) * (item.rate || 0))}</div>
       </div>
-      <textarea placeholder="Item description" data-field="notes" class="line-item__notes" rows="3">${item.notes || ''}</textarea>
+
+      <!-- Row 2: Pricing Grid with Labels -->
+      <div class="line-item__pricing">
+        <div class="line-item__field">
+          <label class="line-item__label">Price</label>
+          <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate">
+        </div>
+        <div class="line-item__field">
+          <label class="line-item__label">Quantity</label>
+          <input type="number" step="1" placeholder="1" value="${item.qty ?? ''}" data-field="qty">
+        </div>
+        <div class="line-item__field">
+          <label class="line-item__label">Photo</label>
+          <button type="button" data-action="photo" class="btn-upload-photo">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2 11L5 8L7 10L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="5" cy="5" r="1" fill="currentColor"/>
+            </svg>
+            <span>Add Photo</span>
+          </button>
+        </div>
+        <div class="line-item__field">
+          <label class="line-item__label">Total</label>
+          <div class="line-total" data-field="lineTotal">${currency((item.qty || 0) * (item.rate || 0))}</div>
+        </div>
+      </div>
+
+      <!-- Row 3: Notes and Actions -->
+      <div class="line-item__footer">
+        <textarea placeholder="Additional notes or details" data-field="notes" class="line-item__notes" rows="2">${item.notes || ''}</textarea>
+        <button type="button" data-action="save-as-item" class="btn-save-item">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 2V12M2 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span>Save to Library</span>
+        </button>
+      </div>
     </div>
   `;
 
@@ -386,10 +423,10 @@ const readLineItems = () => {
       const description = row.querySelector('[data-field="description"]').value.trim();
       const qty = Number(row.querySelector('[data-field="qty"]').value) || 0;
       const rate = Number(row.querySelector('[data-field="rate"]').value) || 0;
-      const markup = Number(row.querySelector('[data-field="markup"]')?.value) || 0;
       const notes = row.querySelector('[data-field="notes"]')?.value?.trim() || '';
       const photoData = row.dataset.photo || '';
-      return { description, qty, rate, markup, notes, photoData };
+      const materials = row.materialsData || [];
+      return { description, qty, rate, notes, photoData, materials };
     })
     .filter((item) => item.description || item.qty || item.rate);
 };
@@ -397,8 +434,18 @@ const readLineItems = () => {
 const recalcTotals = () => {
   const items = readLineItems();
   const subtotal = items.reduce((sum, item) => {
-    const markup = item.markup || 0;
-    return sum + ((item.qty * item.rate) + markup);
+    // Calculate base item cost
+    let itemTotal = item.qty * item.rate;
+
+    // Add materials costs (materials have markup, line items don't)
+    if (item.materials && item.materials.length > 0) {
+      const materialsCost = item.materials.reduce((mSum, m) => {
+        return mSum + ((m.qty * m.rate) + (m.markup || 0));
+      }, 0);
+      itemTotal += materialsCost;
+    }
+
+    return sum + itemTotal;
   }, 0);
   const total = subtotal;
   subtotalEl.textContent = currency(subtotal);
