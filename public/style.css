@@ -147,27 +147,27 @@ h4 {
   line-height: 1.5;
 }
 
-/* Navigation - Railway style */
+/* Navigation - Railway style left sidebar */
 .nav {
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: 0;
+  bottom: 0;
+  width: 200px;
   z-index: 100;
   background: #211F2D;
-  border-bottom: 1px solid #33323E;
-  padding: 0;
-  margin-bottom: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid #33323E;
+  padding: 24px 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
 }
 
 .nav__inner {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 0 24px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 0 12px;
 }
 
 .nav__inner::-webkit-scrollbar {
@@ -176,7 +176,7 @@ h4 {
 
 .nav__item {
   position: relative;
-  padding: 14px 0;
+  padding: 12px 16px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -185,32 +185,42 @@ h4 {
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 0;
+  border-radius: 6px;
   font-family: inherit;
   box-shadow: none;
+  text-align: left;
 }
 
 .nav__item::after {
   content: '';
   position: absolute;
-  bottom: 0;
   left: 0;
-  right: 0;
-  height: 2px;
-  background: transparent;
-  transition: background 0.2s ease;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--accent-primary);
+  transition: height 0.2s ease;
+  border-radius: 0 2px 2px 0;
 }
 
 .nav__item:hover:not(.active) {
   color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .nav__item.active {
   color: var(--text-primary);
+  background: rgba(124, 58, 237, 0.15);
 }
 
 .nav__item.active::after {
-  background: var(--accent-primary);
+  height: 24px;
+}
+
+/* Adjust page layout for left sidebar */
+.page {
+  margin-left: 200px;
 }
 
 /* Cards - Railway inspired */
