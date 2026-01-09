@@ -364,7 +364,7 @@ const addLineItemRow = (item = {}) => {
         <div class="line-item__field">
           <label class="line-item__label">Price</label>
           <div style="position: relative; display: flex; align-items: center;">
-            <span style="position: absolute; left: 8px; font-size: 14px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
+            <span style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 14px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
             <input type="number" step="0.01" placeholder="0.00" value="${item.rate ?? ''}" data-field="rate" style="padding-left: 20px;">
           </div>
         </div>
@@ -793,7 +793,7 @@ const renderMaterialsList = () => {
             name: m.name,
             qty: 1,  // Always default to quantity of 1
             rate: unitRate,
-            markup: m.defaultMarkup || 0,  // Markup is percentage, use as-is
+            markup: Math.round(m.defaultMarkup || 0),  // Markup is percentage, round to whole number
           });
           renderMaterialsSection(currentLineForMaterials);
           recalcTotals();
