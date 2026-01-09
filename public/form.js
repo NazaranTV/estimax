@@ -542,22 +542,12 @@ const readLineItems = () => {
 };
 
 const recalcTotals = () => {
-  const items = readLineItems();
-  const subtotal = items.reduce((sum, item) => {
-    // Calculate base item cost
-    let itemTotal = item.qty * item.rate;
-
-    // Add materials costs (materials have markup as percentage, line items don't)
-    if (item.materials && item.materials.length > 0) {
-      const materialsCost = item.materials.reduce((mSum, m) => {
-        const baseCost = m.qty * m.rate;
-        const markupPercent = (m.markup || 0) / 100;
-        return mSum + (baseCost * (1 + markupPercent));
-      }, 0);
-      itemTotal += materialsCost;
-    }
-
-    return sum + itemTotal;
+  // Read line totals from DOM (already calculated by updateLineTotal including materials)
+  const rows = [...lineItemsEl.querySelectorAll('.line-item')];
+  const subtotal = rows.reduce((sum, row) => {
+    const lineTotalText = row.querySelector('[data-field="lineTotal"]')?.textContent || '$0';
+    const lineTotal = parseFloat(lineTotalText.replace(/[$,]/g, '')) || 0;
+    return sum + lineTotal;
   }, 0);
   const total = subtotal;
   subtotalEl.textContent = currency(subtotal);
