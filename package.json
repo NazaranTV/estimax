@@ -1,6 +1,6 @@
 {
   "name": "estimator3",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Local-first contractor estimates & invoices app",
   "main": "src/server.js",
   "scripts": {
