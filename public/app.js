@@ -245,7 +245,7 @@ const openClientView = (doc) => {
       <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
         <td style="padding: 12px 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word;">
           <div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; word-wrap: break-word;">${li.description || 'Untitled Item'}</div>
-          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word;">${li.notes}</div>` : ''}
+          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap;">${li.notes}</div>` : ''}
         </td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${currency(li.rate || 0)}</td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${li.qty || 0}</td>
@@ -255,23 +255,50 @@ const openClientView = (doc) => {
   }).join('');
 
   clientViewBody.innerHTML = `
-    <div style="display: block;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
-        <div>
-          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Bill To</h4>
-        <p style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">${doc.clientName}</p>
-        ${doc.clientEmail ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientEmail}</p>` : ''}
-        ${doc.clientPhone ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientPhone}</p>` : ''}
-        ${doc.clientBillingAddress ? `<p style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.4;">${doc.clientBillingAddress}</p>` : ''}
+    <div style="display: flex; gap: 16px;">
+      <!-- Left Action Bar -->
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 140px;">
+        <button class="btn primary" onclick="window.location.href='/${doc.type}-form.html?id=${doc.id}'" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+            <path d="M10 1L13 4L5 12H2V9L10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          EDIT
+        </button>
+        <button class="btn" id="emailDocBtn_${doc.id}" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600; background: #10b981;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+            <path d="M13 1L1 6.5L5.5 8.5L7.5 13L13 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          EMAIL
+        </button>
+        ${doc.type === 'invoice' ? `
+        <button class="btn ghost" onclick="window.openPaymentsModal?.(${doc.id})" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+            <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M1 6H13" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          PAYMENTS
+        </button>
+        ` : ''}
       </div>
-      <div style="text-align: right;">
-        <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Document Info</h4>
-        <p style="font-size: 13px; margin-bottom: 3px;"><span style="color: var(--muted);">${doc.type === 'estimate' ? 'Estimate #' : 'Invoice #'}</span> <strong>${doc.poNumber || '—'}</strong></p>
-        ${dateLabel ? `<p style="font-size: 13px; color: var(--muted);">${dateLabel}</p>` : ''}
-        ${doc.projectName ? `<p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Project: ${doc.projectName}</p>` : ''}
-        ${doc.serviceAddress ? `<p style="font-size: 12px; color: var(--muted); margin-top: 3px;">Service: ${doc.serviceAddress}</p>` : ''}
+
+      <!-- Main Content -->
+      <div style="flex: 1;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
+          <div>
+            <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Bill To</h4>
+          <p style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">${doc.clientName}</p>
+          ${doc.clientEmail ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientEmail}</p>` : ''}
+          ${doc.clientPhone ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientPhone}</p>` : ''}
+          ${doc.clientBillingAddress ? `<p style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.4;">${doc.clientBillingAddress}</p>` : ''}
         </div>
-      </div>
+        <div style="text-align: right;">
+          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Document Info</h4>
+          <p style="font-size: 13px; margin-bottom: 3px;"><span style="color: var(--muted);">${doc.type === 'estimate' ? 'Estimate #' : 'Invoice #'}</span> <strong>${doc.poNumber || '—'}</strong></p>
+          ${dateLabel ? `<p style="font-size: 13px; color: var(--muted);">${dateLabel}</p>` : ''}
+          ${doc.projectName ? `<p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Project: ${doc.projectName}</p>` : ''}
+          ${doc.serviceAddress ? `<p style="font-size: 12px; color: var(--muted); margin-top: 3px;">Service: ${doc.serviceAddress}</p>` : ''}
+          </div>
+        </div>
 
       <div style="margin-bottom: 24px;">
         <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
@@ -304,9 +331,16 @@ const openClientView = (doc) => {
         <p style="font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">${doc.notes}</p>
       </div>
       ` : ''}
+      </div>
     </div>
   `;
   clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview`;
+
+  // Setup email button handler
+  const emailBtn = document.getElementById(`emailDocBtn_${doc.id}`);
+  if (emailBtn) {
+    emailBtn.onclick = () => openSend(doc);
+  }
 
   // Check if document has any materials
   const hasMaterials = (doc.lineItems || []).some(li => (li.materials || []).length > 0);
