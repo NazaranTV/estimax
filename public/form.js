@@ -148,22 +148,14 @@ const renderMaterialsSection = (row) => {
   columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; flex: 1; align-items: center;';
   columnsRow.innerHTML = `
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Quantity</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Price</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center; display: block;">Markup</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: right; display: block;">Total</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Quantity</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Price</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Markup</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: right;">Total</span>
     <span></span>
   `;
 
-  const addBtn = document.createElement('button');
-  addBtn.className = 'btn small';
-  addBtn.textContent = '+ Add';
-  addBtn.type = 'button';
-  addBtn.style.cssText = 'padding: 4px 10px; font-size: 12px; margin-left: 8px;';
-  addBtn.onclick = () => openMaterialModal(row);
-
   headerRow.appendChild(columnsRow);
-  headerRow.appendChild(addBtn);
 
   if (!row.materialsData || !row.materialsData.length) {
     materialsWrap.appendChild(headerRow);
@@ -172,6 +164,15 @@ const renderMaterialsSection = (row) => {
     empty.style.cssText = 'font-size: 12px; margin: 0; opacity: 0.6;';
     empty.textContent = 'No materials';
     materialsWrap.appendChild(empty);
+
+    // Add "Add Material" button at the bottom for empty state
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn small';
+    addBtn.textContent = '+ Add Material';
+    addBtn.type = 'button';
+    addBtn.style.cssText = 'padding: 6px 12px; font-size: 12px; margin-top: 8px;';
+    addBtn.onclick = () => openMaterialModal(row);
+    materialsWrap.appendChild(addBtn);
     return;
   }
 
@@ -199,7 +200,7 @@ const renderMaterialsSection = (row) => {
         <span style="position: absolute; right: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">%</span>
       </div>
       <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500; text-align: right;">$${materialTotal.toFixed(2)}</div>
-      <button type="button" class="btn small ghost" style="padding: 4px 6px; font-size: 11px; color: #ef4444;">✕</button>
+      <button type="button" class="btn small ghost" style="padding: 4px 8px; font-size: 11px; color: #ef4444;">Delete</button>
     `;
     // Set the material name value after creating the element to avoid HTML escaping issues
     mRow.querySelector('[data-field="m-name"]').value = m.name || '';
@@ -234,6 +235,15 @@ const renderMaterialsSection = (row) => {
   });
 
   materialsWrap.appendChild(materialsTable);
+
+  // Add "Add Material" button at the bottom
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn small';
+  addBtn.textContent = '+ Add Material';
+  addBtn.type = 'button';
+  addBtn.style.cssText = 'padding: 6px 12px; font-size: 12px; margin-top: 8px;';
+  addBtn.onclick = () => openMaterialModal(row);
+  materialsWrap.appendChild(addBtn);
 };
 
 const updatePhotoDisplay = (row) => {
