@@ -2622,9 +2622,9 @@ async function printDocument(doc) {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 100%;">
         ${paymentMethods.map(method => `
           <div class="payment-method-item">
-            <div class="payment-method-name">${method.methodName}</div>
-            <img src="${method.qrCodeUrl}" alt="${method.methodName} QR Code" class="payment-qr">
-            ${method.displayUrl ? `<div class="payment-url">${method.displayUrl}</div>` : ''}
+            <div class="payment-method-name">${method.name}</div>
+            ${method.qrCode ? `<img src="${method.qrCode}" alt="${method.name} QR Code" class="payment-qr">` : ''}
+            ${method.type === 'url' ? `<div class="payment-url">Scan QR code or visit URL</div>` : ''}
           </div>
         `).join('')}
       </div>
@@ -3487,8 +3487,8 @@ const renderPaymentMethods = () => {
       (method) => `
     <div class="client-card">
       <div>
-        <h4>${method.methodName}</h4>
-        <p class="meta">${method.qrCodeUrl ? 'QR Code uploaded' : 'Text-only method'}</p>
+        <h4>${method.name}</h4>
+        <p class="meta">${method.qrCode ? 'QR Code uploaded' : 'Text-only method'}</p>
       </div>
       <div class="client-actions">
         <button class="btn small ghost" onclick="editPaymentMethod(${method.id})">Edit</button>
@@ -3514,13 +3514,13 @@ const editPaymentMethod = (id) => {
   const method = paymentMethods.find(m => m.id === id);
   document.getElementById('paymentMethodModalTitle').textContent = 'Edit Payment Method';
   const form = document.getElementById('paymentMethodForm');
-  form.methodName.value = method.methodName;
-  form.paymentUrl.value = method.paymentUrl || '';
-  document.getElementById('qrCodeUrlHidden').value = method.qrCodeUrl || '';
+  form.methodName.value = method.name;
+  form.paymentUrl.value = method.type === 'url' ? method.type : '';
+  document.getElementById('qrCodeUrlHidden').value = method.qrCode || '';
 
   // Show QR preview if available
-  if (method.qrCodeUrl) {
-    document.getElementById('qrPreviewImg').src = method.qrCodeUrl;
+  if (method.qrCode) {
+    document.getElementById('qrPreviewImg').src = method.qrCode;
     document.getElementById('qrPreview').style.display = 'block';
   }
 
@@ -3612,12 +3612,14 @@ document.getElementById('paymentMethodForm').addEventListener('submit', async (e
   e.preventDefault();
   const formData = new FormData(e.target);
   const qrCodeUrl = document.getElementById('qrCodeUrlHidden').value;
+  const methodName = formData.get('methodName');
+  const paymentUrl = formData.get('paymentUrl') || '';
 
+  // Map to backend expected fields
   const method = {
-    methodName: formData.get('methodName'),
-    paymentUrl: formData.get('paymentUrl') || '',
-    qrCodeUrl: qrCodeUrl || null,
-    displayUrl: '',
+    name: methodName,
+    type: paymentUrl ? 'url' : 'text',
+    qrCode: qrCodeUrl || null
   };
 
   try {
@@ -3673,438 +3675,6 @@ if (deleteModal) {
     backdrop.addEventListener('click', closeDeleteModal);
   }
 }
-
-// AI Integration
-let generatedMaterialsData = [];
-let generatedEstimateData = null;
-
-// API Key Management
-const saveApiKeyBtn = document.getElementById('saveApiKey');
-const apiKeyInput = document.getElementById('chatgptApiKey');
-
-if (saveApiKeyBtn && apiKeyInput) {
-  // Load saved API key
-  const savedKey = localStorage.getItem('chatgptApiKey');
-  if (savedKey) {
-    apiKeyInput.value = savedKey;
-  }
-
-  saveApiKeyBtn.addEventListener('click', () => {
-    const key = apiKeyInput.value.trim();
-    if (key) {
-      localStorage.setItem('chatgptApiKey', key);
-      alert('API key saved successfully!');
-    } else {
-      alert('Please enter an API key');
-    }
-  });
-}
-
-// Helper function to call OpenAI API
-async function callOpenAI(messages, temperature = 0.7) {
-  const apiKey = localStorage.getItem('chatgptApiKey');
-  if (!apiKey) {
-    throw new Error('Please configure your ChatGPT API key in Settings first');
-  }
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: messages,
-      temperature: temperature
-    })
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'API request failed');
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
-}
-
-// Helper function to read file as text or base64
-async function readFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target.result);
-    reader.onerror = reject;
-
-    if (file.type.startsWith('image/')) {
-      reader.readAsDataURL(file);
-    } else {
-      reader.readAsText(file);
-    }
-  });
-}
-
-// Material Generator
-const priceMaterialsBtn = document.getElementById('priceMaterials');
-const materialsInput = document.getElementById('aiMaterialsInput');
-const materialsStatus = document.getElementById('aiMaterialsStatus');
-const materialsPreview = document.getElementById('generatedMaterialsPreview');
-const materialsList = document.getElementById('generatedMaterialsList');
-
-if (priceMaterialsBtn) {
-  priceMaterialsBtn.addEventListener('click', async () => {
-    const text = materialsInput.value.trim();
-
-    if (!text) {
-      materialsStatus.innerHTML = '<p style="color: #ef4444;">Please enter materials to price</p>';
-      return;
-    }
-
-    // Parse materials list (split by newlines or commas)
-    const materials = text
-      .split(/[\n,]+/)
-      .map(m => m.trim())
-      .filter(m => m.length > 0);
-
-    if (materials.length === 0) {
-      materialsStatus.innerHTML = '<p style="color: #ef4444;">No valid materials found</p>';
-      return;
-    }
-
-    materialsStatus.innerHTML = `<p style="color: var(--accent);">🔍 Searching Google Shopping for ${materials.length} material(s)... This may take a minute.</p>`;
-    priceMaterialsBtn.disabled = true;
-
-    try {
-      // Call our scraping endpoint
-      const response = await fetch('/api/scrape-prices', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ materials })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch prices from server');
-      }
-
-      const data = await response.json();
-      const { results } = data;
-
-      // Use scraped data directly (no AI needed!)
-      generatedMaterialsData = results.map((result) => {
-        return {
-          name: result.name,  // Use EXACT name from input
-          description: result.description || `${result.name}`,
-          defaultQty: 1,
-          defaultRate: result.price,
-          defaultMarkup: 0  // Standard markup in dollars
-        };
-      });
-
-      // Render preview with editable fields
-      renderMaterialsPreview(generatedMaterialsData);
-
-      materialsPreview.style.display = 'block';
-
-      const successCount = results.filter(r => r.success).length;
-      const failCount = results.length - successCount;
-
-      let statusMsg = `<p style="color: var(--accent);">✓ Found prices for ${successCount} material(s)`;
-      if (failCount > 0) {
-        statusMsg += ` (${failCount} not found - set to $0.00)`;
-      }
-      statusMsg += `</p>`;
-
-      materialsStatus.innerHTML = statusMsg;
-    } catch (err) {
-      console.error(err);
-      materialsStatus.innerHTML = `<p style="color: #ef4444;">Error: ${err.message}</p>`;
-    } finally {
-      priceMaterialsBtn.disabled = false;
-    }
-  });
-}
-
-// Helper function to render materials preview
-function renderMaterialsPreview(materials) {
-  materialsList.innerHTML = materials.map((m, idx) => `
-    <div class="generated-material-card" data-index="${idx}" style="padding: 16px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.02);">
-      <div style="display: grid; gap: 12px;">
-        <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
-          <div style="flex: 1;">
-            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Material Name</label>
-            <input type="text" class="material-edit-field" data-field="name" value="${m.name || ''}"
-                   style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: inherit; font-family: inherit; font-size: 14px; font-weight: 600;">
-          </div>
-          <div style="padding-top: 24px;">
-            <button type="button" class="btn-remove" onclick="removeMaterialPreview(${idx})" title="Remove material" style="font-size: 24px; padding: 4px 12px; line-height: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; cursor: pointer; color: #ef4444; transition: all 0.2s;">×</button>
-          </div>
-        </div>
-
-        <div>
-          <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Description</label>
-          <textarea class="material-edit-field" data-field="description" rows="2"
-                    style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: inherit; font-family: inherit; font-size: 13px; resize: vertical;">${m.description || ''}</textarea>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-          <div>
-            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Quantity</label>
-            <input type="number" step="1" class="material-edit-field" data-field="defaultQty" value="${m.defaultQty || 1}"
-                   style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: inherit; font-family: inherit; font-size: 13px;">
-          </div>
-          <div>
-            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Rate ($)</label>
-            <input type="number" step="0.01" class="material-edit-field" data-field="defaultRate" value="${m.defaultRate || 0}"
-                   style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: inherit; font-family: inherit; font-size: 13px;">
-          </div>
-          <div>
-            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">Markup (%)</label>
-            <input type="number" step="1" class="material-edit-field" data-field="defaultMarkup" value="${m.defaultMarkup || 0}"
-                   style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: inherit; font-family: inherit; font-size: 13px;">
-          </div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// Function to remove material from preview
-window.removeMaterialPreview = (index) => {
-  generatedMaterialsData.splice(index, 1);
-
-  if (generatedMaterialsData.length === 0) {
-    materialsPreview.style.display = 'none';
-    materialsStatus.innerHTML = '<p style="color: var(--muted);">All materials removed</p>';
-    return;
-  }
-
-  // Re-render the preview with updated indices
-  renderMaterialsPreview(generatedMaterialsData);
-
-  materialsStatus.innerHTML = `<p style="color: var(--accent);">${generatedMaterialsData.length} material(s) remaining</p>`;
-};
-
-// Confirm generated materials
-document.getElementById('confirmGeneratedMaterials')?.addEventListener('click', async () => {
-  try {
-    materialsStatus.innerHTML = '<p style="color: var(--accent);">Adding materials...</p>';
-
-    // Read edited values from the input fields
-    const materialCards = document.querySelectorAll('.generated-material-card');
-    const editedMaterials = [];
-
-    materialCards.forEach((card, idx) => {
-      const material = {
-        name: card.querySelector('[data-field="name"]').value.trim(),
-        description: card.querySelector('[data-field="description"]').value.trim(),
-        defaultQty: Number(card.querySelector('[data-field="defaultQty"]').value) || 1,
-        defaultRate: Number(card.querySelector('[data-field="defaultRate"]').value) || 0,
-        defaultMarkup: Number(card.querySelector('[data-field="defaultMarkup"]').value) || 0
-      };
-
-      editedMaterials.push(material);
-    });
-
-    // Save edited materials
-    for (const material of editedMaterials) {
-      await fetch('/api/materials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(material)
-      });
-    }
-
-    materialsStatus.innerHTML = `<p style="color: var(--accent);">Successfully added ${editedMaterials.length} materials!</p>`;
-    materialsPreview.style.display = 'none';
-    materialsInput.value = '';
-    generatedMaterialsData = [];
-
-    // Reload materials
-    await loadMaterials();
-
-    setTimeout(() => {
-      materialsStatus.innerHTML = '';
-    }, 3000);
-  } catch (err) {
-    console.error(err);
-    materialsStatus.innerHTML = `<p style="color: #ef4444;">Error adding materials: ${err.message}</p>`;
-  }
-});
-
-document.getElementById('cancelGeneratedMaterials')?.addEventListener('click', () => {
-  materialsPreview.style.display = 'none';
-  generatedMaterialsData = [];
-  materialsInput.value = '';
-  materialsStatus.innerHTML = '';
-});
-
-// Estimate Generator
-const generateEstimateBtn = document.getElementById('generateEstimate');
-const estimateFile = document.getElementById('aiEstimateFile');
-const estimateText = document.getElementById('aiEstimateText');
-const estimateStatus = document.getElementById('aiEstimateStatus');
-const estimatePreview = document.getElementById('generatedEstimatePreview');
-const estimateDetails = document.getElementById('generatedEstimateDetails');
-
-if (generateEstimateBtn) {
-  generateEstimateBtn.addEventListener('click', async () => {
-    const file = estimateFile.files[0];
-    const text = estimateText.value.trim();
-
-    if (!file && !text) {
-      estimateStatus.innerHTML = '<p style="color: #ef4444;">Please upload a file or enter text</p>';
-      return;
-    }
-
-    estimateStatus.innerHTML = '<p style="color: var(--accent);">Generating estimate...</p>';
-    generateEstimateBtn.disabled = true;
-
-    try {
-      let content = text;
-      let messages = [];
-
-      if (file) {
-        estimateStatus.innerHTML = '<p style="color: var(--accent);">Reading file...</p>';
-        const fileContent = await readFile(file);
-
-        if (file.type.startsWith('image/')) {
-          // Vision API for images
-          messages = [{
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Analyze this image and create a construction/contracting estimate. Extract all work items, materials, and costs you can identify.'
-              },
-              {
-                type: 'image_url',
-                image_url: { url: fileContent }
-              }
-            ]
-          }];
-        } else {
-          content = fileContent;
-        }
-      }
-
-      if (!messages.length) {
-        const prompt = `Create a construction/contracting estimate from the following project description. Return ONLY a valid JSON object with this structure:
-{
-  "clientName": "Client name if mentioned",
-  "projectName": "Project title",
-  "serviceAddress": "Location if mentioned",
-  "lineItems": [
-    {
-      "description": "Work item description",
-      "qty": numeric_quantity,
-      "rate": numeric_rate_per_unit,
-      "materials": []
-    }
-  ],
-  "notes": "Any additional notes or observations",
-  "taxRate": suggested_tax_rate_percentage
-}
-
-Input:
-${content}`;
-
-        messages = [{role: 'user', content: prompt}];
-      }
-
-      const response = await callOpenAI(messages, 0.5);
-
-      // Parse JSON from response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Could not parse estimate from AI response');
-      }
-
-      generatedEstimateData = JSON.parse(jsonMatch[0]);
-
-      // Render preview
-      const subtotal = (generatedEstimateData.lineItems || []).reduce((sum, item) => {
-        return sum + (item.qty * item.rate);
-      }, 0);
-
-      estimateDetails.innerHTML = `
-        <div style="margin-bottom: 16px;">
-          <p><strong>Client:</strong> ${generatedEstimateData.clientName || 'Not specified'}</p>
-          <p><strong>Project:</strong> ${generatedEstimateData.projectName || 'Not specified'}</p>
-          ${generatedEstimateData.serviceAddress ? `<p><strong>Location:</strong> ${generatedEstimateData.serviceAddress}</p>` : ''}
-        </div>
-        <h4 style="margin-bottom: 8px;">Line Items:</h4>
-        ${(generatedEstimateData.lineItems || []).map(item => `
-          <div style="padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;">
-            <div style="display: flex; justify-content: space-between;">
-              <span>${item.description}</span>
-              <span><strong>$${(item.qty * item.rate).toFixed(2)}</strong></span>
-            </div>
-            <p class="meta">Qty: ${item.qty} × Rate: $${item.rate}</p>
-          </div>
-        `).join('')}
-        <div style="text-align: right; margin-top: 16px; padding: 12px; background: var(--accent-soft); border-radius: 8px;">
-          <strong>Subtotal: $${subtotal.toFixed(2)}</strong>
-        </div>
-        ${generatedEstimateData.notes ? `
-          <div style="margin-top: 16px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 8px;">
-            <p class="eyebrow">Notes</p>
-            <p style="margin-top: 8px;">${generatedEstimateData.notes}</p>
-          </div>
-        ` : ''}
-      `;
-
-      estimatePreview.style.display = 'block';
-      estimateStatus.innerHTML = '<p style="color: var(--accent);">Estimate generated successfully!</p>';
-    } catch (err) {
-      console.error(err);
-      estimateStatus.innerHTML = `<p style="color: #ef4444;">Error: ${err.message}</p>`;
-    } finally {
-      generateEstimateBtn.disabled = false;
-    }
-  });
-}
-
-// Confirm generated estimate
-document.getElementById('confirmGeneratedEstimate')?.addEventListener('click', async () => {
-  if (!generatedEstimateData) return;
-
-  // Switch to estimates view and open the create form
-  switchView('estimates');
-  openEstimateForm();
-
-  // Pre-fill the form
-  const form = document.getElementById('docForm');
-  if (generatedEstimateData.clientName) {
-    form.clientName.value = generatedEstimateData.clientName;
-  }
-  if (generatedEstimateData.projectName) {
-    form.projectName.value = generatedEstimateData.projectName;
-  }
-  if (generatedEstimateData.serviceAddress) {
-    form.serviceAddress.value = generatedEstimateData.serviceAddress;
-  }
-  if (generatedEstimateData.taxRate) {
-    form.taxRate.value = generatedEstimateData.taxRate;
-  }
-  if (generatedEstimateData.notes) {
-    form.notes.value = generatedEstimateData.notes;
-  }
-
-  // Add line items
-  currentLines = generatedEstimateData.lineItems || [];
-  renderLineItems();
-
-  estimateStatus.innerHTML = '<p style="color: var(--accent);">Estimate loaded into form!</p>';
-  estimatePreview.style.display = 'none';
-  estimateFile.value = '';
-  estimateText.value = '';
-  generatedEstimateData = null;
-});
-
-document.getElementById('cancelGeneratedEstimate')?.addEventListener('click', () => {
-  estimatePreview.style.display = 'none';
-  generatedEstimateData = null;
-});
 
 // Notifications event listeners
 const markAllReadBtn = document.getElementById('markAllReadBtn');

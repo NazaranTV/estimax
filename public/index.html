@@ -16,7 +16,6 @@
         <button class="nav__item" data-view="clients">Clients</button>
         <button class="nav__item" data-view="items">Items</button>
         <button class="nav__item" data-view="materials">Materials</button>
-        <button class="nav__item" data-view="ai">AI</button>
         <button class="nav__item" data-view="notifications" id="notificationsTab">
           Notifications <span id="notificationsBadge" class="badge hidden">0</span>
         </button>
@@ -126,78 +125,6 @@
       </div>
     </section>
 
-    <section class="workspace card hidden" id="aiView">
-      <div class="workspace__header">
-        <div>
-          <p class="eyebrow">AI Assistant</p>
-          <h2>Intelligent estimation tools</h2>
-        </div>
-      </div>
-
-      <!-- Material Generator -->
-      <div class="client-card" style="margin-top: 24px;">
-        <div>
-          <h4>Price Materials</h4>
-          <p class="meta">Search for real pricing from major retailers</p>
-        </div>
-      </div>
-      <div class="pane" style="margin-top: 12px;">
-        <label style="display: block; margin-bottom: 16px;">
-          <span style="font-weight: 600; margin-bottom: 8px; display: block;">Materials List</span>
-          <textarea id="aiMaterialsInput" rows="5" placeholder="Enter materials, one per line or comma-separated:&#10;1/2&quot; PVC Conduit&#10;2x4 lumber&#10;concrete mix&#10;paint rollers" style="width: 100%;"></textarea>
-        </label>
-
-        <button class="btn primary" id="priceMaterials" style="width: 100%;">
-          🔍 Attempt to Price Materials List
-        </button>
-
-        <p class="meta" style="margin-top: 8px; text-align: center; font-size: 12px;">
-          Searches Google Shopping for real pricing from multiple retailers, then averages results (excludes outliers)
-        </p>
-
-        <div id="aiMaterialsStatus" style="margin-top: 12px;"></div>
-
-        <div id="generatedMaterialsPreview" style="display: none; margin-top: 24px; padding: 16px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 12px;">
-          <h4 style="margin-bottom: 12px;">Generated Materials (Review before adding)</h4>
-          <div id="generatedMaterialsList"></div>
-          <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn primary" id="confirmGeneratedMaterials">Add to Materials</button>
-            <button class="btn ghost" id="cancelGeneratedMaterials">Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Estimate Generator -->
-      <div class="client-card" style="margin-top: 32px;">
-        <div>
-          <h4>Generate Estimate</h4>
-          <p class="meta">Create estimates from documents, images, or text</p>
-        </div>
-      </div>
-      <div class="pane" style="margin-top: 12px;">
-        <label style="display: block; margin-bottom: 12px;">
-          <span style="font-weight: 600; margin-bottom: 8px; display: block;">Upload Document</span>
-          <input type="file" id="aiEstimateFile" accept=".pdf,.png,.jpg,.jpeg,.txt" style="width: 100%;">
-          <p class="meta" style="margin-top: 4px;">Supported: PDF, Images (PNG/JPG), Text files</p>
-        </label>
-        <label style="display: block; margin-bottom: 12px;">
-          <span style="font-weight: 600; margin-bottom: 8px; display: block;">Or paste text/description</span>
-          <textarea id="aiEstimateText" rows="8" placeholder="Paste project description, scope of work, or requirements..." style="width: 100%;"></textarea>
-        </label>
-        <button class="btn primary" id="generateEstimate">Generate Estimate</button>
-        <div id="aiEstimateStatus" style="margin-top: 12px;"></div>
-
-        <div id="generatedEstimatePreview" style="display: none; margin-top: 24px; padding: 16px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 12px;">
-          <h4 style="margin-bottom: 12px;">Generated Estimate (Review before creating)</h4>
-          <div id="generatedEstimateDetails"></div>
-          <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn primary" id="confirmGeneratedEstimate">Create Estimate</button>
-            <button class="btn ghost" id="cancelGeneratedEstimate">Cancel</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="workspace card hidden" id="notificationsView">
       <div class="workspace__header">
         <div>
@@ -293,21 +220,6 @@
 
         <div class="client-card" style="margin-top: 24px;">
           <div>
-            <h4>AI Integration</h4>
-            <p class="meta">Configure AI API keys for intelligent features</p>
-          </div>
-        </div>
-        <div class="pane" style="margin-top: 12px;">
-          <label style="display: block;">
-            <span style="font-weight: 600; margin-bottom: 8px; display: block;">ChatGPT API Key</span>
-            <input type="password" id="chatgptApiKey" placeholder="sk-..." style="width: 100%; max-width: 500px;">
-            <p class="meta" style="margin-top: 8px;">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--accent);">OpenAI Platform</a></p>
-          </label>
-          <button class="btn small" id="saveApiKey" style="margin-top: 12px;">Save API Key</button>
-        </div>
-
-        <div class="client-card" style="margin-top: 24px;">
-          <div>
             <h4>Account</h4>
             <p class="meta">Manage your account settings</p>
           </div>
@@ -349,7 +261,7 @@
               <label>Project Name<input name="projectName" placeholder="Kitchen remodel"></label>
             </div>
             <div class="grid two">
-              <label>Service Address<textarea name="serviceAddress" rows="2" placeholder="Where the work will be performed"></textarea></label>
+              <label>Service Address<input name="serviceAddress" placeholder="Where the work will be performed"></label>
             </div>
         <div class="grid three">
           <label>PO Number<input name="poNumber" placeholder="Auto-generated if blank"></label>

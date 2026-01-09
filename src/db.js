@@ -137,6 +137,30 @@ async function initDb() {
       notes TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS company_settings (
+      id SERIAL PRIMARY KEY,
+      name TEXT,
+      address TEXT,
+      phone TEXT,
+      email TEXT,
+      logo TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    -- Singleton pattern: ensure only one row exists
+    INSERT INTO company_settings (id, name, address, phone, email, logo)
+    VALUES (1, '', '', '', '', NULL)
+    ON CONFLICT (id) DO NOTHING;
+
+    CREATE TABLE IF NOT EXISTS payment_methods (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      qr_code TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 }
 

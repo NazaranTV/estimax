@@ -273,7 +273,76 @@
             <div class="doc-meta-value">${doc.notes.replace(/\n/g, '<br>')}</div>
           </div>
         ` : ''}
+
+        ${doc.type === 'invoice' ? `
+          <div id="paymentMethodsSection" style="margin-top: 32px; display: none;">
+            <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">Payment Methods</h4>
+            <div id="paymentMethodsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;"></div>
+          </div>
+        ` : ''}
       `;
+
+      // Load payment methods for invoices
+      if (doc.type === 'invoice') {
+        loadPaymentMethods();
+      }
+    }
+
+    async function loadPaymentMethods() {
+      try {
+        const res = await fetch('/api/payment-methods');
+        if (!res.ok) return;
+
+        const methods = await res.json();
+        if (!methods || methods.length === 0) return;
+
+        const grid = document.getElementById('paymentMethodsGrid');
+        if (!grid) return;
+
+        grid.innerHTML = methods.map(method => `
+          <div class="payment-method-card" style="
+            background: #211F2D;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+          ">
+            <div style="
+              font-size: 14px;
+              font-weight: 600;
+              color: var(--text-primary);
+              margin-bottom: 12px;
+            ">${method.name}</div>
+
+            ${method.qrCode ? `
+              <img src="${method.qrCode}"
+                   alt="${method.name} QR Code"
+                   style="
+                     width: 150px;
+                     height: 150px;
+                     margin: 0 auto 12px;
+                     border: 2px solid rgba(255, 255, 255, 0.1);
+                     border-radius: 8px;
+                     padding: 8px;
+                     background: white;
+                     display: block;
+                   ">
+            ` : ''}
+
+            ${method.type === 'url' ? `
+              <div style="
+                font-size: 12px;
+                color: var(--text-secondary);
+                word-break: break-all;
+              ">Scan QR code or visit URL</div>
+            ` : ''}
+          </div>
+        `).join('');
+
+        document.getElementById('paymentMethodsSection').style.display = 'block';
+      } catch (err) {
+        console.error('Failed to load payment methods:', err);
+      }
     }
   </script>
 </body>
