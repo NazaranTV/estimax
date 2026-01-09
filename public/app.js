@@ -271,7 +271,7 @@ const openClientView = (doc) => {
       <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
         <td style="padding: 12px 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word;">
           <div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; word-wrap: break-word;">${li.description || 'Untitled Item'}</div>
-          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; margin-bottom: 8px;">${li.notes}</div>` : ''}
+          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; margin-bottom: 8px;">${li.notes}</div>` : ''}
           ${(li.materials || []).length > 0 ? `
             <div style="margin-top: 8px;">
               <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 60px 60px 60px 70px; gap: 8px; padding: 0 8px;">
@@ -293,10 +293,37 @@ const openClientView = (doc) => {
   }).join('');
 
   clientViewBody.innerHTML = `
-    <div style="display: block;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
-        <div>
-          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Bill To</h4>
+    <div style="display: flex; gap: 16px;">
+      <!-- Left Action Bar -->
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 140px;">
+        <button class="btn primary" onclick="window.location.href='/${doc.type}-form.html?id=${doc.id}'" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+            <path d="M10 1L13 4L5 12H2V9L10 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          EDIT
+        </button>
+        <button class="btn" id="emailDocBtn_${doc.id}" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600; background: #10b981;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+            <path d="M13 1L1 6.5L5.5 8.5L7.5 13L13 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          EMAIL
+        </button>
+        ${doc.type === 'invoice' ? `
+        <button class="btn ghost" onclick="window.openPaymentsModal?.(${doc.id})" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 13px; font-weight: 600;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+            <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M1 6H13" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          PAYMENTS
+        </button>
+        ` : ''}
+      </div>
+
+      <!-- Main Content -->
+      <div style="flex: 1;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
+          <div>
+            <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Bill To</h4>
           <p style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">${doc.clientName}</p>
           ${doc.clientEmail ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientEmail}</p>` : ''}
           ${doc.clientPhone ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientPhone}</p>` : ''}
@@ -342,130 +369,26 @@ const openClientView = (doc) => {
         <p style="font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">${doc.notes}</p>
       </div>
       ` : ''}
+      </div>
     </div>
   `;
   clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview - Contractor View`;
 
-  // Add action buttons to header
-  const actionButtonsContainer = document.getElementById('previewActionButtons');
-  // Clear existing buttons except Close
-  actionButtonsContainer.innerHTML = '';
-
-  // Add Invoice or Payments button
-  if (doc.type === 'estimate') {
-    const invoiceBtn = document.createElement('button');
-    invoiceBtn.className = 'btn small';
-    invoiceBtn.textContent = 'Invoice';
-    invoiceBtn.onclick = () => {
-      clientViewModal.classList.add('hidden');
-      createInvoiceFromEstimate(doc, null);
-    };
-    actionButtonsContainer.appendChild(invoiceBtn);
-  } else if (doc.type === 'invoice') {
-    const paymentsBtn = document.createElement('button');
-    paymentsBtn.className = 'btn small';
-    paymentsBtn.textContent = 'Payments';
-    paymentsBtn.onclick = () => {
-      clientViewModal.classList.add('hidden');
-      openPaymentsModal(doc);
-    };
-    actionButtonsContainer.appendChild(paymentsBtn);
+  // Setup email button handler
+  const emailBtn = document.getElementById(`emailDocBtn_${doc.id}`);
+  if (emailBtn) {
+    emailBtn.onclick = () => openSend(doc);
   }
 
-  // Add Share dropdown
+  // Check if document has any materials
   const hasMaterials = (doc.lineItems || []).some(li => (li.materials || []).length > 0);
-  const shareContainer = document.createElement('div');
-  shareContainer.className = 'dropdown-container';
-  shareContainer.style.position = 'relative';
-  shareContainer.innerHTML = `
-    <button class="btn small ghost dropdown-trigger">Share ▼</button>
-    <div class="dropdown-menu hidden">
-      <button class="dropdown-item" data-action="view">View</button>
-      <button class="dropdown-item" data-action="email">Email</button>
-      <button class="dropdown-item" data-action="sms">SMS</button>
-      ${hasMaterials ? '<button class="dropdown-item" data-action="materials">Materials</button>' : ''}
-    </div>
-  `;
-
-  const trigger = shareContainer.querySelector('.dropdown-trigger');
-  const menu = shareContainer.querySelector('.dropdown-menu');
-
-  trigger.onclick = (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.dropdown-menu').forEach(m => {
-      if (m !== menu) m.classList.add('hidden');
-    });
-    menu.classList.toggle('hidden');
-  };
-
-  document.addEventListener('click', (e) => {
-    if (!shareContainer.contains(e.target)) {
-      menu.classList.add('hidden');
-    }
-  });
-
-  shareContainer.querySelectorAll('[data-action]').forEach(btn => {
-    btn.onclick = async (e) => {
-      e.stopPropagation();
-      menu.classList.add('hidden');
-      const action = btn.dataset.action;
-
-      if (action === 'view') {
-        // Open share link directly in new tab
-        try {
-          let shareToken = doc.shareToken;
-          if (!shareToken) {
-            const res = await fetch(`/api/documents/${doc.id}/share-token`, {
-              method: 'POST',
-              credentials: 'include'
-            });
-            if (!res.ok) throw new Error('Failed to generate share token');
-            const updated = await res.json();
-            shareToken = updated.shareToken;
-          }
-          window.open(`/share.html?token=${shareToken}`, '_blank');
-        } catch (err) {
-          console.error('Failed to open share link:', err);
-          alert('Failed to open share link. Please try again.');
-        }
-      } else if (action === 'email' || action === 'sms') {
-        showShareLink(doc);
-      } else if (action === 'materials') {
-        // Show materials list and immediately trigger print
-        showMaterialsListView(doc);
-        // Wait for DOM to update before printing
-        setTimeout(() => {
-          window.print();
-        }, 100);
-      }
-    };
-  });
-
-  actionButtonsContainer.appendChild(shareContainer);
-
-  // Add Edit button
-  const editBtn = document.createElement('button');
-  editBtn.className = 'btn small ghost';
-  editBtn.textContent = 'Edit';
-  editBtn.onclick = () => {
-    window.location.href = `/${doc.type}-form.html?id=${doc.id}`;
-  };
-  actionButtonsContainer.appendChild(editBtn);
-
-  // Add Delete button
-  const deleteBtn = document.createElement('button');
-  deleteBtn.className = 'btn small ghost';
-  deleteBtn.textContent = 'Delete';
-  deleteBtn.style.color = '#ef4444';
-  deleteBtn.onclick = () => {
-    if (confirm(`Are you sure you want to delete this ${doc.type}?`)) {
-      deleteDocument(doc.id, doc.type);
-      clientViewModal.classList.add('hidden');
-    }
-  };
-  actionButtonsContainer.appendChild(deleteBtn);
-
-  // Add Close button
+  const materialsBtn = document.getElementById('showMaterialsList');
+  if (hasMaterials) {
+    materialsBtn.style.display = 'block';
+    materialsBtn.onclick = () => showMaterialsListView(doc);
+  } else {
+    materialsBtn.style.display = 'none';
+  }
   const closeBtn = document.createElement('button');
   closeBtn.className = 'btn small ghost';
   closeBtn.textContent = 'Close';
