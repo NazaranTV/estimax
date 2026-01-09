@@ -95,8 +95,6 @@ body::after {
 .page {
   position: relative;
   z-index: 1;
-  width: 100%;
-  margin: 0;
   margin-left: 200px;
   padding: 32px 48px 0 32px;
 }
