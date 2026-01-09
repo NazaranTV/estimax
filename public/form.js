@@ -200,6 +200,69 @@ const renderMaterialsSection = (row) => {
   materialsWrap.appendChild(materialsTable);
 };
 
+const updatePhotoDisplay = (row) => {
+  const photoData = row.dataset.photo;
+  let photoContainer = row.querySelector('.line-item__photo-display');
+
+  if (!photoData) {
+    if (photoContainer) photoContainer.remove();
+    return;
+  }
+
+  if (!photoContainer) {
+    photoContainer = document.createElement('div');
+    photoContainer.className = 'line-item__photo-display';
+    photoContainer.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;';
+
+    const contentDiv = row.querySelector('.line-item__content');
+    contentDiv.appendChild(photoContainer);
+  }
+
+  photoContainer.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <img src="${photoData}" alt="Line item photo" style="max-width: 150px; max-height: 150px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);">
+      <button type="button" class="btn small ghost" data-action="remove-photo" style="color: #ef4444;">Remove Photo</button>
+    </div>
+  `;
+
+  photoContainer.querySelector('[data-action="remove-photo"]').addEventListener('click', () => {
+    delete row.dataset.photo;
+    updatePhotoDisplay(row);
+    markFormAsChanged();
+  });
+};
+
+const checkItemDuplicate = (row) => {
+  const saveBtn = row.querySelector('[data-action="save-as-item"]');
+  if (!saveBtn) return;
+
+  const description = row.querySelector('[data-field="description"]').value.trim();
+
+  if (!description) {
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.querySelector('span').textContent = 'Save to Items';
+    return;
+  }
+
+  // Check if item with same name exists (case-insensitive)
+  const isDuplicate = items.some(item =>
+    item.name.toLowerCase() === description.toLowerCase()
+  );
+
+  if (isDuplicate) {
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = '0.5';
+    saveBtn.style.cursor = 'not-allowed';
+    saveBtn.querySelector('span').textContent = 'Already in Items';
+  } else {
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.querySelector('span').textContent = 'Save to Items';
+  }
+};
+
 const updateLineTotal = (row) => {
   const qty = Number(row.querySelector('[data-field="qty"]').value) || 0;
   const rate = Number(row.querySelector('[data-field="rate"]').value) || 0;
@@ -245,7 +308,7 @@ const addLineItemRow = (item = {}) => {
             <rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/>
             <rect x="2" y="11" width="12" height="2" rx="1" fill="currentColor"/>
           </svg>
-          <span>From Library</span>
+          <span>Item List</span>
         </button>
         <button type="button" class="btn-remove" data-action="remove" title="Remove line item">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -288,7 +351,7 @@ const addLineItemRow = (item = {}) => {
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M7 2V12M2 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <span>Save to Library</span>
+          <span>Save to Items</span>
         </button>
       </div>
     </div>
@@ -299,6 +362,9 @@ const addLineItemRow = (item = {}) => {
       recalcTotals();
       updateLineTotal(row);
       markFormAsChanged();
+      if (input.dataset.field === 'description') {
+        checkItemDuplicate(row);
+      }
     }),
   );
 
@@ -320,6 +386,7 @@ const addLineItemRow = (item = {}) => {
       const reader = new FileReader();
       reader.onload = () => {
         row.dataset.photo = reader.result;
+        updatePhotoDisplay(row);
         markFormAsChanged();
       };
       reader.readAsDataURL(file);
@@ -383,6 +450,7 @@ const addLineItemRow = (item = {}) => {
 
   if (item.photoData) {
     row.dataset.photo = item.photoData;
+    updatePhotoDisplay(row);
   }
 
   // Add drag and drop functionality
@@ -413,6 +481,7 @@ const addLineItemRow = (item = {}) => {
   });
 
   updateLineTotal(row);
+  checkItemDuplicate(row);
   lineItemsEl.appendChild(row);
 };
 
@@ -535,6 +604,11 @@ const loadItems = async () => {
   try {
     const res = await fetch('/api/items');
     items = await res.json();
+
+    // Re-check all line items for duplicates
+    document.querySelectorAll('.line-item').forEach(row => {
+      checkItemDuplicate(row);
+    });
   } catch (err) {
     console.error(err);
   }
