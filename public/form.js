@@ -770,7 +770,7 @@ const renderMaterialsList = () => {
 
           // If material has a default quantity, calculate unit rate
           const defaultQty = m.defaultQty || 1;
-          const unitRate = defaultQty > 1 ? (m.defaultRate || 0) / defaultQty : (m.defaultRate || 0);
+          const unitRate = defaultQty > 1 ? Math.round(((m.defaultRate || 0) / defaultQty) * 100) / 100 : (m.defaultRate || 0);
 
           currentLineForMaterials.materialsData.push({
             name: m.name,
