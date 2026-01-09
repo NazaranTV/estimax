@@ -188,7 +188,7 @@ const renderMaterialsSection = (row) => {
     mRow.className = 'material-row';
     mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
     mRow.innerHTML = `
-      <input value="${m.name || ''}" placeholder="Material" data-field="m-name" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <input placeholder="Material" data-field="m-name" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
       <input type="number" step="1" value="${m.qty ?? ''}" placeholder="0" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
       <div style="position: relative; display: flex; align-items: center;">
         <span style="position: absolute; left: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
@@ -201,6 +201,8 @@ const renderMaterialsSection = (row) => {
       <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500;">$${materialTotal.toFixed(2)}</div>
       <button type="button" class="btn small ghost" style="padding: 4px 6px; font-size: 11px; color: #ef4444;">✕</button>
     `;
+    // Set the material name value after creating the element to avoid HTML escaping issues
+    mRow.querySelector('[data-field="m-name"]').value = m.name || '';
     mRow.querySelectorAll('input:not([type="hidden"])').forEach((input) => {
       input.addEventListener('input', () => {
         const name = mRow.querySelector('[data-field="m-name"]').value;
@@ -352,7 +354,7 @@ const addLineItemRow = (item = {}) => {
         </button>
 
         <div class="line-item__description-col">
-          <textarea placeholder="Item Name" data-field="description" class="line-item__description">${item.description || ''}</textarea>
+          <input placeholder="Item Name" value="${item.description || ''}" data-field="description" class="line-item__description">
           <button type="button" data-action="choose-item" class="btn-item-list-icon" title="Choose from Items">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="2" y="2" width="10" height="2" rx="1" fill="currentColor"/>
@@ -414,11 +416,11 @@ const addLineItemRow = (item = {}) => {
     textarea.style.height = textarea.scrollHeight + 'px';
   };
 
-  // Set up auto-resize for description textarea
-  const descriptionTextarea = row.querySelector('[data-field="description"]');
-  if (descriptionTextarea) {
-    autoResize(descriptionTextarea);
-    descriptionTextarea.addEventListener('input', () => autoResize(descriptionTextarea));
+  // Set up auto-resize for notes textarea
+  const notesTextarea = row.querySelector('[data-field="notes"]');
+  if (notesTextarea) {
+    autoResize(notesTextarea);
+    notesTextarea.addEventListener('input', () => autoResize(notesTextarea));
   }
 
   row.querySelectorAll('input, textarea').forEach((input) =>

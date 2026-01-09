@@ -99,7 +99,7 @@
   display: grid;
   grid-template-columns: 32px 2fr 90px 100px 90px 100px 32px;
   gap: 8px;
-  align-items: start;
+  align-items: center;
 }
 
 /* Remove Button (Red Circle) */
@@ -136,10 +136,7 @@
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px;
-  min-height: 36px;
-  resize: none;
-  overflow: hidden;
-  line-height: 1.4;
+  height: 36px;
 }
 
 .btn-item-list-icon {
