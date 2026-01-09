@@ -60,7 +60,7 @@ const clientsView = document.getElementById('clientsView');
 const materialsView = document.getElementById('materialsView');
 const itemsView = document.getElementById('itemsView');
 const settingsView = document.getElementById('settingsView');
-const aiView = document.getElementById('aiView');
+const aiView = document.getElementById('aiView'); // May not exist in HTML
 const typeList = document.getElementById('typeList');
 const searchDocs = document.getElementById('searchDocs');
 const newDocBtn = document.getElementById('newDocBtn');
@@ -1555,7 +1555,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     filterType = 'all';
     filters.querySelectorAll('button').forEach((btn) => {
@@ -1570,7 +1570,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     setFormType(view === 'estimates' ? 'estimate' : 'invoice');
     listEyebrow.textContent = view === 'estimates' ? 'Estimates' : 'Invoices';
@@ -1589,7 +1589,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     if (!clients.length) loadClients();
   } else if (view === 'materials') {
@@ -1600,7 +1600,7 @@ const switchView = (view) => {
     settingsView.classList.add('hidden');
     placeholder.classList.add('hidden');
     materialsView.classList.remove('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     if (!materials.length) loadMaterials();
   } else if (view === 'items') {
@@ -1611,7 +1611,7 @@ const switchView = (view) => {
     settingsView.classList.add('hidden');
     placeholder.classList.add('hidden');
     itemsView.classList.remove('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     if (!items.length) loadItems();
     renderItemsView();
@@ -1623,7 +1623,7 @@ const switchView = (view) => {
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
     placeholder.classList.add('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.remove('hidden');
     loadNotifications();
   } else if (view === 'settings') {
@@ -1633,7 +1633,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     placeholder.classList.add('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     settingsView.classList.remove('hidden');
   } else if (view === 'ai') {
@@ -1645,7 +1645,7 @@ const switchView = (view) => {
     settingsView.classList.add('hidden');
     placeholder.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
-    aiView.classList.remove('hidden');
+    aiView?.classList.remove('hidden');
   } else {
     overviewView.classList.add('hidden');
     workspace.classList.add('hidden');
@@ -1653,7 +1653,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
-    aiView.classList.add('hidden');
+    aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     placeholder.classList.remove('hidden');
     placeholderLabel.textContent = 'Coming soon';
