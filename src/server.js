@@ -729,6 +729,58 @@ app.delete('/api/payment-methods/:id', async (req, res) => {
   }
 });
 
+// Notifications API
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const { unreadOnly } = req.query;
+    let query = 'SELECT * FROM notifications';
+    if (unreadOnly === 'true') {
+      query += ' WHERE read = false';
+    }
+    query += ' ORDER BY created_at DESC';
+    const { rows } = await pool.query(query);
+    res.json(rows.map(toCamel));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load notifications' });
+  }
+});
+
+app.get('/api/notifications/unread-count', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT COUNT(*) as count FROM notifications WHERE read = false');
+    res.json({ count: parseInt(rows[0].count) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load unread count' });
+  }
+});
+
+app.put('/api/notifications/:id/read', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query(
+      'UPDATE notifications SET read = true WHERE id = $1 RETURNING *',
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json(toCamel(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
+app.put('/api/notifications/mark-all-read', async (req, res) => {
+  try {
+    await pool.query('UPDATE notifications SET read = true WHERE read = false');
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to mark all as read' });
+  }
+});
+
 // Company Settings API
 app.get('/api/company-settings', async (req, res) => {
   try {
