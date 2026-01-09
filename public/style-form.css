@@ -173,9 +173,6 @@
   border: 1px solid rgba(124, 58, 237, 0.2);
   border-radius: 6px;
   text-align: right;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
 }
 
 /* Footer Row */
@@ -296,6 +293,7 @@
   gap: 12px;
   padding-top: 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: space-between;
 }
 
 .form-status {
