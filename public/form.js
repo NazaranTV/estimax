@@ -162,29 +162,49 @@ const renderMaterialsSection = (row) => {
     return;
   }
 
+  // Add column headers
+  const headersRow = document.createElement('div');
+  headersRow.style.cssText = 'display: grid; grid-template-columns: 2fr 80px 80px 80px 60px; gap: 6px; padding: 0 4px 4px 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
+  headersRow.innerHTML = `
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Quantity</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Price</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Total</span>
+    <span></span>
+  `;
+  materialsWrap.appendChild(headersRow);
+
   const materialsTable = document.createElement('div');
-  materialsTable.style.cssText = 'display: flex; flex-direction: column; gap: 4px;';
+  materialsTable.style.cssText = 'display: flex; flex-direction: column; gap: 4px; margin-top: 4px;';
 
   row.materialsData.forEach((m, idx) => {
+    const materialTotal = ((m.qty || 0) * (m.rate || 0)) + (m.markup || 0);
     const mRow = document.createElement('div');
     mRow.className = 'material-row';
     mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 80px 80px 80px 60px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
     mRow.innerHTML = `
       <input value="${m.name || ''}" placeholder="Material" data-field="m-name" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="Qty" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="Rate" data-field="m-rate" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <input type="number" step="1" value="${m.markup ?? ''}" placeholder="Markup" data-field="m-markup" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="0" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
+      <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500;">$${materialTotal.toFixed(2)}</div>
       <button type="button" class="btn small ghost" style="padding: 4px 6px; font-size: 11px; color: #ef4444;">✕</button>
+      <input type="hidden" value="${m.markup ?? ''}" data-field="m-markup">
     `;
-    mRow.querySelectorAll('input').forEach((input) => {
+    mRow.querySelectorAll('input:not([type="hidden"])').forEach((input) => {
       input.addEventListener('input', () => {
         const name = mRow.querySelector('[data-field="m-name"]').value;
         const qty = Number(mRow.querySelector('[data-field="m-qty"]').value) || 0;
         const rate = Number(mRow.querySelector('[data-field="m-rate"]').value) || 0;
         const markup = Number(mRow.querySelector('[data-field="m-markup"]').value) || 0;
         row.materialsData[idx] = { name, qty, rate, markup };
-        recalcTotals();
+
+        // Update the total display
+        const newTotal = (qty * rate) + markup;
+        mRow.querySelector('[data-field="m-total"]').textContent = `$${newTotal.toFixed(2)}`;
+
+        // Update line total first, then recalc totals
         updateLineTotal(row);
+        recalcTotals();
         markFormAsChanged();
       });
     });
