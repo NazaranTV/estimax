@@ -145,13 +145,13 @@ const renderMaterialsSection = (row) => {
   headerRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
 
   const columnsRow = document.createElement('div');
-  columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; flex: 1;';
+  columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; flex: 1; align-items: center;';
   columnsRow.innerHTML = `
     <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Quantity</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Price</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Markup</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Total</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Quantity</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Price</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Markup</span>
+    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Total</span>
     <span></span>
   `;
 
@@ -249,7 +249,14 @@ const updatePhotoDisplay = (row) => {
     photoContainer.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;';
 
     const contentDiv = row.querySelector('.line-item__content');
-    contentDiv.appendChild(photoContainer);
+    const materialsSection = row.querySelector('.materials-list');
+
+    // Insert photo container before materials section if it exists, otherwise at end
+    if (materialsSection) {
+      contentDiv.insertBefore(photoContainer, materialsSection);
+    } else {
+      contentDiv.appendChild(photoContainer);
+    }
   }
 
   photoContainer.innerHTML = `
@@ -345,7 +352,7 @@ const addLineItemRow = (item = {}) => {
         </button>
 
         <div class="line-item__description-col">
-          <input placeholder="Item Name" value="${item.description || ''}" data-field="description" class="line-item__description">
+          <textarea placeholder="Item Name" data-field="description" class="line-item__description">${item.description || ''}</textarea>
           <button type="button" data-action="choose-item" class="btn-item-list-icon" title="Choose from Items">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="2" y="2" width="10" height="2" rx="1" fill="currentColor"/>
@@ -354,6 +361,8 @@ const addLineItemRow = (item = {}) => {
             </svg>
           </button>
         </div>
+
+        <input type="number" step="1" placeholder="1" value="${item.qty ?? ''}" data-field="qty" class="line-item__qty">
 
         <div style="position: relative;">
           <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: rgba(255, 255, 255, 0.4); pointer-events: none;">$</span>
@@ -364,10 +373,6 @@ const addLineItemRow = (item = {}) => {
           <input type="number" step="0.01" placeholder="0" value="${markup}" data-field="markup" class="line-item__markup" style="padding-right: 20px;">
           <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: rgba(255, 255, 255, 0.4); pointer-events: none;">%</span>
         </div>
-
-        <input type="number" step="1" placeholder="1" value="${item.qty ?? ''}" data-field="qty" class="line-item__qty">
-
-        <div class="line-item__tax-col">Tax</div>
 
         <div class="line-total" data-field="lineTotal">${currency(initialTotal)}</div>
 
@@ -402,6 +407,19 @@ const addLineItemRow = (item = {}) => {
       </div>
     </div>
   `;
+
+  // Auto-resize textarea function
+  const autoResize = (textarea) => {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  };
+
+  // Set up auto-resize for description textarea
+  const descriptionTextarea = row.querySelector('[data-field="description"]');
+  if (descriptionTextarea) {
+    autoResize(descriptionTextarea);
+    descriptionTextarea.addEventListener('input', () => autoResize(descriptionTextarea));
+  }
 
   row.querySelectorAll('input, textarea').forEach((input) =>
     input.addEventListener('input', () => {

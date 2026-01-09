@@ -54,7 +54,7 @@
 /* Line Items Table Header */
 .line-items-table-header {
   display: grid;
-  grid-template-columns: 32px 2fr 100px 90px 90px 80px 100px 32px;
+  grid-template-columns: 32px 2fr 90px 100px 90px 100px 32px;
   gap: 8px;
   align-items: center;
   padding: 0 16px 12px 16px;
@@ -97,9 +97,9 @@
 /* Table Row Layout */
 .line-item__table-row {
   display: grid;
-  grid-template-columns: 32px 2fr 100px 90px 90px 80px 100px 32px;
+  grid-template-columns: 32px 2fr 90px 100px 90px 100px 32px;
   gap: 8px;
-  align-items: center;
+  align-items: start;
 }
 
 /* Remove Button (Red Circle) */
@@ -136,7 +136,10 @@
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px;
-  height: 36px;
+  min-height: 36px;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.4;
 }
 
 .btn-item-list-icon {
@@ -167,18 +170,6 @@
   font-size: 14px;
   height: 36px;
   text-align: center;
-}
-
-/* Tax Column */
-.line-item__tax-col {
-  padding: 8px 10px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  text-align: center;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Total Column */
@@ -289,33 +280,35 @@
     grid-row: 1;
   }
 
-  /* Second row: Rate, Markup, Quantity in a sub-grid */
-  .line-item__rate {
+  /* Second row: Quantity, Rate, Markup in a sub-grid */
+  .line-item__qty {
     grid-column: 1 / 4;
     grid-row: 2;
   }
 
-  .line-item__markup {
+  .line-item__rate {
     grid-column: 1 / 4;
     grid-row: 3;
   }
 
-  .line-item__qty {
-    grid-column: 1 / 2;
-    grid-row: 4;
-  }
-
-  .line-item__tax-col {
-    grid-column: 2;
+  .line-item__markup {
+    grid-column: 1 / 4;
     grid-row: 4;
   }
 
   .line-total {
-    grid-column: 3;
-    grid-row: 4;
+    grid-column: 1 / 4;
+    grid-row: 5;
+    justify-content: flex-start;
   }
 
   /* Add labels for mobile */
+  .line-item__qty::before {
+    content: "Qty: ";
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
   .line-item__rate::before {
     content: "Rate: ";
     font-weight: 600;
@@ -328,8 +321,8 @@
     margin-right: 8px;
   }
 
-  .line-item__qty::before {
-    content: "Qty: ";
+  .line-total::before {
+    content: "Total: ";
     font-weight: 600;
     margin-right: 8px;
   }
