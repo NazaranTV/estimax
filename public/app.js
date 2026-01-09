@@ -241,11 +241,26 @@ const openClientView = (doc) => {
   const lineItemsHtml = (doc.lineItems || []).map((li) => {
     const markup = Number(li.markup) || 0;
     const total = ((li.qty || 0) * (li.rate || 0)) + markup;
+
+    // Generate materials HTML if any exist for this line item
+    const materialsHtml = (li.materials && li.materials.length > 0) ? `
+      <div style="margin-top: 8px; padding: 8px; background: rgba(124, 58, 237, 0.08); border-left: 2px solid var(--accent-primary); border-radius: 4px;">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-tertiary); margin-bottom: 6px;">Materials:</div>
+        ${li.materials.map(mat => {
+          const matTotal = ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0);
+          return `<div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 3px;">
+            • ${mat.name || 'Unnamed'} - Qty: ${mat.qty || 0} @ ${currency(mat.rate || 0)} ${mat.markup ? `+ ${currency(mat.markup)} markup` : ''} = ${currency(matTotal)}
+          </div>`;
+        }).join('')}
+      </div>
+    ` : '';
+
     return `
       <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
         <td style="padding: 12px 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word;">
           <div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; word-wrap: break-word;">${li.description || 'Untitled Item'}</div>
-          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap;">${li.notes}</div>` : ''}
+          ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; margin-bottom: 4px;">${li.notes}</div>` : ''}
+          ${materialsHtml}
         </td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${currency(li.rate || 0)}</td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${li.qty || 0}</td>
@@ -309,21 +324,94 @@ const openClientView = (doc) => {
   `;
   clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview - Contractor View`;
 
+  // Wire up action buttons
+  const previewInvoiceBtn = document.getElementById('previewInvoiceBtn');
+  const previewEditBtn = document.getElementById('previewEditBtn');
+  const previewDeleteBtn = document.getElementById('previewDeleteBtn');
+  const previewShareEmail = document.getElementById('previewShareEmail');
+  const previewShareSMS = document.getElementById('previewShareSMS');
+  const previewShareMaterials = document.getElementById('previewShareMaterials');
+  const shareDropdown = document.querySelector('#previewShareDropdown .dropdown-menu');
+  const shareDropdownBtn = document.querySelector('#previewShareDropdown .btn');
+
+  // Show Invoice button only for estimates
+  if (doc.type === 'estimate') {
+    previewInvoiceBtn.style.display = 'inline-flex';
+    previewInvoiceBtn.onclick = async () => {
+      if (confirm('Convert this estimate to an invoice? The estimate will be deleted.')) {
+        closeClientViewModal();
+        await createInvoiceFromEstimate(doc, null);
+        await loadDocuments();
+      }
+    };
+  } else {
+    previewInvoiceBtn.style.display = 'none';
+  }
+
+  // Edit button
+  previewEditBtn.onclick = () => {
+    closeClientViewModal();
+    openEditForm(doc);
+  };
+
+  // Delete button
+  previewDeleteBtn.onclick = async () => {
+    if (confirm(`Delete this ${doc.type}?`)) {
+      await fetch(`/api/documents/${doc.id}`, { method: 'DELETE' });
+      closeClientViewModal();
+      await loadDocuments();
+    }
+  };
+
+  // Share dropdown toggle
+  shareDropdownBtn.onclick = (e) => {
+    e.stopPropagation();
+    shareDropdown.classList.toggle('hidden');
+    shareDropdown.style.display = shareDropdown.classList.contains('hidden') ? 'none' : 'block';
+  };
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#previewShareDropdown')) {
+      shareDropdown.classList.add('hidden');
+      shareDropdown.style.display = 'none';
+    }
+  });
+
+  // Share Email
+  previewShareEmail.onclick = () => {
+    shareDropdown.classList.add('hidden');
+    shareDropdown.style.display = 'none';
+    closeClientViewModal();
+    openSend(doc);
+  };
+
+  // Share SMS
+  previewShareSMS.onclick = () => {
+    shareDropdown.classList.add('hidden');
+    shareDropdown.style.display = 'none';
+    closeClientViewModal();
+    openSend(doc);
+  };
+
   // Check if document has any materials
   const hasMaterials = (doc.lineItems || []).some(li => (li.materials || []).length > 0);
-  const materialsBtn = document.getElementById('showMaterialsList');
   if (hasMaterials) {
-    materialsBtn.style.display = 'block';
-    materialsBtn.onclick = () => showMaterialsListView(doc);
+    previewShareMaterials.style.display = 'block';
+    previewShareMaterials.onclick = () => {
+      shareDropdown.classList.add('hidden');
+      shareDropdown.style.display = 'none';
+      showMaterialsListView(doc, true); // Pass true for printable mode
+    };
   } else {
-    materialsBtn.style.display = 'none';
+    previewShareMaterials.style.display = 'none';
   }
 
   clientViewModal.classList.remove('hidden');
   logDebug(`Opened client preview for ${doc.type} #${doc.id}`);
 };
 
-const showMaterialsListView = (doc) => {
+const showMaterialsListView = (doc, printable = false) => {
   // Collect all materials from all line items
   const allMaterials = [];
   (doc.lineItems || []).forEach((li) => {
@@ -334,6 +422,81 @@ const showMaterialsListView = (doc) => {
       });
     });
   });
+
+  // If printable mode, open in new window
+  if (printable) {
+    const printWindow = window.open('', '_blank');
+    const materialsTotal = allMaterials.reduce((sum, mat) => sum + ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0), 0);
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Materials List - ${doc.type === 'estimate' ? 'Estimate' : 'Invoice'} #${doc.poNumber}</title>
+        <style>
+          body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            color: #000;
+            padding: 40px;
+            line-height: 1.6;
+          }
+          h1 { font-size: 24px; margin-bottom: 8px; }
+          h2 { font-size: 18px; margin-bottom: 24px; color: #666; }
+          table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+          thead { border-bottom: 2px solid #000; }
+          th { padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+          td { padding: 12px 4px; border-bottom: 1px solid #ddd; font-size: 14px; }
+          .total { border-top: 2px solid #000; padding-top: 16px; margin-top: 16px; text-align: right; font-size: 18px; font-weight: 700; }
+          @media print {
+            body { padding: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Materials List</h1>
+        <h2>${doc.type === 'estimate' ? 'Estimate' : 'Invoice'} #${doc.poNumber || '—'} - ${doc.clientName}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Line Item</th>
+              <th>Material</th>
+              <th style="text-align: center;">Rate</th>
+              <th style="text-align: center;">Qty</th>
+              <th style="text-align: center;">Markup</th>
+              <th style="text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${allMaterials.map((mat) => {
+              const matTotal = ((mat.qty || 0) * (mat.rate || 0)) + (mat.markup || 0);
+              return `
+                <tr>
+                  <td>${mat.lineItem}</td>
+                  <td><strong>${mat.name || 'Unnamed Material'}</strong></td>
+                  <td style="text-align: center;">$${(mat.rate || 0).toFixed(2)}</td>
+                  <td style="text-align: center;">${mat.qty || 0}</td>
+                  <td style="text-align: center;">$${(mat.markup || 0).toFixed(2)}</td>
+                  <td style="text-align: right;"><strong>$${matTotal.toFixed(2)}</strong></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+        <div class="total">
+          TOTAL MATERIALS: $${materialsTotal.toFixed(2)}
+        </div>
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    return;
+  }
 
   clientViewBody.innerHTML = `
     <div style="display: block;">

@@ -299,7 +299,17 @@
       <div class="modal__header">
         <h3 id="clientViewTitle">Preview</h3>
         <div style="display: flex; gap: 8px;">
-          <button class="btn small" id="showMaterialsList" style="display: none;">Materials List</button>
+          <button class="btn small primary" id="previewInvoiceBtn" style="display: none;">Invoice</button>
+          <div class="dropdown-container" id="previewShareDropdown" style="position: relative;">
+            <button class="btn small">Share ▾</button>
+            <div class="dropdown-menu hidden" style="display: none;">
+              <button class="dropdown-item" id="previewShareEmail">Email</button>
+              <button class="dropdown-item" id="previewShareSMS">SMS</button>
+              <button class="dropdown-item" id="previewShareMaterials" style="display: none;">Materials List</button>
+            </div>
+          </div>
+          <button class="btn small" id="previewEditBtn">Edit</button>
+          <button class="btn small" id="previewDeleteBtn" style="color: var(--error);">Delete</button>
           <button class="btn small ghost" id="closeClientViewModal">Close</button>
         </div>
       </div>
