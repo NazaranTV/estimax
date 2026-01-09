@@ -757,6 +757,27 @@ const renderItemsList = () => {
     });
 };
 
+// Show toast notification when material is added
+const showMaterialToast = (materialName) => {
+  const toast = document.getElementById('materialToast');
+  if (!toast) return;
+
+  toast.innerHTML = `<div class="material-toast__content">${materialName} was added</div>`;
+  toast.classList.add('show');
+  toast.classList.remove('fade-out');
+
+  // Fade out after 2 seconds
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    toast.classList.remove('show');
+    // Clear content after animation
+    setTimeout(() => {
+      toast.innerHTML = '';
+      toast.classList.remove('fade-out');
+    }, 300);
+  }, 2000);
+};
+
 const renderMaterialsList = () => {
   const term = (searchMaterialsInput.value || '').toLowerCase();
   materialsPickerList.innerHTML = '';
@@ -858,6 +879,9 @@ const renderMaterialsList = () => {
 
     // Add materials to category
     materialsByCategory[category].forEach((m) => {
+      // Check if material is already added to current line
+      const isAlreadyAdded = currentLineForMaterials?.materialsData?.some(mat => mat.name === m.name) || false;
+
       const card = document.createElement('div');
       card.className = 'client-card';
       card.style.marginBottom = '8px';
@@ -867,11 +891,18 @@ const renderMaterialsList = () => {
           <p class="meta">${m.description || 'No description'}</p>
           <p class="meta">Qty ${m.defaultQty || 1} · Rate ${currency(m.defaultRate || 0)} · Markup ${m.defaultMarkup || 0}%</p>
         </div>
-        <button class="btn small ghost" data-material-id="${m.id}">Use</button>
+        <button class="btn small ${isAlreadyAdded ? 'added' : 'ghost'}" data-material-id="${m.id}" ${isAlreadyAdded ? 'style="border: 2px solid #10b981; color: #10b981;"' : ''}>${isAlreadyAdded ? 'Added' : 'Add'}</button>
       `;
       card.querySelector('button').onclick = () => {
         if (currentLineForMaterials) {
           currentLineForMaterials.materialsData = currentLineForMaterials.materialsData || [];
+
+          // Check if material is already added
+          const alreadyExists = currentLineForMaterials.materialsData.some(mat => mat.name === m.name);
+          if (alreadyExists) {
+            // Material is already added, do nothing
+            return;
+          }
 
           // If material has a default quantity, calculate unit rate (markup is percentage, not divided)
           const defaultQty = m.defaultQty || 1;
@@ -887,17 +918,10 @@ const renderMaterialsList = () => {
           recalcTotals();
           markFormAsChanged();
 
-          // Show success message and clear search, but keep modal open
-          const btn = card.querySelector('button');
-          const originalText = btn.textContent;
-          btn.textContent = '✓ Added';
-          btn.style.background = '#10b981';
-          setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = '';
-          }, 1500);
+          // Show toast notification
+          showMaterialToast(m.name);
 
-          // Clear search and refresh list
+          // Clear search and refresh list to update button states
           searchMaterialsInput.value = '';
           renderMaterialsList();
         }
