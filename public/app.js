@@ -914,6 +914,45 @@ const loadPaymentsHistory = async (docId) => {
   }
 };
 
+const deletePayment = async (docId, paymentId) => {
+  if (!confirm('Are you sure you want to delete this payment?')) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/documents/${docId}/payments/${paymentId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    if (!res.ok) throw new Error('Failed to delete payment');
+
+    // Reload the payments history
+    await loadPaymentsHistory(docId);
+
+    // Reload the payments summary
+    const docRes = await fetch(`/api/documents/${docId}`, { credentials: 'include' });
+    if (docRes.ok) {
+      const doc = await docRes.json();
+      updatePaymentsSummary(doc);
+    }
+
+    // Refresh the preview if it's open
+    if (currentPaymentDoc && currentPaymentDoc.id === docId) {
+      const updatedDocRes = await fetch(`/api/documents/${docId}`, { credentials: 'include' });
+      if (updatedDocRes.ok) {
+        currentPaymentDoc = await updatedDocRes.json();
+        loadPreviewPaymentTracking(docId, currentPaymentDoc.total);
+      }
+    }
+
+    alert('Payment deleted successfully');
+  } catch (err) {
+    console.error('Error deleting payment:', err);
+    alert('Could not delete payment. Please try again.');
+  }
+};
+
 const loadPreviewPaymentTracking = async (docId, invoiceTotal) => {
   try {
     const res = await fetch(`/api/documents/${docId}/payments`);
@@ -1441,18 +1480,6 @@ const renderList = () => {
     };
     actions.appendChild(viewBtn);
 
-    // Add Payments button for invoices
-    if (doc.type === 'invoice') {
-      const paymentsBtn = document.createElement('button');
-      paymentsBtn.className = 'btn small';
-      paymentsBtn.textContent = 'Payments';
-      paymentsBtn.onclick = (e) => {
-        e.stopPropagation();
-        openPaymentsModal(doc);
-      };
-      actions.appendChild(paymentsBtn);
-    }
-
     // Edit button
     const loadBtn = document.createElement('button');
     loadBtn.className = 'btn small ghost';
@@ -1592,18 +1619,6 @@ const renderTypeList = () => {
       openClientView(doc);
     };
     actions.appendChild(viewBtn);
-
-    // Add Payments button for invoices
-    if (doc.type === 'invoice') {
-      const paymentsBtn = document.createElement('button');
-      paymentsBtn.className = 'btn small';
-      paymentsBtn.textContent = 'Payments';
-      paymentsBtn.onclick = (e) => {
-        e.stopPropagation();
-        openPaymentsModal(doc);
-      };
-      actions.appendChild(paymentsBtn);
-    }
 
     // Edit button
     const editBtn = document.createElement('button');
@@ -3234,8 +3249,22 @@ searchMaterialsInput.addEventListener('input', renderMaterialsList);
 document.getElementById('closePaymentsModal').addEventListener('click', closePaymentsModal);
 document.getElementById('paymentAmountType').addEventListener('change', (e) => {
   const isDollars = e.target.value === 'dollars';
-  document.getElementById('dollarAmountField').style.display = isDollars ? 'block' : 'none';
-  document.getElementById('percentageAmountField').style.display = isDollars ? 'none' : 'block';
+  const dollarField = document.getElementById('dollarAmountField');
+  const percentageField = document.getElementById('percentageAmountField');
+  const dollarInput = dollarField.querySelector('input');
+  const percentageInput = percentageField.querySelector('select');
+
+  if (isDollars) {
+    dollarField.style.display = 'block';
+    percentageField.style.display = 'none';
+    dollarInput.required = true;
+    percentageInput.required = false;
+  } else {
+    dollarField.style.display = 'none';
+    percentageField.style.display = 'block';
+    dollarInput.required = false;
+    percentageInput.required = true;
+  }
 });
 document.getElementById('paymentMethod').addEventListener('change', (e) => {
   const isCheck = e.target.value === 'check';
@@ -3884,6 +3913,7 @@ loadPaymentMethods();
 // Make functions global for inline onclick handlers
 window.editPaymentMethod = editPaymentMethod;
 window.deletePaymentMethod = deletePaymentMethod;
+window.deletePayment = deletePayment;
 
 // Delete confirmation modal handlers
 document.getElementById('confirmDelete').addEventListener('click', confirmDeleteDocument);
