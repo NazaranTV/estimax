@@ -33,6 +33,38 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
+    .company-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .company-logo {
+      max-width: 200px;
+      max-height: 80px;
+      object-fit: contain;
+    }
+
+    .company-info {
+      text-align: right;
+    }
+
+    .company-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .company-details {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+
     .doc-header {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -253,6 +285,20 @@
         padding: 24px;
       }
 
+      .company-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .company-info {
+        text-align: left;
+      }
+
+      .company-logo {
+        max-width: 150px;
+      }
+
       .doc-header {
         grid-template-columns: 1fr;
         gap: 24px;
@@ -313,19 +359,27 @@
 
     async function loadDocument() {
       try {
-        const res = await fetch(`/api/share/${token}`);
-        if (!res.ok) {
+        // Load document and company settings in parallel
+        const [docRes, companyRes] = await Promise.all([
+          fetch(`/api/share/${token}`),
+          fetch('/api/company-settings')
+        ]);
+
+        if (!docRes.ok) {
           throw new Error('Document not found');
         }
-        const doc = await res.json();
-        renderDocument(doc);
+
+        const doc = await docRes.json();
+        const companySettings = companyRes.ok ? await companyRes.json() : null;
+
+        renderDocument(doc, companySettings);
       } catch (err) {
         console.error(err);
         document.getElementById('loadingMessage').innerHTML = '<p class="error-message">This document could not be found or the share link has expired.</p>';
       }
     }
 
-    function renderDocument(doc) {
+    function renderDocument(doc, companySettings) {
       const lineItems = doc.lineItems || [];
 
       // Build line items HTML
@@ -352,7 +406,30 @@
         dateLabel = `<p>Valid Until: ${new Date(doc.validUntil).toLocaleDateString()}</p>`;
       }
 
+      // Build company header HTML
+      let companyHeaderHtml = '';
+      if (companySettings && (companySettings.name || companySettings.logo)) {
+        companyHeaderHtml = `
+          <div class="company-header">
+            ${companySettings.logo ? `
+              <div>
+                <img src="${companySettings.logo}" alt="Company Logo" class="company-logo">
+              </div>
+            ` : '<div></div>'}
+            <div class="company-info">
+              ${companySettings.name ? `<div class="company-name">${companySettings.name}</div>` : ''}
+              <div class="company-details">
+                ${companySettings.address ? `<div>${companySettings.address}</div>` : ''}
+                ${companySettings.phone ? `<div>${companySettings.phone}</div>` : ''}
+                ${companySettings.email ? `<div>${companySettings.email}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       document.getElementById('docContent').innerHTML = `
+        ${companyHeaderHtml}
         <div class="doc-header">
           <div class="client-info">
             <div class="doc-section-title">Bill To</div>
