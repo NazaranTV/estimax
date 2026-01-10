@@ -357,6 +357,7 @@ const openClientView = (doc) => {
 
   // Wire up action buttons
   const previewInvoiceBtn = document.getElementById('previewInvoiceBtn');
+  const previewPaymentBtn = document.getElementById('previewPaymentBtn');
   const previewEditBtn = document.getElementById('previewEditBtn');
   const previewDeleteBtn = document.getElementById('previewDeleteBtn');
   const previewShareView = document.getElementById('previewShareView');
@@ -378,6 +379,17 @@ const openClientView = (doc) => {
     };
   } else {
     previewInvoiceBtn.style.display = 'none';
+  }
+
+  // Show Payment button only for invoices
+  if (doc.type === 'invoice') {
+    previewPaymentBtn.style.display = 'inline-flex';
+    previewPaymentBtn.onclick = () => {
+      closeClientViewModal();
+      openPaymentsModal(doc);
+    };
+  } else {
+    previewPaymentBtn.style.display = 'none';
   }
 
   // Edit button
