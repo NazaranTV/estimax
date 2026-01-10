@@ -158,6 +158,7 @@
       font-size: 14px;
       font-weight: 500;
       color: #1a1a1a;
+      white-space: pre-wrap;
     }
 
     .item-notes {
@@ -165,6 +166,7 @@
       color: #666;
       margin-top: 4px;
       font-style: italic;
+      white-space: pre-wrap;
     }
 
     .totals-section {
@@ -348,16 +350,23 @@
         padding-bottom: 24px;
         border-bottom: 2px solid #e0e0e0;
         page-break-inside: avoid;
+        flex-wrap: nowrap;
+      }
+
+      .company-header > div:first-child {
+        flex: 0 0 auto;
       }
 
       .company-logo {
         max-width: 300px;
         max-height: 120px;
+        display: block;
       }
 
       .company-info {
         text-align: right;
         margin-left: auto;
+        flex: 0 1 auto;
       }
 
       .doc-header {
@@ -512,14 +521,26 @@
 
       // Build line items HTML
       const lineItemsHtml = lineItems.map(item => {
-        const total = (item.qty * item.rate) + (item.markup || 0);
+        // Calculate materials cost
+        let materialsCost = 0;
+        if (item.materials && Array.isArray(item.materials) && item.materials.length > 0) {
+          materialsCost = item.materials.reduce((sum, m) => {
+            const baseCost = (Number(m.qty) || 0) * (Number(m.rate) || 0);
+            const markupPercent = (Number(m.markup) || 0) / 100;
+            return sum + (baseCost * (1 + markupPercent));
+          }, 0);
+        }
+
+        const rateWithMaterials = (item.rate || 0) + materialsCost;
+        const total = (item.qty * rateWithMaterials) + (item.markup || 0);
+
         return `
           <tr>
             <td>
               <div class="item-description">${item.description}</div>
               ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
             </td>
-            <td>${currency(item.rate)}</td>
+            <td>${currency(rateWithMaterials)}</td>
             <td>${item.qty}</td>
             <td>${currency(total)}</td>
           </tr>
