@@ -238,19 +238,52 @@ const openClientView = (doc) => {
       ? `Due Date: ${new Date(doc.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
       : '';
 
+  // Calculate total with materials cost
+  let calculatedTotal = 0;
+
   const lineItemsHtml = (doc.lineItems || []).map((li) => {
+    // Calculate materials cost
+    let materialsCost = 0;
+    if (li.materials && Array.isArray(li.materials) && li.materials.length > 0) {
+      materialsCost = li.materials.reduce((sum, m) => {
+        const baseCost = (Number(m.qty) || 0) * (Number(m.rate) || 0);
+        const markupPercent = (Number(m.markup) || 0) / 100;
+        return sum + (baseCost * (1 + markupPercent));
+      }, 0);
+    }
+
+    const rateWithMaterials = (li.rate || 0) + materialsCost;
     const markup = Number(li.markup) || 0;
-    const total = ((li.qty || 0) * (li.rate || 0)) + markup;
+    const lineItemSubtotal = (li.qty || 0) * rateWithMaterials;
+    const total = lineItemSubtotal + markup;
+    calculatedTotal += total;
 
     // Generate materials HTML if any exist for this line item
     const materialsHtml = (li.materials && li.materials.length > 0) ? `
-      <div style="margin-top: 6px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.15);">
-        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 4px;">Materials:</div>
+      <div style="margin-top: 8px; padding-left: 12px; border-left: 2px solid rgba(103, 193, 24, 0.3);">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px;">Materials:</div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">
+          <div>Name</div>
+          <div style="text-align: center;">Qty</div>
+          <div style="text-align: center;">Cost</div>
+          <div style="text-align: right;">Total</div>
+        </div>
         ${li.materials.map(mat => {
-          return `<div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; line-height: 1.4;">
-            • ${mat.name || 'Unnamed'} (Qty: ${mat.qty || 0})
+          const matQty = Number(mat.qty) || 0;
+          const matRate = Number(mat.rate) || 0;
+          const matMarkup = Number(mat.markup) || 0;
+          const matBaseCost = matQty * matRate;
+          const matTotal = matBaseCost * (1 + matMarkup / 100);
+          return `<div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; line-height: 1.4;">
+            <div>${mat.name || 'Unnamed'}</div>
+            <div style="text-align: center;">${matQty}</div>
+            <div style="text-align: center;">${currency(matRate)}</div>
+            <div style="text-align: right;">${currency(matTotal)}</div>
           </div>`;
         }).join('')}
+        <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 11px; color: var(--text-muted); text-align: right; font-weight: 600;">
+          Subtotal: ${currency(materialsCost)}
+        </div>
       </div>
     ` : '';
 
@@ -261,7 +294,7 @@ const openClientView = (doc) => {
           ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; margin-bottom: 4px;">${li.notes}</div>` : ''}
           ${materialsHtml}
         </td>
-        <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${currency(li.rate || 0)}</td>
+        <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${currency(rateWithMaterials)}</td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${li.qty || 0}</td>
         <td style="padding: 12px 4px; text-align: right; font-weight: 600; font-size: 14px; vertical-align: top;">${currency(total)}</td>
       </tr>
@@ -307,7 +340,7 @@ const openClientView = (doc) => {
         <div style="display: flex; justify-content: flex-end;">
           <div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 16px; font-weight: 700; min-width: 200px;">
             <span>TOTAL</span>
-            <span>${currency(doc.total)}</span>
+            <span>${currency(calculatedTotal)}</span>
           </div>
         </div>
       </div>
@@ -325,7 +358,7 @@ const openClientView = (doc) => {
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
           <div style="background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 8px; text-align: center;">
             <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Invoice Total</div>
-            <div style="font-size: 18px; font-weight: 700;" id="previewInvoiceTotal">${currency(doc.total)}</div>
+            <div style="font-size: 18px; font-weight: 700;" id="previewInvoiceTotal">${currency(calculatedTotal)}</div>
           </div>
           <div style="background: rgba(103, 193, 24, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
             <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Total Paid</div>
@@ -333,7 +366,7 @@ const openClientView = (doc) => {
           </div>
           <div style="background: rgba(255, 165, 0, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
             <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Balance Due</div>
-            <div style="font-size: 18px; font-weight: 700; color: #ffa726;" id="previewBalance">${currency(doc.total)}</div>
+            <div style="font-size: 18px; font-weight: 700; color: #ffa726;" id="previewBalance">${currency(calculatedTotal)}</div>
           </div>
         </div>
         <div style="background: rgba(0, 0, 0, 0.2); border-radius: 999px; height: 6px; overflow: hidden; margin-bottom: 16px;">
@@ -352,12 +385,14 @@ const openClientView = (doc) => {
 
   // Load payment tracking for invoices
   if (doc.type === 'invoice') {
-    loadPreviewPaymentTracking(doc.id, doc.total);
+    loadPreviewPaymentTracking(doc.id, calculatedTotal);
   }
 
   // Wire up action buttons
   const previewInvoiceBtn = document.getElementById('previewInvoiceBtn');
+  const previewRevertBtn = document.getElementById('previewRevertBtn');
   const previewPaymentBtn = document.getElementById('previewPaymentBtn');
+  const previewCopyBtn = document.getElementById('previewCopyBtn');
   const previewEditBtn = document.getElementById('previewEditBtn');
   const previewDeleteBtn = document.getElementById('previewDeleteBtn');
   const previewShareView = document.getElementById('previewShareView');
@@ -381,6 +416,20 @@ const openClientView = (doc) => {
     previewInvoiceBtn.style.display = 'none';
   }
 
+  // Show Revert to Estimate button only for invoices
+  if (doc.type === 'invoice') {
+    previewRevertBtn.style.display = 'inline-flex';
+    previewRevertBtn.onclick = async () => {
+      if (confirm('Revert this invoice to an estimate? The invoice will be deleted.')) {
+        closeClientViewModal();
+        await createEstimateFromInvoice(doc, null);
+        await loadDocuments();
+      }
+    };
+  } else {
+    previewRevertBtn.style.display = 'none';
+  }
+
   // Show Payment button only for invoices
   if (doc.type === 'invoice') {
     previewPaymentBtn.style.display = 'inline-flex';
@@ -390,6 +439,12 @@ const openClientView = (doc) => {
     };
   } else {
     previewPaymentBtn.style.display = 'none';
+  }
+
+  // Copy button
+  previewCopyBtn.onclick = async () => {
+    await copyDocument(doc);
+    closeClientViewModal();
   }
 
   // Edit button
