@@ -675,6 +675,9 @@
     function renderDocument(doc, companySettings) {
       const lineItems = doc.lineItems || [];
 
+      // Calculate total with materials cost
+      let calculatedTotal = 0;
+
       // Build line items HTML
       const lineItemsHtml = lineItems.map(item => {
         // Calculate materials cost
@@ -689,6 +692,7 @@
 
         const rateWithMaterials = (item.rate || 0) + materialsCost;
         const total = (item.qty * rateWithMaterials) + (item.markup || 0);
+        calculatedTotal += total;
 
         return `
           <tr>
@@ -769,7 +773,7 @@
         <div class="totals-section">
           <div class="total-row">
             <span>TOTAL</span>
-            <span>${currency(doc.total)}</span>
+            <span>${currency(calculatedTotal)}</span>
           </div>
         </div>
 
@@ -786,7 +790,7 @@
             <div class="payment-summary">
               <div class="payment-summary-item">
                 <div class="payment-summary-label">Invoice Total</div>
-                <div class="payment-summary-value" id="shareInvoiceTotal">${currency(doc.total)}</div>
+                <div class="payment-summary-value" id="shareInvoiceTotal">${currency(calculatedTotal)}</div>
               </div>
               <div class="payment-summary-item paid">
                 <div class="payment-summary-label">Total Paid</div>
@@ -794,7 +798,7 @@
               </div>
               <div class="payment-summary-item balance">
                 <div class="payment-summary-label">Balance Due</div>
-                <div class="payment-summary-value" id="shareBalance">${currency(doc.total)}</div>
+                <div class="payment-summary-value" id="shareBalance">${currency(calculatedTotal)}</div>
               </div>
             </div>
             <div class="payment-progress-bar">
@@ -822,7 +826,7 @@
       // Load payment methods and payments for invoices
       if (doc.type === 'invoice') {
         loadPaymentMethods();
-        loadPaymentTracking(doc.id, doc.total);
+        loadPaymentTracking(doc.id, calculatedTotal);
       }
     }
 
