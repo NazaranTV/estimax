@@ -260,13 +260,13 @@ const openClientView = (doc) => {
 
     // Generate materials HTML if any exist for this line item
     const materialsHtml = (li.materials && li.materials.length > 0) ? `
-      <div style="margin-top: 8px; padding-left: 12px; border-left: 2px solid rgba(103, 193, 24, 0.3);">
-        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px;">Materials:</div>
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">
+      <div class="preview-materials">
+        <div class="preview-materials__label">Materials:</div>
+        <div class="preview-materials__header">
           <div>Name</div>
-          <div style="text-align: center;">Qty</div>
-          <div style="text-align: center;">Cost</div>
-          <div style="text-align: right;">Total</div>
+          <div>Qty</div>
+          <div>Cost</div>
+          <div>Total</div>
         </div>
         ${li.materials.map(mat => {
           const matQty = Number(mat.qty) || 0;
@@ -274,14 +274,14 @@ const openClientView = (doc) => {
           const matMarkup = Number(mat.markup) || 0;
           const matBaseCost = matQty * matRate;
           const matTotal = matBaseCost * (1 + matMarkup / 100);
-          return `<div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; line-height: 1.4;">
+          return `<div class="preview-materials__row">
             <div>${mat.name || 'Unnamed'}</div>
-            <div style="text-align: center;">${matQty}</div>
-            <div style="text-align: center;">${currency(matRate)}</div>
-            <div style="text-align: right;">${currency(matTotal)}</div>
+            <div>${matQty}</div>
+            <div>${currency(matRate)}</div>
+            <div>${currency(matTotal)}</div>
           </div>`;
         }).join('')}
-        <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 11px; color: var(--text-muted); text-align: right; font-weight: 600;">
+        <div class="preview-materials__subtotal">
           Subtotal: ${currency(materialsCost)}
         </div>
       </div>
