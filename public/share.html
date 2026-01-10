@@ -4,31 +4,287 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>View Document - Estimax</title>
-  <link rel="stylesheet" href="/style.css">
   <style>
-    body {
-      background: var(--background);
-      color: var(--text-primary);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
     .share-view {
       max-width: 900px;
       margin: 40px auto;
-      padding: 0 20px;
+      background: #ffffff;
     }
+
     .doc-card {
-      background: #211F2D;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--radius-lg);
-      padding: 40px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 48px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
+
+    .doc-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .doc-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #666;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .client-info p,
+    .doc-info p {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .client-info p:first-of-type,
+    .doc-info p:first-of-type {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .doc-info {
+      text-align: right;
+    }
+
+    .line-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+
+    .line-items-table thead {
+      border-bottom: 2px solid #333;
+    }
+
+    .line-items-table th {
+      padding: 12px 8px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #333;
+    }
+
+    .line-items-table th:nth-child(2),
+    .line-items-table th:nth-child(3) {
+      text-align: center;
+      width: 80px;
+    }
+
+    .line-items-table th:nth-child(4) {
+      text-align: right;
+      width: 100px;
+    }
+
+    .line-items-table td {
+      padding: 16px 8px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .line-items-table td:nth-child(2),
+    .line-items-table td:nth-child(3) {
+      text-align: center;
+    }
+
+    .line-items-table td:nth-child(4) {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .line-items-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .item-description {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .item-notes {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    .totals-section {
+      border-top: 2px solid #333;
+      padding-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      min-width: 250px;
+      padding: 10px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .notes-section {
+      background: #f8f8f8;
+      padding: 20px;
+      border-radius: 6px;
+      border-left: 4px solid #4CAF50;
+      margin-top: 32px;
+    }
+
+    .notes-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #666;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .notes-content {
+      font-size: 14px;
+      color: #333;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .payment-methods {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .payment-methods-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #333;
+    }
+
+    .payment-methods-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .payment-method-card {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .payment-method-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+    }
+
+    .payment-method-card img {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 8px;
+      background: white;
+      display: block;
+    }
+
+    .payment-method-text {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .loading-message,
+    .error-message {
+      text-align: center;
+      padding: 40px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .error-message {
+      color: #d32f2f;
+    }
+
     @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
       .share-view {
         margin: 20px auto;
-        padding: 0 16px;
       }
+
       .doc-card {
         padding: 24px;
+      }
+
+      .doc-header {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .doc-info {
+        text-align: left;
+      }
+
+      .line-items-table {
+        font-size: 12px;
+      }
+
+      .line-items-table th,
+      .line-items-table td {
+        padding: 8px 4px;
+      }
+
+      .total-row {
+        min-width: 200px;
+        font-size: 16px;
+      }
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+
+      .doc-card {
+        box-shadow: none;
+        border: none;
       }
     }
   </style>
@@ -36,8 +292,8 @@
 <body>
   <div class="share-view">
     <div class="doc-card" id="docContent">
-      <div id="loadingMessage">
-        <p style="text-align: center; color: var(--text-tertiary);">Loading document...</p>
+      <div id="loadingMessage" class="loading-message">
+        <p>Loading document...</p>
       </div>
     </div>
   </div>
@@ -46,7 +302,7 @@
     const token = new URLSearchParams(window.location.search).get('token');
 
     if (!token) {
-      document.getElementById('loadingMessage').innerHTML = '<p style="text-align: center; color: var(--error);">This share link is invalid.</p>';
+      document.getElementById('loadingMessage').innerHTML = '<p class="error-message">This share link is invalid.</p>';
     } else {
       loadDocument();
     }
@@ -65,7 +321,7 @@
         renderDocument(doc);
       } catch (err) {
         console.error(err);
-        document.getElementById('loadingMessage').innerHTML = '<p style="text-align: center; color: var(--error);">This document could not be found or the share link has expired.</p>';
+        document.getElementById('loadingMessage').innerHTML = '<p class="error-message">This document could not be found or the share link has expired.</p>';
       }
     }
 
@@ -77,13 +333,13 @@
         const total = (item.qty * item.rate) + (item.markup || 0);
         return `
           <tr>
-            <td style="padding: 10px 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-              <div style="font-size: 14px; font-weight: 500;">${item.description}</div>
-              ${item.notes ? `<div style="font-size: 12px; color: var(--muted); margin-top: 4px;">${item.notes}</div>` : ''}
+            <td>
+              <div class="item-description">${item.description}</div>
+              ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
             </td>
-            <td style="padding: 10px 4px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px;">${currency(item.rate)}</td>
-            <td style="padding: 10px 4px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px;">${item.qty}</td>
-            <td style="padding: 10px 4px; text-align: right; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 14px; font-weight: 600;">${currency(total)}</td>
+            <td>${currency(item.rate)}</td>
+            <td>${item.qty}</td>
+            <td>${currency(total)}</td>
           </tr>
         `;
       }).join('');
@@ -91,69 +347,63 @@
       // Format dates
       let dateLabel = '';
       if (doc.type === 'invoice' && doc.dueDate) {
-        dateLabel = `Due: ${new Date(doc.dueDate).toLocaleDateString()}`;
+        dateLabel = `<p>Due: ${new Date(doc.dueDate).toLocaleDateString()}</p>`;
       } else if (doc.type === 'estimate' && doc.validUntil) {
-        dateLabel = `Valid Until: ${new Date(doc.validUntil).toLocaleDateString()}`;
+        dateLabel = `<p>Valid Until: ${new Date(doc.validUntil).toLocaleDateString()}</p>`;
       }
 
       document.getElementById('docContent').innerHTML = `
-        <div style="display: block;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
-            <div>
-              <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Bill To</h4>
-              <p style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">${doc.clientName}</p>
-              ${doc.clientEmail ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientEmail}</p>` : ''}
-              ${doc.clientPhone ? `<p style="font-size: 13px; color: var(--muted);">${doc.clientPhone}</p>` : ''}
-              ${doc.clientBillingAddress ? `<p style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.4;">${doc.clientBillingAddress}</p>` : ''}
-            </div>
-            <div style="text-align: right;">
-              <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Document Info</h4>
-              <p style="font-size: 13px; margin-bottom: 3px;"><span style="color: var(--muted);">${doc.type === 'estimate' ? 'Estimate #' : 'Invoice #'}</span> <strong>${doc.poNumber || '—'}</strong></p>
-              ${dateLabel ? `<p style="font-size: 13px; color: var(--muted);">${dateLabel}</p>` : ''}
-              ${doc.projectName ? `<p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Project: ${doc.projectName}</p>` : ''}
-              ${doc.serviceAddress ? `<p style="font-size: 12px; color: var(--muted); margin-top: 3px;">Service: ${doc.serviceAddress}</p>` : ''}
-            </div>
+        <div class="doc-header">
+          <div class="client-info">
+            <div class="doc-section-title">Bill To</div>
+            <p>${doc.clientName}</p>
+            ${doc.clientEmail ? `<p>${doc.clientEmail}</p>` : ''}
+            ${doc.clientPhone ? `<p>${doc.clientPhone}</p>` : ''}
+            ${doc.clientBillingAddress ? `<p style="margin-top: 8px;">${doc.clientBillingAddress}</p>` : ''}
           </div>
-
-          <div style="margin-bottom: 24px;">
-            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-              <thead style="border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
-                <tr>
-                  <th style="padding: 10px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Description</th>
-                  <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 70px;">Rate</th>
-                  <th style="padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 45px;">Qty</th>
-                  <th style="padding: 10px 4px; text-align: right; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; width: 85px;">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${lineItemsHtml}
-              </tbody>
-            </table>
+          <div class="doc-info">
+            <div class="doc-section-title">Document Info</div>
+            <p>${doc.type === 'estimate' ? 'Estimate' : 'Invoice'} #${doc.poNumber || '—'}</p>
+            ${dateLabel}
+            ${doc.projectName ? `<p style="margin-top: 8px;">Project: ${doc.projectName}</p>` : ''}
+            ${doc.serviceAddress ? `<p>Service: ${doc.serviceAddress}</p>` : ''}
           </div>
-
-          <div style="border-top: 2px solid rgba(255, 255, 255, 0.2); padding-top: 16px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: flex-end;">
-              <div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 16px; font-weight: 700; min-width: 200px;">
-                <span>TOTAL</span>
-                <span>${currency(doc.total)}</span>
-              </div>
-            </div>
-          </div>
-
-          ${doc.notes ? `
-          <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent);">
-            <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;">Notes</h4>
-            <p style="font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">${doc.notes}</p>
-          </div>
-          ` : ''}
-
-          ${doc.type === 'invoice' ? `
-            <div id="paymentMethodsSection" style="margin-top: 32px; display: none;">
-              <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted);">Payment Methods</h4>
-              <div id="paymentMethodsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;"></div>
-            </div>
-          ` : ''}
         </div>
+
+        <table class="line-items-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Rate</th>
+              <th>Qty</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${lineItemsHtml}
+          </tbody>
+        </table>
+
+        <div class="totals-section">
+          <div class="total-row">
+            <span>TOTAL</span>
+            <span>${currency(doc.total)}</span>
+          </div>
+        </div>
+
+        ${doc.notes ? `
+          <div class="notes-section">
+            <div class="notes-title">Notes</div>
+            <div class="notes-content">${doc.notes}</div>
+          </div>
+        ` : ''}
+
+        ${doc.type === 'invoice' ? `
+          <div id="paymentMethodsSection" class="payment-methods" style="display: none;">
+            <div class="payment-methods-title">Payment Methods</div>
+            <div id="paymentMethodsGrid" class="payment-methods-grid"></div>
+          </div>
+        ` : ''}
       `;
 
       // Load payment methods for invoices
@@ -174,41 +424,13 @@
         if (!grid) return;
 
         grid.innerHTML = methods.map(method => `
-          <div style="
-            background: #13111C;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            padding: 16px;
-            text-align: center;
-          ">
-            <div style="
-              font-size: 14px;
-              font-weight: 600;
-              color: var(--text-primary);
-              margin-bottom: 12px;
-            ">${method.name}</div>
-
+          <div class="payment-method-card">
+            <div class="payment-method-name">${method.name}</div>
             ${method.qrCode ? `
-              <img src="${method.qrCode}"
-                   alt="${method.name} QR Code"
-                   style="
-                     width: 150px;
-                     height: 150px;
-                     margin: 0 auto 12px;
-                     border: 2px solid rgba(255, 255, 255, 0.1);
-                     border-radius: 8px;
-                     padding: 8px;
-                     background: white;
-                     display: block;
-                   ">
+              <img src="${method.qrCode}" alt="${method.name} QR Code">
             ` : ''}
-
             ${method.type === 'url' ? `
-              <div style="
-                font-size: 12px;
-                color: var(--text-secondary);
-                word-break: break-all;
-              ">Scan QR code or visit URL</div>
+              <div class="payment-method-text">Scan QR code or visit URL</div>
             ` : ''}
           </div>
         `).join('');

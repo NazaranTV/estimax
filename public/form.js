@@ -806,19 +806,25 @@ const renderMaterialsList = () => {
 
     const createBtn = document.getElementById('createNewMaterialBtn');
     if (createBtn) {
-      createBtn.onclick = (e) => {
+      createBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
+
+        // Close material modal without clearing currentLineForMaterials
         materialModal.classList.add('hidden');
-        materialCreateModal.classList.remove('hidden');
-        if (term) {
-          // Pre-fill the name field if user was searching
-          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-          if (nameInput) nameInput.value = term;
-        }
+
+        // Open create modal on next frame to ensure close completes
+        requestAnimationFrame(() => {
+          materialCreateModal.classList.remove('hidden');
+          if (term) {
+            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+            if (nameInput) nameInput.value = term;
+          }
+        });
+
         return false;
-      };
+      }, true); // Use capture phase
     }
     return;
   }
@@ -849,16 +855,23 @@ const renderMaterialsList = () => {
 
     const createBtn = document.getElementById('createNewMaterialTopBtn');
     if (createBtn) {
-      createBtn.onclick = (e) => {
+      createBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
+
+        // Close material modal without clearing currentLineForMaterials
         materialModal.classList.add('hidden');
-        materialCreateModal.classList.remove('hidden');
-        const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-        if (nameInput) nameInput.value = term;
+
+        // Open create modal on next frame to ensure close completes
+        requestAnimationFrame(() => {
+          materialCreateModal.classList.remove('hidden');
+          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+          if (nameInput) nameInput.value = term;
+        });
+
         return false;
-      };
+      }, true); // Use capture phase
     }
   }
 
