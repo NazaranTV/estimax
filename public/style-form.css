@@ -437,7 +437,7 @@
 /* Material Toast Notification */
 .material-toast {
   position: fixed;
-  top: 24px;
+  top: 100px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1001;
