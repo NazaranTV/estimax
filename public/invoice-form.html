@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style-form.css">
 </head>
 <body>
   <div class="page">
@@ -19,21 +20,25 @@
         <button class="nav__item" data-view="clients">Clients</button>
         <button class="nav__item" data-view="items">Items</button>
         <button class="nav__item" data-view="materials">Materials</button>
+        <button class="nav__item" data-view="notifications" id="notificationsTab">Notifications</button>
         <button class="nav__item" data-view="settings">Settings</button>
       </div>
     </nav>
 
-    <div class="card" style="max-width: 1200px; margin: 40px auto;">
-      <div class="modal__header">
-        <h3 id="formTitle">Create invoice</h3>
-        <button class="btn small ghost" id="closeBtn">Close</button>
+    <div class="form-container">
+      <div class="form-header">
+        <div>
+          <p class="eyebrow">INVOICE</p>
+          <h2 id="formTitle">Create invoice</h2>
+        </div>
+        <button class="btn ghost" id="closeBtn">Close</button>
       </div>
 
-      <form id="docForm">
-        <div class="client-select">
-          <div class="client-select__top">
-            <label>Client</label>
-          </div>
+      <form id="docForm" class="estimate-form">
+        <!-- Client Information Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Client Information</h3>
+
           <button type="button" class="btn-client-selector" id="openClientSelectorBtn">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9 10C11.2091 10 13 8.20914 13 6C13 3.79086 11.2091 2 9 2C6.79086 2 5 3.79086 5 6C5 8.20914 6.79086 10 9 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -41,48 +46,102 @@
             </svg>
             <span id="selectedClientName">Select saved client</span>
           </button>
+
+          <div class="grid three">
+            <div class="form-field">
+              <label>Client name</label>
+              <input name="clientName" required placeholder="Jane Smith Construction">
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input name="clientEmail" type="email" placeholder="client@email.com">
+            </div>
+            <div class="form-field">
+              <label>Phone</label>
+              <input name="clientPhone" placeholder="(555) 123-4567">
+            </div>
+          </div>
+
+          <div class="grid two">
+            <div class="form-field">
+              <label>Billing address</label>
+              <input name="clientBillingAddress" placeholder="Street, City, State, ZIP">
+            </div>
+            <div class="form-field">
+              <label>Service address</label>
+              <input name="serviceAddress" placeholder="Where the work will be performed">
+            </div>
+          </div>
+
+          <button type="button" class="btn small" id="saveAsNewClient">Save as New Client</button>
         </div>
 
-        <div class="grid three">
-          <label>Client name<input name="clientName" required placeholder="Jane Smith Construction"></label>
-          <label>Email<input name="clientEmail" type="email" placeholder="client@email.com"></label>
-          <label>Phone<input name="clientPhone" placeholder="(555) 123-4567"></label>
-        </div>
+        <!-- Project Details Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Project Details</h3>
 
-        <div class="grid three">
-          <label>Billing address<input name="clientBillingAddress" placeholder="Street, City, State, ZIP"></label>
-          <label>Project Name<input name="projectName" placeholder="Kitchen remodel"></label>
-          <div>
-            <div style="font-size: 14px; font-weight: 500; line-height: 1.5; height: 24px; margin: 0;">&nbsp;</div>
-            <button type="button" class="btn small primary" id="saveAsNewClient" style="width:100%;margin-top:8px;margin-bottom:0;padding:14px 16px;height:auto;">Save as New Client</button>
+          <div class="grid three">
+            <div class="form-field">
+              <label>Project name</label>
+              <input name="projectName" placeholder="Kitchen remodel">
+            </div>
+            <div class="form-field">
+              <label>PO number</label>
+              <input name="poNumber" placeholder="Auto-generated if blank">
+            </div>
+            <div class="form-field date-estimate" style="display: none;">
+              <label>Valid until</label>
+              <input name="validUntil" type="date">
+            </div>
+            <div class="form-field date-invoice">
+              <label>Due date</label>
+              <input name="dueDate" type="date">
+            </div>
           </div>
         </div>
 
-        <div class="grid two">
-          <label>Service Address<input name="serviceAddress" placeholder="Where the work will be performed"></label>
+        <!-- Line Items Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Line Items</h3>
+          <!-- Table Header -->
+          <div class="line-items-table-header">
+            <div class="th-remove"></div>
+            <div class="th-description">Description</div>
+            <div class="th-quantity">Quantity</div>
+            <div class="th-rate">Rate</div>
+            <div class="th-markup">Markup</div>
+            <div class="th-total">Total</div>
+            <div class="th-drag"></div>
+          </div>          <div id="lineItems" class="line-items-container"></div>
+          <button type="button" class="btn-add-item" id="addLineItem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Line Item
+          </button>
         </div>
 
-        <div class="grid three">
-          <label>PO Number<input name="poNumber" placeholder="Auto-generated if blank"></label>
-          <label class="date-estimate" style="display: none;">Valid until<input name="validUntil" type="date"></label>
-          <label class="date-invoice">Due date<input name="dueDate" type="date"></label>
-        </div>
-
-        <div class="line-items">
-          <div class="line-items__header">
-            <p>Line items</p>
+        <!-- Summary Section -->
+        <div class="form-section">
+          <div class="estimate-summary">
+            <div class="summary-row">
+              <span class="summary-label">Subtotal</span>
+              <span class="summary-value" id="subtotal">$0.00</span>
+            </div>
+            <div class="summary-row summary-row--total">
+              <span class="summary-label">Total</span>
+              <span class="summary-value" id="total">$0.00</span>
+            </div>
           </div>
-          <div id="lineItems"></div>
-          <button type="button" class="btn-add-item" id="addLineItem">+ Add Line Item</button>
         </div>
 
-        <div class="totals">
-          <div><p>Subtotal</p><strong id="subtotal">$0.00</strong></div>
-          <div><p>Total</p><strong id="total">$0.00</strong></div>
+        <!-- Notes Section -->
+        <div class="form-section">
+          <h3 class="form-section__title">Notes</h3>
+          <textarea name="notes" rows="4" placeholder="Scope, payment terms, or scheduling notes"></textarea>
         </div>
 
-        <label>Notes<textarea name="notes" rows="3" placeholder="Scope, payment terms, or scheduling notes"></textarea></label>
-
+        <!-- Form Actions -->
         <div class="form-actions">
           <button class="btn ghost" type="button" id="resetForm">Clear Form</button>
           <span id="formStatus" class="form-status"></span>
@@ -100,8 +159,10 @@
         <h3>Select client</h3>
         <button class="btn small ghost" id="closeClientSelectorModal">Close</button>
       </div>
-      <input id="searchClients" type="text" placeholder="Search clients by name, email, or company" style="width:100%;margin-bottom:16px;padding:12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:#f8fafc;font-size:14px;">
-      <div id="clientSelectorList" class="client-list"></div>
+      <div class="modal__body">
+        <input id="searchClients" type="text" placeholder="Search clients by name, email, or company" class="search-input">
+        <div id="clientSelectorList" class="modal-list"></div>
+      </div>
     </div>
   </div>
 
@@ -113,18 +174,40 @@
         <h3>Add client</h3>
         <button class="btn small ghost" id="closeClientModal">Close</button>
       </div>
-      <form id="clientForm">
-        <label>Name<input name="name" required placeholder="Client name"></label>
-        <label>Email<input name="email" type="email" placeholder="email@example.com"></label>
-        <label>Phone<input name="phone" placeholder="(555) 123-4567"></label>
-        <label>Company<input name="company" placeholder="Company"></label>
-        <label>Billing address<textarea name="billingAddress" rows="2" placeholder="Street, City, State, ZIP"></textarea></label>
-        <label>Notes<textarea name="notes" rows="3" placeholder="Notes"></textarea></label>
-        <div class="form__actions">
-          <button type="submit" class="btn primary">Save client</button>
-          <span id="clientStatus" class="muted"></span>
-        </div>
-      </form>
+      <div class="modal__body">
+        <form id="clientForm" class="modal-form">
+          <div class="form-field">
+            <label>Name</label>
+            <input name="name" required placeholder="Client name">
+          </div>
+          <div class="grid two">
+            <div class="form-field">
+              <label>Email</label>
+              <input name="email" type="email" placeholder="email@example.com">
+            </div>
+            <div class="form-field">
+              <label>Phone</label>
+              <input name="phone" placeholder="(555) 123-4567">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Company</label>
+            <input name="company" placeholder="Company">
+          </div>
+          <div class="form-field">
+            <label>Billing address</label>
+            <textarea name="billingAddress" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+          </div>
+          <div class="form-field">
+            <label>Notes</label>
+            <textarea name="notes" rows="3" placeholder="Additional notes"></textarea>
+          </div>
+          <div class="modal-form__actions">
+            <button type="submit" class="btn primary large">Save Client</button>
+            <span id="clientStatus" class="form-status"></span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -136,8 +219,10 @@
         <h3>Select item</h3>
         <button class="btn small ghost" id="closeItemModal">Close</button>
       </div>
-      <input id="searchItems" type="text" placeholder="Search items" style="width:100%;margin-bottom:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:#f8fafc;">
-      <div id="itemsList" class="client-list"></div>
+      <div class="modal__body">
+        <input id="searchItems" type="text" placeholder="Search items" class="search-input">
+        <div id="itemsList" class="modal-list"></div>
+      </div>
     </div>
   </div>
 
@@ -149,10 +234,14 @@
         <h3>Select material</h3>
         <button class="btn small ghost" id="closeMaterialModal">Close</button>
       </div>
-      <input id="searchMaterials" type="text" placeholder="Search materials" style="width:100%;margin-bottom:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:#f8fafc;">
-      <div id="materialsPickerList" class="client-list"></div>
+      <div class="modal__body">
+        <input id="searchMaterials" type="text" placeholder="Search materials" class="search-input">
+        <div id="materialsPickerList" class="modal-list"></div>
     </div>
   </div>
+
+  <!-- Material Toast Notification (outside modal to prevent resizing) -->
+  <div id="materialToast" class="material-toast"></div>
 
   <!-- Item Create Modal -->
   <div class="modal hidden" id="itemCreateModal">
@@ -184,17 +273,50 @@
         <h3>Add material</h3>
         <button class="btn small ghost" id="closeMaterialCreateModal">Close</button>
       </div>
-      <form id="materialForm">
-        <label>Name<input name="name" required placeholder="Material name"></label>
-        <label>Description<textarea name="description" rows="2" placeholder="Description"></textarea></label>
-        <label>Default qty<input name="defaultQty" type="number" step="1" value="1"></label>
-        <label>Default rate<input name="defaultRate" type="number" step="0.01" value="0"></label>
-        <label>Default markup %<input name="defaultMarkup" type="number" step="1" value="0"></label>
-        <div class="form__actions">
-          <button type="submit" class="btn primary">Save material</button>
-          <span id="materialStatus" class="muted"></span>
-        </div>
-      </form>
+      <div class="modal__body">
+        <form id="materialForm" class="modal-form">
+          <div class="form-field">
+            <label>Name</label>
+            <input name="name" required placeholder="Material name">
+          </div>
+
+          <div class="form-field">
+            <label>Description</label>
+            <textarea name="description" rows="3" placeholder="Description"></textarea>
+          </div>
+
+          <div class="form-field autocomplete-wrapper">
+            <label>Category</label>
+            <input name="category" placeholder="Type or select category (optional)" autocomplete="off">
+            <div class="autocomplete-dropdown hidden"></div>
+          </div>
+
+          <div class="grid three">
+            <div class="form-field">
+              <label>Default qty</label>
+              <input name="defaultQty" type="number" step="1" value="1">
+            </div>
+            <div class="form-field">
+              <label>Price</label>
+              <input name="defaultRate" type="number" step="0.01" value="0">
+            </div>
+            <div class="form-field">
+              <label>Unit rate</label>
+              <input name="unitRate" type="number" step="0.01" value="0" readonly style="background: rgba(255, 255, 255, 0.02); cursor: not-allowed;">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Default markup %</label>
+            <input name="defaultMarkup" type="number" step="1" value="0">
+          </div>
+
+          <div class="form__actions">
+            <button type="submit" class="btn primary">Save material</button>
+            <span id="materialStatus" class="muted"></span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
