@@ -1099,7 +1099,7 @@ label {
 
   /* Show mobile bottom navigation */
   .mobile-nav {
-    display: flex;
+    display: flex !important;
     justify-content: space-around;
     align-items: center;
   }
@@ -1492,7 +1492,7 @@ label {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 9999;
   background: #1a1825;
   border-top: 1px solid #33323E;
   padding: 8px 0;
