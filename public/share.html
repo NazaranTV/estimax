@@ -343,18 +343,17 @@
       }
 
       .company-header {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         align-items: center;
-        justify-content: space-between;
         margin-bottom: 32px;
         padding-bottom: 24px;
         border-bottom: 2px solid #e0e0e0;
         page-break-inside: avoid;
-        flex-wrap: nowrap;
       }
 
       .company-header > div:first-child {
-        flex: 0 0 auto;
+        justify-self: start;
       }
 
       .company-logo {
@@ -365,8 +364,7 @@
 
       .company-info {
         text-align: right;
-        margin-left: auto;
-        flex: 0 1 auto;
+        justify-self: end;
       }
 
       .doc-header {
