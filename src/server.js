@@ -409,6 +409,27 @@ app.post('/api/documents/:id/payments', async (req, res) => {
   }
 });
 
+app.delete('/api/documents/:id/payments/:paymentId', async (req, res) => {
+  try {
+    const { id, paymentId } = req.params;
+
+    // Verify the payment belongs to the document
+    const { rows } = await pool.query(
+      'DELETE FROM payments WHERE id = $1 AND document_id = $2 RETURNING *',
+      [paymentId, id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    res.json({ success: true, payment: toCamel(rows[0]) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete payment' });
+  }
+});
+
 // Clients
 app.get('/api/clients', async (_req, res) => {
   try {
