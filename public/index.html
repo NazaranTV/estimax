@@ -513,66 +513,66 @@
 
   <div class="modal hidden" id="paymentsModal">
     <div class="modal__backdrop"></div>
-    <div class="modal__content" style="max-width: 700px;">
+    <div class="modal__content" style="max-width: 800px;">
       <div class="modal__header">
         <div>
           <h3>Track Payments</h3>
           <p class="eyebrow" id="paymentsInvoiceInfo">Invoice Details</p>
         </div>
-        <button class="btn small ghost" id="closePaymentsModal">✕</button>
+        <button class="btn small ghost" id="closePaymentsModal">Close</button>
       </div>
 
-      <!-- Invoice Summary -->
-      <div id="paymentsSummary" style="margin-bottom: 24px; padding: 20px; background: var(--accent-soft); border: 1px solid rgba(103, 193, 24, 0.3); border-radius: 12px;">
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
-          <div>
-            <p class="eyebrow" style="margin-bottom: 4px;">Invoice Total</p>
-            <h3 id="paymentsInvoiceTotal" style="color: var(--accent);">$0.00</h3>
+      <div class="modal__body">
+        <!-- Invoice Summary -->
+        <div class="payment-summary-card">
+          <div class="payment-summary-grid">
+            <div class="payment-summary-item">
+              <div class="payment-summary-label">Invoice Total</div>
+              <div class="payment-summary-value" id="paymentsInvoiceTotal">$0.00</div>
+            </div>
+            <div class="payment-summary-item paid">
+              <div class="payment-summary-label">Total Paid</div>
+              <div class="payment-summary-value" id="paymentsTotalPaid">$0.00</div>
+            </div>
+            <div class="payment-summary-item balance">
+              <div class="payment-summary-label">Balance Due</div>
+              <div class="payment-summary-value" id="paymentsBalance">$0.00</div>
+            </div>
           </div>
-          <div>
-            <p class="eyebrow" style="margin-bottom: 4px;">Total Paid</p>
-            <h3 id="paymentsTotalPaid" style="color: #b8ff6f;">$0.00</h3>
-          </div>
-          <div>
-            <p class="eyebrow" style="margin-bottom: 4px;">Balance Due</p>
-            <h3 id="paymentsBalance" style="color: #ffdfa6;">$0.00</h3>
+          <div class="payment-progress-bar">
+            <div class="payment-progress-fill" id="paymentsProgressBar"></div>
           </div>
         </div>
-        <div style="margin-top: 16px; background: rgba(0, 0, 0, 0.2); border-radius: 999px; height: 8px; overflow: hidden;">
-          <div id="paymentsProgressBar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
-        </div>
-      </div>
 
-      <!-- Payment Form -->
-      <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-        <h4 style="margin-bottom: 16px;">Record New Payment</h4>
-        <form id="paymentsForm">
-          <div class="grid two">
-            <div>
-              <label>Amount Type
+        <!-- Payment Form -->
+        <div class="payment-form-section">
+          <h4 class="section-title">Record New Payment</h4>
+          <form id="paymentsForm">
+            <div class="grid two">
+              <div class="form-field">
+                <label>Amount Type</label>
                 <select id="paymentAmountType">
                   <option value="dollars">Dollar Amount</option>
                   <option value="percentage">Percentage</option>
                 </select>
-              </label>
-            </div>
-            <div id="dollarAmountField">
-              <label>Amount ($)<input type="number" step="0.01" name="dollarAmount" placeholder="0.00" required></label>
-            </div>
-            <div id="percentageAmountField" style="display: none;">
-              <label>Percentage
+              </div>
+              <div class="form-field" id="dollarAmountField">
+                <label>Amount ($)</label>
+                <input type="number" step="0.01" name="dollarAmount" placeholder="0.00" required>
+              </div>
+              <div class="form-field" id="percentageAmountField" style="display: none;">
+                <label>Percentage</label>
                 <select name="percentageAmount">
                   <option value="25">25%</option>
                   <option value="50">50%</option>
                   <option value="75">75%</option>
                   <option value="100">Full (100%)</option>
                 </select>
-              </label>
+              </div>
             </div>
-          </div>
-          <div class="grid two">
-            <div>
-              <label>Payment Method
+            <div class="grid two">
+              <div class="form-field">
+                <label>Payment Method</label>
                 <select id="paymentMethod" name="paymentMethod">
                   <option value="cash">Cash</option>
                   <option value="check">Check</option>
@@ -580,27 +580,32 @@
                   <option value="credit_card">Credit Card</option>
                   <option value="other">Other</option>
                 </select>
-              </label>
+              </div>
+              <div class="form-field">
+                <label>Payment Date</label>
+                <input type="date" name="paymentDate" required>
+              </div>
             </div>
-            <div>
-              <label>Payment Date<input type="date" name="paymentDate" required></label>
+            <div class="form-field" id="checkNumberField" style="display: none;">
+              <label>Check Number</label>
+              <input type="text" name="checkNumber" placeholder="Check #">
             </div>
-          </div>
-          <div id="checkNumberField" style="display: none;">
-            <label>Check Number<input type="text" name="checkNumber" placeholder="Check #"></label>
-          </div>
-          <label>Notes (Optional)<textarea name="paymentNotes" rows="2" placeholder="Add any notes about this payment..."></textarea></label>
-          <div class="form__actions">
-            <button type="submit" class="btn primary">Record Payment</button>
-            <span id="paymentStatus" class="muted"></span>
-          </div>
-        </form>
-      </div>
+            <div class="form-field">
+              <label>Notes (Optional)</label>
+              <textarea name="paymentNotes" rows="2" placeholder="Add any notes about this payment..."></textarea>
+            </div>
+            <div class="modal-form__actions">
+              <button type="submit" class="btn primary large">Record Payment</button>
+              <span id="paymentStatus" class="form-status"></span>
+            </div>
+          </form>
+        </div>
 
-      <!-- Payment History -->
-      <div id="paymentsHistory">
-        <h4 style="margin-bottom: 12px;">Payment History</h4>
-        <div id="paymentsList"></div>
+        <!-- Payment History -->
+        <div class="payment-history-section">
+          <h4 class="section-title">Payment History</h4>
+          <div id="paymentsList" class="payments-list"></div>
+        </div>
       </div>
     </div>
   </div>

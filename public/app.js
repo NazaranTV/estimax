@@ -318,10 +318,42 @@ const openClientView = (doc) => {
         <p style="font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">${doc.notes}</p>
       </div>
       ` : ''}
+
+      ${doc.type === 'invoice' ? `
+      <div id="previewPaymentTracking" style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px;">Payment Status</h4>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+          <div style="background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Invoice Total</div>
+            <div style="font-size: 18px; font-weight: 700;" id="previewInvoiceTotal">${currency(doc.total)}</div>
+          </div>
+          <div style="background: rgba(103, 193, 24, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Total Paid</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--accent);" id="previewTotalPaid">$0.00</div>
+          </div>
+          <div style="background: rgba(255, 165, 0, 0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Balance Due</div>
+            <div style="font-size: 18px; font-weight: 700; color: #ffa726;" id="previewBalance">${currency(doc.total)}</div>
+          </div>
+        </div>
+        <div style="background: rgba(0, 0, 0, 0.2); border-radius: 999px; height: 6px; overflow: hidden; margin-bottom: 16px;">
+          <div id="previewProgressBar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+        </div>
+        <div id="previewPaymentHistory" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px;">
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Payment History</div>
+          <div id="previewPaymentsList" style="font-size: 12px; color: var(--text-tertiary);">Loading...</div>
+        </div>
+      </div>
+      ` : ''}
       </div>
     </div>
   `;
   clientViewTitle.textContent = `${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Preview - Contractor View`;
+
+  // Load payment tracking for invoices
+  if (doc.type === 'invoice') {
+    loadPreviewPaymentTracking(doc.id, doc.total);
+  }
 
   // Wire up action buttons
   const previewInvoiceBtn = document.getElementById('previewInvoiceBtn');
@@ -846,39 +878,63 @@ const loadPaymentsHistory = async (docId) => {
     const list = document.getElementById('paymentsList');
 
     if (!payments || !payments.length) {
-      list.innerHTML = `
-        <div style="padding: 32px; text-align: center; background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 12px;">
-          <p class="muted">No payments recorded yet.</p>
-          <p class="muted" style="font-size: 13px; margin-top: 4px;">Record your first payment above to get started.</p>
-        </div>
-      `;
+      list.innerHTML = '<div class="no-payments-message">No payments recorded yet. Record your first payment above to get started.</div>';
       return;
     }
 
     // Sort payments by date (newest first)
     payments.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
 
-    list.innerHTML = payments.map((p, index) => `
-      <div style="padding: 16px; background: ${index % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'transparent'}; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-          <div>
-            <h4 style="margin: 0; color: var(--accent);">${currency(p.amount)}</h4>
-            <p class="meta" style="margin-top: 4px;">
-              <span style="text-transform: capitalize;">${p.paymentMethod.replace('_', ' ')}</span>
-              ${p.checkNumber ? ` • Check #${p.checkNumber}` : ''}
-            </p>
-          </div>
-          <div style="text-align: right;">
-            <p class="eyebrow" style="margin-bottom: 2px;">Payment Date</p>
-            <p style="font-weight: 600; font-size: 14px;">${new Date(p.paymentDate).toLocaleDateString()}</p>
-          </div>
+    list.innerHTML = payments.map(p => `
+      <div class="payment-record">
+        <div class="payment-info">
+          <div class="payment-date">${new Date(p.paymentDate).toLocaleDateString()}</div>
+          <div class="payment-method-type">${p.paymentMethod.replace('_', ' ')}${p.checkNumber ? ` • #${p.checkNumber}` : ''}</div>
+          ${p.notes ? `<div class="payment-notes">${p.notes}</div>` : ''}
         </div>
-        ${p.notes ? `<p class="muted" style="margin-top: 8px; font-size: 13px; font-style: italic;">"${p.notes}"</p>` : ''}
+        <div class="payment-amount">${currency(p.amount)}</div>
+        <button class="payment-delete" onclick="deletePayment(${docId}, ${p.id})">Delete</button>
       </div>
     `).join('');
   } catch (err) {
     console.error(err);
-    document.getElementById('paymentsList').innerHTML = '<p class="muted">Could not load payments.</p>';
+    document.getElementById('paymentsList').innerHTML = '<div class="no-payments-message">Could not load payments.</div>';
+  }
+};
+
+const loadPreviewPaymentTracking = async (docId, invoiceTotal) => {
+  try {
+    const res = await fetch(`/api/documents/${docId}/payments`);
+    const payments = await res.json();
+
+    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const balance = invoiceTotal - totalPaid;
+    const progress = invoiceTotal > 0 ? (totalPaid / invoiceTotal) * 100 : 0;
+
+    // Update summary
+    document.getElementById('previewTotalPaid').textContent = currency(totalPaid);
+    document.getElementById('previewBalance').textContent = currency(balance);
+    document.getElementById('previewProgressBar').style.width = `${progress}%`;
+
+    // Update payment history
+    const paymentsList = document.getElementById('previewPaymentsList');
+    if (payments.length > 0) {
+      payments.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+      paymentsList.innerHTML = payments.map(p => `
+        <div style="padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 12px; color: var(--text-primary); font-weight: 500;">${new Date(p.paymentDate).toLocaleDateString()}</div>
+            <div style="font-size: 11px; color: var(--text-tertiary); text-transform: capitalize;">${p.paymentMethod.replace('_', ' ')}</div>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--accent);">${currency(p.amount)}</div>
+        </div>
+      `).join('');
+    } else {
+      paymentsList.textContent = 'No payments recorded yet';
+    }
+  } catch (err) {
+    console.error('Failed to load preview payment tracking:', err);
+    document.getElementById('previewPaymentsList').textContent = 'Failed to load payments';
   }
 };
 
