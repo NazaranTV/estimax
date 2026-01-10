@@ -43,8 +43,8 @@
     }
 
     .company-logo {
-      max-width: 200px;
-      max-height: 80px;
+      max-width: 300px;
+      max-height: 120px;
       object-fit: contain;
     }
 
@@ -326,11 +326,138 @@
     @media print {
       body {
         padding: 0;
+        background: #ffffff;
+      }
+
+      .share-view {
+        margin: 0;
+        max-width: 100%;
       }
 
       .doc-card {
         box-shadow: none;
-        border: none;
+        border: 1px solid #e0e0e0;
+        padding: 48px;
+      }
+
+      .company-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 2px solid #e0e0e0;
+        page-break-inside: avoid;
+      }
+
+      .company-logo {
+        max-width: 300px;
+        max-height: 120px;
+      }
+
+      .company-info {
+        text-align: right;
+      }
+
+      .doc-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 2px solid #e0e0e0;
+        page-break-inside: avoid;
+      }
+
+      .doc-info {
+        text-align: right;
+      }
+
+      .line-items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+      }
+
+      .line-items-table thead {
+        border-bottom: 2px solid #333;
+      }
+
+      .line-items-table th {
+        padding: 12px 8px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #333;
+      }
+
+      .line-items-table th:nth-child(2),
+      .line-items-table th:nth-child(3) {
+        text-align: center;
+        width: 80px;
+      }
+
+      .line-items-table th:nth-child(4) {
+        text-align: right;
+        width: 100px;
+      }
+
+      .line-items-table td {
+        padding: 16px 8px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 14px;
+        color: #333;
+      }
+
+      .line-items-table td:nth-child(2),
+      .line-items-table td:nth-child(3) {
+        text-align: center;
+      }
+
+      .line-items-table td:nth-child(4) {
+        text-align: right;
+        font-weight: 600;
+      }
+
+      .totals-section {
+        border-top: 2px solid #333;
+        padding-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        page-break-inside: avoid;
+      }
+
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        min-width: 250px;
+        padding: 10px 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+
+      .notes-section {
+        background: #f8f8f8;
+        padding: 20px;
+        border-radius: 6px;
+        border-left: 4px solid #4CAF50;
+        margin-top: 32px;
+        page-break-inside: avoid;
+      }
+
+      .payment-methods {
+        margin-top: 40px;
+        padding-top: 32px;
+        border-top: 1px solid #e0e0e0;
+        page-break-inside: avoid;
+      }
+
+      /* Ensure proper page breaks */
+      .line-items-table tr {
+        page-break-inside: avoid;
       }
     }
   </style>
