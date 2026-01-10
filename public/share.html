@@ -220,8 +220,7 @@
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       color: #333;
     }
 
@@ -284,45 +283,44 @@
     }
 
     .payment-tracking {
-      margin-top: 40px;
-      padding-top: 32px;
+      margin-top: 24px;
+      padding-top: 20px;
       border-top: 1px solid #e0e0e0;
     }
 
     .payment-tracking-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
       color: #333;
     }
 
     .payment-summary {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
     .payment-summary-item {
       background: #f8f8f8;
       border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 16px;
+      border-radius: 6px;
+      padding: 10px;
       text-align: center;
     }
 
     .payment-summary-label {
-      font-size: 11px;
+      font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       color: #666;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .payment-summary-value {
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 700;
       color: #1a1a1a;
     }
@@ -338,9 +336,9 @@
     .payment-progress-bar {
       background: #e0e0e0;
       border-radius: 999px;
-      height: 8px;
+      height: 6px;
       overflow: hidden;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
 
     .payment-progress-fill {
@@ -352,23 +350,23 @@
     .payment-history {
       background: #f8f8f8;
       border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 20px;
+      border-radius: 6px;
+      padding: 12px;
     }
 
     .payment-history-title {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
       color: #1a1a1a;
     }
 
     .payment-item {
-      padding: 12px 0;
+      padding: 8px 0;
       border-bottom: 1px solid #e0e0e0;
       display: grid;
-      grid-template-columns: 1fr auto auto;
-      gap: 16px;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
       align-items: center;
     }
 
@@ -377,28 +375,27 @@
     }
 
     .payment-date {
-      font-size: 13px;
+      font-size: 12px;
       color: #666;
     }
 
     .payment-method-label {
-      font-size: 12px;
+      font-size: 11px;
       color: #999;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      text-transform: capitalize;
     }
 
     .payment-amount {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
       color: #4CAF50;
     }
 
     .no-payments {
       text-align: center;
-      padding: 32px;
+      padding: 16px;
       color: #999;
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .loading-message,
@@ -811,11 +808,16 @@
             </div>
           </div>
           <div id="paymentMethodsSection" class="payment-methods" style="display: none;">
-            <div class="payment-methods-title">Payment Methods</div>
+            <div class="payment-methods-title">Accepted Payment Methods</div>
             <div id="paymentMethodsGrid" class="payment-methods-grid"></div>
           </div>
         ` : ''}
       `;
+
+      // Update page title
+      const docType = doc.type === 'estimate' ? 'Estimate' : 'Invoice';
+      const poNumber = doc.poNumber || 'N/A';
+      document.title = `${docType} #${poNumber} - Estimax`;
 
       // Load payment methods and payments for invoices
       if (doc.type === 'invoice') {
@@ -883,9 +885,6 @@
             <div class="payment-method-card">
               <div class="payment-method-name">${method.name}</div>
               <img src="${method.qrCode}" alt="${method.name} QR Code">
-              ${method.type === 'url' ? `
-                <div class="payment-method-text">Scan QR code or visit URL</div>
-              ` : ''}
             </div>
           `;
         });
@@ -894,7 +893,6 @@
         if (textMethods.length > 0) {
           html += `
             <div class="payment-method-card text-only">
-              <div class="payment-method-name">Accepted Payment Methods</div>
               ${textMethods.map(m => `
                 <div class="payment-method-item">${m.name}</div>
               `).join('')}
