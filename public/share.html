@@ -239,6 +239,27 @@
       text-align: center;
     }
 
+    .payment-method-card.text-only {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+      padding: 24px;
+    }
+
+    .payment-method-card.text-only .payment-method-item {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .payment-method-card.text-only .payment-method-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
     .payment-method-name {
       font-size: 14px;
       font-weight: 600;
@@ -260,6 +281,124 @@
     .payment-method-text {
       font-size: 12px;
       color: #666;
+    }
+
+    .payment-tracking {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .payment-tracking-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #333;
+    }
+
+    .payment-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .payment-summary-item {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .payment-summary-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .payment-summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .payment-summary-item.paid .payment-summary-value {
+      color: #4CAF50;
+    }
+
+    .payment-summary-item.balance .payment-summary-value {
+      color: #ff9800;
+    }
+
+    .payment-progress-bar {
+      background: #e0e0e0;
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .payment-progress-fill {
+      background: #4CAF50;
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .payment-history {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .payment-history-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .payment-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .payment-item:last-child {
+      border-bottom: none;
+    }
+
+    .payment-date {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .payment-method-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .payment-amount {
+      font-size: 16px;
+      font-weight: 600;
+      color: #4CAF50;
+    }
+
+    .no-payments {
+      text-align: center;
+      padding: 32px;
+      color: #999;
+      font-size: 14px;
     }
 
     .loading-message,
@@ -463,6 +602,28 @@
         page-break-inside: avoid;
       }
 
+      .payment-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .payment-method-card {
+        page-break-inside: avoid;
+      }
+
+      .payment-method-card img {
+        width: 120px;
+        height: 120px;
+      }
+
+      .payment-tracking {
+        margin-top: 40px;
+        padding-top: 32px;
+        border-top: 1px solid #e0e0e0;
+        page-break-inside: avoid;
+      }
+
       /* Ensure proper page breaks */
       .line-items-table tr {
         page-break-inside: avoid;
@@ -623,6 +784,32 @@
         ` : ''}
 
         ${doc.type === 'invoice' ? `
+          <div id="paymentTrackingSection" class="payment-tracking" style="display: none;">
+            <div class="payment-tracking-title">Payment Status</div>
+            <div class="payment-summary">
+              <div class="payment-summary-item">
+                <div class="payment-summary-label">Invoice Total</div>
+                <div class="payment-summary-value" id="shareInvoiceTotal">${currency(doc.total)}</div>
+              </div>
+              <div class="payment-summary-item paid">
+                <div class="payment-summary-label">Total Paid</div>
+                <div class="payment-summary-value" id="shareTotalPaid">$0.00</div>
+              </div>
+              <div class="payment-summary-item balance">
+                <div class="payment-summary-label">Balance Due</div>
+                <div class="payment-summary-value" id="shareBalance">${currency(doc.total)}</div>
+              </div>
+            </div>
+            <div class="payment-progress-bar">
+              <div class="payment-progress-fill" id="shareProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="payment-history">
+              <div class="payment-history-title">Payment History</div>
+              <div id="sharePaymentsList">
+                <div class="no-payments">No payments recorded yet</div>
+              </div>
+            </div>
+          </div>
           <div id="paymentMethodsSection" class="payment-methods" style="display: none;">
             <div class="payment-methods-title">Payment Methods</div>
             <div id="paymentMethodsGrid" class="payment-methods-grid"></div>
@@ -630,9 +817,46 @@
         ` : ''}
       `;
 
-      // Load payment methods for invoices
+      // Load payment methods and payments for invoices
       if (doc.type === 'invoice') {
         loadPaymentMethods();
+        loadPaymentTracking(doc.id, doc.total);
+      }
+    }
+
+    async function loadPaymentTracking(documentId, invoiceTotal) {
+      try {
+        const res = await fetch(`/api/documents/${documentId}/payments`);
+        if (!res.ok) return;
+
+        const payments = await res.json();
+
+        const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+        const balance = invoiceTotal - totalPaid;
+        const progress = invoiceTotal > 0 ? (totalPaid / invoiceTotal) * 100 : 0;
+
+        // Update summary
+        document.getElementById('shareTotalPaid').textContent = currency(totalPaid);
+        document.getElementById('shareBalance').textContent = currency(balance);
+        document.getElementById('shareProgressBar').style.width = `${progress}%`;
+
+        // Update payment history
+        const paymentsList = document.getElementById('sharePaymentsList');
+        if (payments.length > 0) {
+          paymentsList.innerHTML = payments.map(payment => `
+            <div class="payment-item">
+              <div>
+                <div class="payment-date">${new Date(payment.paymentDate).toLocaleDateString()}</div>
+                <div class="payment-method-label">${payment.paymentMethod}</div>
+              </div>
+              <div class="payment-amount">${currency(payment.amount)}</div>
+            </div>
+          `).join('');
+        }
+
+        document.getElementById('paymentTrackingSection').style.display = 'block';
+      } catch (err) {
+        console.error('Failed to load payment tracking:', err);
       }
     }
 
@@ -647,18 +871,38 @@
         const grid = document.getElementById('paymentMethodsGrid');
         if (!grid) return;
 
-        grid.innerHTML = methods.map(method => `
-          <div class="payment-method-card">
-            <div class="payment-method-name">${method.name}</div>
-            ${method.qrCode ? `
-              <img src="${method.qrCode}" alt="${method.name} QR Code">
-            ` : ''}
-            ${method.type === 'url' ? `
-              <div class="payment-method-text">Scan QR code or visit URL</div>
-            ` : ''}
-          </div>
-        `).join('');
+        // Separate text-only methods from QR code methods
+        const qrMethods = methods.filter(m => m.qrCode);
+        const textMethods = methods.filter(m => !m.qrCode);
 
+        let html = '';
+
+        // Add QR code methods
+        qrMethods.forEach(method => {
+          html += `
+            <div class="payment-method-card">
+              <div class="payment-method-name">${method.name}</div>
+              <img src="${method.qrCode}" alt="${method.name} QR Code">
+              ${method.type === 'url' ? `
+                <div class="payment-method-text">Scan QR code or visit URL</div>
+              ` : ''}
+            </div>
+          `;
+        });
+
+        // Group all text-only methods in one card
+        if (textMethods.length > 0) {
+          html += `
+            <div class="payment-method-card text-only">
+              <div class="payment-method-name">Accepted Payment Methods</div>
+              ${textMethods.map(m => `
+                <div class="payment-method-item">${m.name}</div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        grid.innerHTML = html;
         document.getElementById('paymentMethodsSection').style.display = 'block';
       } catch (err) {
         console.error('Failed to load payment methods:', err);
