@@ -846,39 +846,27 @@ const loadPaymentsHistory = async (docId) => {
     const list = document.getElementById('paymentsList');
 
     if (!payments || !payments.length) {
-      list.innerHTML = `
-        <div style="padding: 32px; text-align: center; background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border); border-radius: 12px;">
-          <p class="muted">No payments recorded yet.</p>
-          <p class="muted" style="font-size: 13px; margin-top: 4px;">Record your first payment above to get started.</p>
-        </div>
-      `;
+      list.innerHTML = '<div class="no-payments-message">No payments recorded yet. Record your first payment above to get started.</div>';
       return;
     }
 
     // Sort payments by date (newest first)
     payments.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
 
-    list.innerHTML = payments.map((p, index) => `
-      <div style="padding: 16px; background: ${index % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'transparent'}; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-          <div>
-            <h4 style="margin: 0; color: var(--accent);">${currency(p.amount)}</h4>
-            <p class="meta" style="margin-top: 4px;">
-              <span style="text-transform: capitalize;">${p.paymentMethod.replace('_', ' ')}</span>
-              ${p.checkNumber ? ` • Check #${p.checkNumber}` : ''}
-            </p>
-          </div>
-          <div style="text-align: right;">
-            <p class="eyebrow" style="margin-bottom: 2px;">Payment Date</p>
-            <p style="font-weight: 600; font-size: 14px;">${new Date(p.paymentDate).toLocaleDateString()}</p>
-          </div>
+    list.innerHTML = payments.map(p => `
+      <div class="payment-record">
+        <div class="payment-info">
+          <div class="payment-date">${new Date(p.paymentDate).toLocaleDateString()}</div>
+          <div class="payment-method-type">${p.paymentMethod.replace('_', ' ')}${p.checkNumber ? ` • #${p.checkNumber}` : ''}</div>
+          ${p.notes ? `<div class="payment-notes">${p.notes}</div>` : ''}
         </div>
-        ${p.notes ? `<p class="muted" style="margin-top: 8px; font-size: 13px; font-style: italic;">"${p.notes}"</p>` : ''}
+        <div class="payment-amount">${currency(p.amount)}</div>
+        <button class="payment-delete" onclick="deletePayment(${docId}, ${p.id})">Delete</button>
       </div>
     `).join('');
   } catch (err) {
     console.error(err);
-    document.getElementById('paymentsList').innerHTML = '<p class="muted">Could not load payments.</p>';
+    document.getElementById('paymentsList').innerHTML = '<div class="no-payments-message">Could not load payments.</div>';
   }
 };
 
