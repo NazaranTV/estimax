@@ -1719,6 +1719,31 @@ const switchView = (view) => {
     btn.classList.toggle('active', btn.dataset.view === view);
   });
 
+  // Update mobile nav active states
+  const mobileNav = document.getElementById('mobileNav');
+  if (mobileNav) {
+    const mobileMoreMenu = document.getElementById('mobileMoreMenu');
+    const moreMenuViews = ['items', 'materials', 'notifications', 'settings'];
+
+    // Update main mobile nav items
+    mobileNav.querySelectorAll('.mobile-nav__item[data-view]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.view === view);
+    });
+
+    // Update More menu items
+    if (mobileMoreMenu) {
+      mobileMoreMenu.querySelectorAll('.mobile-nav__menu-item[data-view]').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+    }
+
+    // Highlight More button if current view is in More menu
+    const moreBtn = document.getElementById('mobileMoreBtn');
+    if (moreBtn) {
+      moreBtn.classList.toggle('active', moreMenuViews.includes(view));
+    }
+  }
+
   if (view === 'overview') {
     overviewView.classList.remove('hidden');
     workspace.classList.add('hidden');
@@ -1838,6 +1863,73 @@ topNav.addEventListener('click', (e) => {
   if (!e.target.dataset.view) return;
   switchView(e.target.dataset.view);
 });
+
+// Mobile navigation handling
+const mobileNav = document.getElementById('mobileNav');
+const mobileMoreBtn = document.getElementById('mobileMoreBtn');
+const mobileMoreMenu = document.getElementById('mobileMoreMenu');
+
+if (mobileNav) {
+  // Handle clicks on main mobile nav items
+  mobileNav.querySelectorAll('.mobile-nav__item[data-view]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchView(btn.dataset.view);
+    });
+  });
+
+  // Handle clicks on More menu items
+  if (mobileMoreMenu) {
+    mobileMoreMenu.querySelectorAll('.mobile-nav__menu-item[data-view]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView(btn.dataset.view);
+        mobileMoreMenu.classList.add('hidden');
+      });
+    });
+  }
+
+  // Toggle More menu
+  if (mobileMoreBtn) {
+    mobileMoreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      mobileMoreMenu.classList.toggle('hidden');
+    });
+  }
+
+  // Close More menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (mobileMoreMenu && !mobileMoreMenu.classList.contains('hidden')) {
+      if (!e.target.closest('.mobile-nav__menu') && !e.target.closest('#mobileMoreBtn')) {
+        mobileMoreMenu.classList.add('hidden');
+      }
+    }
+  });
+}
+
+// Sync notification badge to mobile nav
+const syncMobileNotificationBadge = () => {
+  const desktopBadge = document.getElementById('notificationsBadge');
+  const mobileBadge = document.getElementById('mobileNotificationsBadge');
+  if (desktopBadge && mobileBadge) {
+    mobileBadge.textContent = desktopBadge.textContent;
+    mobileBadge.classList.toggle('hidden', desktopBadge.classList.contains('hidden'));
+  }
+};
+
+// Call sync on page load and observe changes
+syncMobileNotificationBadge();
+const notificationsBadgeObserver = new MutationObserver(syncMobileNotificationBadge);
+const desktopNotificationBadge = document.getElementById('notificationsBadge');
+if (desktopNotificationBadge) {
+  notificationsBadgeObserver.observe(desktopNotificationBadge, {
+    attributes: true,
+    childList: true,
+    characterData: true,
+    subtree: true
+  });
+}
 
 const fillForm = (doc) => {
   editingId = doc.id;
