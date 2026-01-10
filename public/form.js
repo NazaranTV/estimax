@@ -809,17 +809,15 @@ const renderMaterialsList = () => {
       createBtn.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        closeMaterialModal();
-        setTimeout(() => {
-          openMaterialCreateModal();
-          if (term) {
-            // Pre-fill the name field if user was searching
-            setTimeout(() => {
-              const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-              if (nameInput) nameInput.value = term;
-            }, 10);
-          }
-        }, 200);
+        e.stopImmediatePropagation();
+        materialModal.classList.add('hidden');
+        materialCreateModal.classList.remove('hidden');
+        if (term) {
+          // Pre-fill the name field if user was searching
+          const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+          if (nameInput) nameInput.value = term;
+        }
+        return false;
       };
     }
     return;
@@ -854,14 +852,12 @@ const renderMaterialsList = () => {
       createBtn.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        closeMaterialModal();
-        setTimeout(() => {
-          openMaterialCreateModal();
-          setTimeout(() => {
-            const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
-            if (nameInput) nameInput.value = term;
-          }, 10);
-        }, 200);
+        e.stopImmediatePropagation();
+        materialModal.classList.add('hidden');
+        materialCreateModal.classList.remove('hidden');
+        const nameInput = document.querySelector('#materialCreateModal input[name="name"]');
+        if (nameInput) nameInput.value = term;
+        return false;
       };
     }
   }
