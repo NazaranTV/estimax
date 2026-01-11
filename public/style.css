@@ -745,6 +745,27 @@ label {
   justify-content: space-between;
   padding: 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.modal__header-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.modal__header .dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.modal__header .dropdown-menu {
+  position: absolute;
+  top: auto;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 4px;
 }
 
 .modal__body {
@@ -1107,7 +1128,8 @@ label {
   /* Adjust page layout for mobile - remove sidebar margin, add bottom padding for nav */
   .page {
     margin-left: 0;
-    padding: 16px 16px 80px 16px;
+    padding: 16px 16px 100px 16px;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
   }
 
   h1 {
@@ -1330,21 +1352,21 @@ label {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .modal__header > div {
-    display: grid;
+  .modal__header-buttons {
+    display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
     width: 100%;
   }
 
-  .modal__header .btn {
+  .modal__header-buttons .btn {
     padding: 10px 12px;
     font-size: 12px;
     width: 100%;
     justify-content: center;
   }
 
-  .modal__header .btn.small {
+  .modal__header-buttons .btn.small {
     padding: 10px 12px;
     font-size: 12px;
   }
