@@ -1322,20 +1322,20 @@ label {
   }
 
   .modal__header > div {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     width: 100%;
   }
 
   .modal__header .btn {
-    padding: 8px 12px;
-    font-size: 12px;
-    width: 100%;
+    padding: 6px 10px;
+    font-size: 11px;
+    flex: 0 0 auto;
   }
 
   .modal__header .btn.small {
-    padding: 8px 10px;
+    padding: 6px 10px;
     font-size: 11px;
   }
 
@@ -1344,17 +1344,70 @@ label {
     padding: 12px !important;
   }
 
+  /* Hide the table header on mobile */
+  #clientViewBody thead {
+    display: none;
+  }
+
+  /* Stack line items vertically on mobile */
   #clientViewBody table {
-    font-size: 12px;
+    display: block;
+    width: 100%;
   }
 
-  #clientViewBody th,
+  #clientViewBody tbody {
+    display: block;
+  }
+
+  #clientViewBody tr {
+    display: block;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
   #clientViewBody td {
-    padding: 8px 2px !important;
+    display: block;
+    padding: 0 !important;
+    text-align: left !important;
   }
 
-  #clientViewBody th {
-    font-size: 9px !important;
+  /* Description column takes full width */
+  #clientViewBody td:first-child {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  /* Rate, Qty, Total in a row at bottom */
+  #clientViewBody td:nth-child(2),
+  #clientViewBody td:nth-child(3),
+  #clientViewBody td:nth-child(4) {
+    display: inline-block;
+    width: auto;
+    font-size: 12px;
+    margin-right: 16px;
+  }
+
+  #clientViewBody td:nth-child(2)::before {
+    content: "Rate: ";
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  #clientViewBody td:nth-child(3)::before {
+    content: "Qty: ";
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  #clientViewBody td:nth-child(4)::before {
+    content: "Total: ";
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  #clientViewBody td:nth-child(4) {
+    font-weight: 700;
+    margin-right: 0;
   }
 
   /* Mobile materials preview - compact layout */
