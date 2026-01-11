@@ -1869,11 +1869,20 @@ const mobileNav = document.getElementById('mobileNav');
 const mobileMoreBtn = document.getElementById('mobileMoreBtn');
 const mobileMoreMenu = document.getElementById('mobileMoreMenu');
 
+// Helper function to close all modals when navigating
+const closeAllModals = () => {
+  const clientViewModal = document.getElementById('clientViewModal');
+  if (clientViewModal && !clientViewModal.classList.contains('hidden')) {
+    clientViewModal.classList.add('hidden');
+  }
+};
+
 if (mobileNav) {
   // Handle clicks on main mobile nav items
   mobileNav.querySelectorAll('.mobile-nav__item[data-view]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
+      closeAllModals();
       switchView(btn.dataset.view);
     });
   });
@@ -1883,6 +1892,7 @@ if (mobileNav) {
     mobileMoreMenu.querySelectorAll('.mobile-nav__menu-item[data-view]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        closeAllModals();
         switchView(btn.dataset.view);
         mobileMoreMenu.classList.add('hidden');
       });

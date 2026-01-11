@@ -1322,8 +1322,8 @@ label {
   }
 
   .modal__header > div {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 6px;
     width: 100%;
   }
@@ -1331,10 +1331,11 @@ label {
   .modal__header .btn {
     padding: 8px 12px;
     font-size: 12px;
+    width: 100%;
   }
 
   .modal__header .btn.small {
-    padding: 6px 10px;
+    padding: 8px 10px;
     font-size: 11px;
   }
 
