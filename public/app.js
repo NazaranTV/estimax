@@ -529,6 +529,10 @@ const openClientView = (doc) => {
   }
 
   clientViewModal.classList.remove('hidden');
+  // Lock body scroll on mobile
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
   logDebug(`Opened client preview for ${doc.type} #${doc.id}`);
 };
 
@@ -675,7 +679,12 @@ const showMaterialsListView = (doc, printable = false) => {
   materialsBtn.textContent = 'Back to Document';
 };
 
-const closeClientViewModal = () => clientViewModal.classList.add('hidden');
+const closeClientViewModal = () => {
+  clientViewModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+};
 
 const openSend = (doc) => {
   currentSendId = doc.id;
@@ -1874,6 +1883,10 @@ const closeAllModals = () => {
   const clientViewModal = document.getElementById('clientViewModal');
   if (clientViewModal && !clientViewModal.classList.contains('hidden')) {
     clientViewModal.classList.add('hidden');
+    // Unlock body scroll
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
   }
 };
 

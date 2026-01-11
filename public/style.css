@@ -1303,11 +1303,15 @@ label {
   /* Modal fixes for mobile */
   .modal {
     padding: 8px;
+    overflow: hidden;
   }
 
   .modal__content {
     max-height: 95vh;
     max-width: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .modal.wide .modal__content {
@@ -1319,24 +1323,37 @@ label {
     align-items: flex-start;
     gap: 12px;
     padding: 16px;
+    position: sticky;
+    top: 0;
+    background: #1a1825;
+    z-index: 10;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .modal__header > div {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 6px;
     width: 100%;
   }
 
   .modal__header .btn {
-    padding: 6px 10px;
-    font-size: 11px;
-    flex: 0 0 auto;
+    padding: 10px 12px;
+    font-size: 12px;
+    width: 100%;
+    justify-content: center;
   }
 
   .modal__header .btn.small {
-    padding: 6px 10px;
-    font-size: 11px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  /* Prevent body scroll when modal is open */
+  body:has(.modal:not(.hidden)) {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 
   /* Preview content mobile fixes */
