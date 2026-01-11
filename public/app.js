@@ -400,7 +400,7 @@ const openClientView = (doc) => {
   const previewShareSMS = document.getElementById('previewShareSMS');
   const previewShareMaterials = document.getElementById('previewShareMaterials');
   const shareDropdown = document.querySelector('#previewShareDropdown .dropdown-menu');
-  const shareDropdownBtn = document.querySelector('#previewShareDropdown .btn');
+  const shareDropdownBtn = document.getElementById('previewShareBtn');
 
   // Show Invoice button only for estimates
   if (doc.type === 'estimate') {
