@@ -390,7 +390,6 @@ const openClientView = (doc) => {
 
   // Wire up action buttons
   const previewInvoiceBtn = document.getElementById('previewInvoiceBtn');
-  const previewRevertBtn = document.getElementById('previewRevertBtn');
   const previewPaymentBtn = document.getElementById('previewPaymentBtn');
   const previewCopyBtn = document.getElementById('previewCopyBtn');
   const previewEditBtn = document.getElementById('previewEditBtn');
@@ -414,20 +413,6 @@ const openClientView = (doc) => {
     };
   } else {
     previewInvoiceBtn.style.display = 'none';
-  }
-
-  // Show Revert to Estimate button only for invoices
-  if (doc.type === 'invoice') {
-    previewRevertBtn.style.display = 'inline-flex';
-    previewRevertBtn.onclick = async () => {
-      if (confirm('Revert this invoice to an estimate? The invoice will be deleted.')) {
-        closeClientViewModal();
-        await createEstimateFromInvoice(doc, null);
-        await loadDocuments();
-      }
-    };
-  } else {
-    previewRevertBtn.style.display = 'none';
   }
 
   // Show Payment button only for invoices
