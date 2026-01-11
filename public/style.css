@@ -1325,15 +1325,17 @@ label {
   /* Modal fixes for mobile */
   .modal {
     padding: 8px;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
     overflow: hidden;
   }
 
   .modal__content {
-    max-height: 95vh;
+    max-height: calc(100vh - 80px - env(safe-area-inset-bottom));
     max-width: 100%;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    padding-bottom: 20px;
   }
 
   .modal.wide .modal__content {
