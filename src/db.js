@@ -173,6 +173,51 @@ async function initDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
     CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at DESC);
+
+    -- Add approval_status and approved_at columns to documents if they don't exist
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='documents' AND column_name='approval_status'
+      ) THEN
+        ALTER TABLE documents ADD COLUMN approval_status TEXT DEFAULT 'pending' CHECK (approval_status IN ('pending', 'approved', 'declined'));
+        ALTER TABLE documents ADD COLUMN approved_at TIMESTAMPTZ;
+        ALTER TABLE documents ADD COLUMN declined_at TIMESTAMPTZ;
+        ALTER TABLE documents ADD COLUMN customer_notes TEXT;
+      END IF;
+    END $$;
+
+    CREATE TABLE IF NOT EXISTS availability_slots (
+      id SERIAL PRIMARY KEY,
+      document_id INTEGER REFERENCES documents(id) ON DELETE CASCADE,
+      slot_date DATE NOT NULL,
+      slot_time TEXT NOT NULL,
+      is_booked BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_availability_slots_document ON availability_slots(document_id);
+    CREATE INDEX IF NOT EXISTS idx_availability_slots_date ON availability_slots(slot_date);
+
+    CREATE TABLE IF NOT EXISTS appointments (
+      id SERIAL PRIMARY KEY,
+      document_id INTEGER REFERENCES documents(id) ON DELETE CASCADE,
+      po_number TEXT,
+      client_name TEXT NOT NULL,
+      client_email TEXT,
+      client_phone TEXT,
+      service_address TEXT,
+      appointment_date DATE NOT NULL,
+      appointment_time TEXT NOT NULL,
+      duration_hours NUMERIC(4,2) DEFAULT 2,
+      status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'cancelled', 'rescheduled')),
+      notes TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_appointments_document ON appointments(document_id);
+    CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
+    CREATE INDEX IF NOT EXISTS idx_appointments_po ON appointments(po_number);
   `);
 }
 
