@@ -1637,7 +1637,8 @@ label {
     display: none !important;
   }
 
-  /* Adjust workspace content only for views with mobile headers */
+  /* Adjust workspace content for mobile */
+  #overviewView.card,
   #workspace.card,
   #clientsView.card,
   #itemsView.card,
@@ -1647,6 +1648,7 @@ label {
     border: none;
   }
 
+  #overviewView .pane,
   #workspace .pane,
   #clientsView .pane,
   #itemsView .pane,
