@@ -461,7 +461,54 @@
       }
     }
 
+    /* Close button for standalone mode */
+    .close-btn {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.7);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1000;
+      transition: background 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .close-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .close-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: white;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    /* Hide close button in non-standalone mode */
+    .close-btn {
+      display: none;
+    }
+
+    /* Show close button only in standalone mode (PWA/Home Screen app) */
+    @media all and (display-mode: standalone) {
+      .close-btn {
+        display: flex;
+      }
+    }
+
     @media print {
+      .close-btn {
+        display: none !important;
+      }
+
       body {
         padding: 0;
         background: #ffffff;
@@ -629,6 +676,13 @@
   </style>
 </head>
 <body>
+  <!-- Close button for standalone mode -->
+  <button class="close-btn" id="closeBtn" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor"/>
+    </svg>
+  </button>
+
   <div class="share-view">
     <div class="doc-card" id="docContent">
       <div id="loadingMessage" class="loading-message">
@@ -638,6 +692,20 @@
   </div>
 
   <script>
+    // Close button handler for standalone mode
+    const closeBtn = document.getElementById('closeBtn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        // Try to close the window, or go back in history
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          // If there's no history, try to close (works in some PWA contexts)
+          window.close();
+        }
+      });
+    }
+
     const token = new URLSearchParams(window.location.search).get('token');
 
     if (!token) {

@@ -1048,6 +1048,68 @@ closeBtn.addEventListener('click', () => {
   window.location.href = '/';
 });
 
+// Mobile navigation handling
+const mobileNav = document.getElementById('mobileNav');
+const mobileMoreBtn = document.getElementById('mobileMoreBtn');
+const mobileMoreMenu = document.getElementById('mobileMoreMenu');
+
+if (mobileNav) {
+  // Handle clicks on main mobile nav items
+  mobileNav.querySelectorAll('.mobile-nav__item[data-view]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      if (hasUnsavedChanges && !formSubmitted) {
+        const confirmLeave = confirm('You have unsaved changes. Are you sure you want to leave this page?');
+        if (!confirmLeave) return;
+      }
+
+      const view = btn.dataset.view;
+      if (view === 'estimates' || view === 'invoices' || view === 'overview') {
+        window.location.href = '/';
+      } else {
+        window.location.href = `/#${view}`;
+      }
+    });
+  });
+
+  // Handle clicks on More menu items
+  if (mobileMoreMenu) {
+    mobileMoreMenu.querySelectorAll('.mobile-nav__menu-item[data-view]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        if (hasUnsavedChanges && !formSubmitted) {
+          const confirmLeave = confirm('You have unsaved changes. Are you sure you want to leave this page?');
+          if (!confirmLeave) return;
+        }
+
+        const view = btn.dataset.view;
+        mobileMoreMenu.classList.add('hidden');
+        window.location.href = `/#${view}`;
+      });
+    });
+  }
+
+  // Toggle More menu
+  if (mobileMoreBtn) {
+    mobileMoreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      mobileMoreMenu.classList.toggle('hidden');
+    });
+  }
+
+  // Close More menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (mobileMoreMenu && !mobileMoreMenu.classList.contains('hidden')) {
+      if (!e.target.closest('.mobile-nav__menu') && !e.target.closest('#mobileMoreBtn')) {
+        mobileMoreMenu.classList.add('hidden');
+      }
+    }
+  });
+}
+
 document.getElementById('addLineItem').addEventListener('click', () => {
   addLineItemRow();
   markFormAsChanged();
