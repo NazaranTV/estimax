@@ -1118,12 +1118,12 @@ label {
 }
 
 .desktop-only {
-  display: block !important;
+  display: initial !important;
 }
 
 @media (max-width: 768px) {
   .mobile-only {
-    display: block !important;
+    display: initial !important;
   }
 
   .desktop-only {
@@ -1626,19 +1626,25 @@ label {
     transform: scale(1.3);
   }
 
-  /* Hide desktop workspace header on mobile */
-  .workspace__header {
+  /* Hide desktop workspace header on mobile (only for views with mobile headers) */
+  .workspace__header.desktop-only {
     display: none !important;
   }
 
-  /* Adjust workspace content */
-  .workspace.card {
+  /* Adjust workspace content only for views with mobile headers */
+  #workspace.card,
+  #clientsView.card,
+  #itemsView.card,
+  #materialsView.card {
     padding: 0;
     background: transparent;
     border: none;
   }
 
-  .workspace .pane {
+  #workspace .pane,
+  #clientsView .pane,
+  #itemsView .pane,
+  #materialsView .pane {
     padding: 0;
   }
 
