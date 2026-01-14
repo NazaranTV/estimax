@@ -1112,7 +1112,11 @@ label {
 }
 
 /* Mobile responsiveness */
-/* Utility classes for responsive design */
+/* Responsive visibility utilities */
+.desktop-only {
+  display: block;
+}
+
 .mobile-view-header,
 .mobile-view-content,
 .alphabet-index {
