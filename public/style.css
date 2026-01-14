@@ -1113,21 +1113,27 @@ label {
 
 /* Mobile responsiveness */
 /* Utility classes for responsive design */
-.mobile-only {
-  display: none !important;
-}
-
-.desktop-only {
-  display: initial !important;
+.mobile-view-header,
+.mobile-view-content,
+.alphabet-index {
+  display: none;
 }
 
 @media (max-width: 768px) {
-  .mobile-only {
-    display: initial !important;
-  }
-
   .desktop-only {
     display: none !important;
+  }
+
+  .mobile-view-header {
+    display: block;
+  }
+
+  .mobile-view-content {
+    display: block;
+  }
+
+  .alphabet-index {
+    display: flex;
   }
 
   /* Hide desktop sidebar on mobile */
