@@ -60,6 +60,7 @@ const clientsView = document.getElementById('clientsView');
 const materialsView = document.getElementById('materialsView');
 const itemsView = document.getElementById('itemsView');
 const settingsView = document.getElementById('settingsView');
+const calendarView = document.getElementById('calendarView');
 const aiView = document.getElementById('aiView'); // May not exist in HTML
 const typeList = document.getElementById('typeList');
 const searchDocs = document.getElementById('searchDocs');
@@ -1747,6 +1748,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     filterType = 'all';
@@ -1762,6 +1764,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     setFormType(view === 'estimates' ? 'estimate' : 'invoice');
@@ -1781,6 +1784,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     if (!clients.length) loadClients();
@@ -1790,6 +1794,7 @@ const switchView = (view) => {
     clientsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     materialsView.classList.remove('hidden');
     aiView?.classList.add('hidden');
@@ -1801,6 +1806,7 @@ const switchView = (view) => {
     clientsView.classList.add('hidden');
     materialsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     itemsView.classList.remove('hidden');
     aiView?.classList.add('hidden');
@@ -1814,16 +1820,30 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.remove('hidden');
     loadNotifications();
+  } else if (view === 'calendar') {
+    overviewView.classList.add('hidden');
+    workspace.classList.add('hidden');
+    clientsView.classList.add('hidden');
+    materialsView.classList.add('hidden');
+    itemsView.classList.add('hidden');
+    settingsView.classList.add('hidden');
+    placeholder.classList.add('hidden');
+    aiView?.classList.add('hidden');
+    document.getElementById('notificationsView').classList.add('hidden');
+    calendarView?.classList.remove('hidden');
+    loadCalendar();
   } else if (view === 'settings') {
     overviewView.classList.add('hidden');
     workspace.classList.add('hidden');
     clientsView.classList.add('hidden');
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
@@ -1835,6 +1855,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     aiView?.classList.remove('hidden');
@@ -1845,6 +1866,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     placeholder.classList.remove('hidden');
@@ -4688,5 +4710,276 @@ if (statusFilters) {
 
 // Initial clone
 cloneStatusFiltersToMobile();
+
+// ========================================
+// CALENDAR FUNCTIONALITY
+// ========================================
+
+let calendarDate = new Date();
+let calendarViewMode = 'month';
+let appointments = [];
+
+const loadCalendar = async () => {
+  try {
+    const res = await fetch('/api/calendar/appointments');
+    const data = await res.json();
+    appointments = data.appointments || [];
+    renderCalendar();
+    renderAppointments();
+  } catch (err) {
+    console.error('Error loading calendar:', err);
+  }
+};
+
+const renderCalendar = () => {
+  const calendarHeader = document.getElementById('calendarHeader');
+  const calendarGrid = document.getElementById('calendarGrid');
+
+  if (!calendarHeader || !calendarGrid) return;
+
+  if (calendarViewMode === 'month') {
+    renderMonthView(calendarHeader, calendarGrid);
+  } else if (calendarViewMode === 'week') {
+    renderWeekView(calendarHeader, calendarGrid);
+  } else {
+    renderDayView(calendarHeader, calendarGrid);
+  }
+};
+
+const renderMonthView = (header, grid) => {
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+
+  // Header with month/year
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  header.innerHTML = `<h3 style="margin: 0; font-size: 18px;">${monthNames[month]} ${year}</h3>`;
+
+  // Get first day of month and number of days
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+
+  // Build grid
+  let html = '<div class="calendar-grid-month">';
+
+  // Day headers
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  dayNames.forEach(day => {
+    html += `<div class="calendar-day-header">${day}</div>`;
+  });
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="calendar-day empty"></div>';
+  }
+
+  // Days of month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateStr = date.toISOString().split('T')[0];
+    const isToday = date.toDateString() === today.toDateString();
+
+    // Count appointments for this day
+    const dayAppointments = appointments.filter(apt =>
+      apt.appointmentDate && apt.appointmentDate.startsWith(dateStr)
+    );
+
+    html += `
+      <div class="calendar-day ${isToday ? 'today' : ''}" data-date="${dateStr}">
+        <div class="calendar-day-number">${day}</div>
+        ${dayAppointments.length > 0 ? `
+          <div class="calendar-day-dots">
+            ${dayAppointments.slice(0, 3).map(apt =>
+              `<div class="calendar-dot ${apt.status || 'scheduled'}"></div>`
+            ).join('')}
+            ${dayAppointments.length > 3 ? `<span class="calendar-more">+${dayAppointments.length - 3}</span>` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  grid.innerHTML = html;
+
+  // Add click handlers to days
+  grid.querySelectorAll('.calendar-day[data-date]').forEach(dayEl => {
+    dayEl.addEventListener('click', () => {
+      const date = dayEl.dataset.date;
+      showDayAppointments(date);
+    });
+  });
+};
+
+const renderWeekView = (header, grid) => {
+  // Get start of week (Sunday)
+  const startOfWeek = new Date(calendarDate);
+  startOfWeek.setDate(calendarDate.getDate() - calendarDate.getDay());
+
+  header.innerHTML = `<h3 style="margin: 0; font-size: 18px;">Week of ${startOfWeek.toLocaleDateString()}</h3>`;
+
+  let html = '<div class="calendar-grid-week">';
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startOfWeek);
+    date.setDate(startOfWeek.getDate() + i);
+    const dateStr = date.toISOString().split('T')[0];
+    const dayAppointments = appointments.filter(apt =>
+      apt.appointmentDate && apt.appointmentDate.startsWith(dateStr)
+    );
+
+    html += `
+      <div class="calendar-week-day">
+        <div class="calendar-week-day-header">
+          <div>${dayNames[i]}</div>
+          <div>${date.getDate()}</div>
+        </div>
+        <div class="calendar-week-day-appointments">
+          ${dayAppointments.map(apt => `
+            <div class="calendar-appointment-card ${apt.status || 'scheduled'}">
+              <div style="font-weight: 500;">${apt.appointmentTime || ''}</div>
+              <div style="font-size: 12px;">${apt.clientName || ''}</div>
+              <div style="font-size: 11px; color: var(--text-tertiary);">${apt.poNumber || ''}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  grid.innerHTML = html;
+};
+
+const renderDayView = (header, grid) => {
+  const dateStr = calendarDate.toISOString().split('T')[0];
+  header.innerHTML = `<h3 style="margin: 0; font-size: 18px;">${calendarDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>`;
+
+  const dayAppointments = appointments.filter(apt =>
+    apt.appointmentDate && apt.appointmentDate.startsWith(dateStr)
+  ).sort((a, b) => (a.appointmentTime || '').localeCompare(b.appointmentTime || ''));
+
+  let html = '<div class="calendar-day-view">';
+
+  if (dayAppointments.length === 0) {
+    html += '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">No appointments scheduled</div>';
+  } else {
+    dayAppointments.forEach(apt => {
+      html += `
+        <div class="calendar-appointment-card-detailed ${apt.status || 'scheduled'}">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <div style="font-weight: 600; font-size: 16px;">${apt.appointmentTime || 'No time'}</div>
+              <div style="font-size: 14px; margin-top: 4px;">${apt.clientName || ''}</div>
+              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">PO: ${apt.poNumber || 'N/A'}</div>
+            </div>
+            <div class="status-badge ${apt.status || 'scheduled'}">${apt.status || 'scheduled'}</div>
+          </div>
+          ${apt.serviceAddress ? `<div style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">📍 ${apt.serviceAddress}</div>` : ''}
+          ${apt.notes ? `<div style="margin-top: 8px; font-size: 13px;">${apt.notes}</div>` : ''}
+        </div>
+      `;
+    });
+  }
+
+  html += '</div>';
+  grid.innerHTML = html;
+};
+
+const renderAppointments = () => {
+  const appointmentsContent = document.getElementById('appointmentsContent');
+  if (!appointmentsContent) return;
+
+  // Show next 10 upcoming appointments
+  const now = new Date();
+  const upcoming = appointments
+    .filter(apt => {
+      const aptDate = new Date(apt.appointmentDate);
+      return aptDate >= now;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.appointmentDate + ' ' + (a.appointmentTime || '00:00'));
+      const dateB = new Date(b.appointmentDate + ' ' + (b.appointmentTime || '00:00'));
+      return dateA - dateB;
+    })
+    .slice(0, 10);
+
+  if (upcoming.length === 0) {
+    appointmentsContent.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No upcoming appointments</div>';
+    return;
+  }
+
+  appointmentsContent.innerHTML = upcoming.map(apt => {
+    const aptDate = new Date(apt.appointmentDate);
+    return `
+      <div class="appointment-item" style="padding: 12px; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <div style="font-weight: 500;">${aptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${apt.appointmentTime || 'TBD'}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">${apt.clientName || ''}</div>
+            <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">PO: ${apt.poNumber || 'N/A'}</div>
+          </div>
+          <div class="status-badge ${apt.status || 'scheduled'}" style="font-size: 11px; padding: 4px 8px;">${apt.status || 'scheduled'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+const showDayAppointments = (dateStr) => {
+  const date = new Date(dateStr);
+  calendarDate = date;
+  calendarViewMode = 'day';
+  document.getElementById('calendarViewMode').value = 'day';
+  renderCalendar();
+};
+
+// Calendar navigation controls
+const calendarTodayBtn = document.getElementById('calendarTodayBtn');
+const calendarPrevBtn = document.getElementById('calendarPrevBtn');
+const calendarNextBtn = document.getElementById('calendarNextBtn');
+const calendarViewModeSelect = document.getElementById('calendarViewMode');
+
+if (calendarTodayBtn) {
+  calendarTodayBtn.addEventListener('click', () => {
+    calendarDate = new Date();
+    renderCalendar();
+  });
+}
+
+if (calendarPrevBtn) {
+  calendarPrevBtn.addEventListener('click', () => {
+    if (calendarViewMode === 'month') {
+      calendarDate.setMonth(calendarDate.getMonth() - 1);
+    } else if (calendarViewMode === 'week') {
+      calendarDate.setDate(calendarDate.getDate() - 7);
+    } else {
+      calendarDate.setDate(calendarDate.getDate() - 1);
+    }
+    renderCalendar();
+  });
+}
+
+if (calendarNextBtn) {
+  calendarNextBtn.addEventListener('click', () => {
+    if (calendarViewMode === 'month') {
+      calendarDate.setMonth(calendarDate.getMonth() + 1);
+    } else if (calendarViewMode === 'week') {
+      calendarDate.setDate(calendarDate.getDate() + 7);
+    } else {
+      calendarDate.setDate(calendarDate.getDate() + 1);
+    }
+    renderCalendar();
+  });
+}
+
+if (calendarViewModeSelect) {
+  calendarViewModeSelect.addEventListener('change', (e) => {
+    calendarViewMode = e.target.value;
+    renderCalendar();
+  });
+}
 
 } // End of initApp function

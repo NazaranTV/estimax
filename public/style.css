@@ -2096,3 +2096,335 @@ label {
   text-align: right;
   font-weight: 600;
 }
+
+/* ========================================
+   CALENDAR STYLES
+   ======================================== */
+
+.calendar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.calendar-header {
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.calendar-grid {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  padding: 16px;
+}
+
+/* Month View Grid */
+.calendar-grid-month {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-day-header {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.calendar-day {
+  min-height: 80px;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-day:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-normal);
+}
+
+.calendar-day.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+.calendar-day.today {
+  background: var(--accent-soft);
+  border-color: var(--accent-primary);
+}
+
+.calendar-day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.calendar-day-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.calendar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+}
+
+.calendar-dot.scheduled {
+  background: #3b82f6;
+}
+
+.calendar-dot.completed {
+  background: var(--success);
+}
+
+.calendar-dot.cancelled {
+  background: var(--text-tertiary);
+}
+
+.calendar-dot.rescheduled {
+  background: var(--warning);
+}
+
+.calendar-more {
+  font-size: 9px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Week View Grid */
+.calendar-grid-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-week-day {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.calendar-week-day-header {
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.calendar-week-day-appointments {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Day View */
+.calendar-day-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Appointment Cards */
+.calendar-appointment-card {
+  padding: 8px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-primary);
+  font-size: 11px;
+}
+
+.calendar-appointment-card.scheduled {
+  border-left-color: #3b82f6;
+}
+
+.calendar-appointment-card.completed {
+  border-left-color: var(--success);
+}
+
+.calendar-appointment-card.cancelled {
+  border-left-color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+.calendar-appointment-card.rescheduled {
+  border-left-color: var(--warning);
+}
+
+.calendar-appointment-card-detailed {
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--accent-primary);
+}
+
+.calendar-appointment-card-detailed.scheduled {
+  border-left-color: #3b82f6;
+}
+
+.calendar-appointment-card-detailed.completed {
+  border-left-color: var(--success);
+}
+
+.calendar-appointment-card-detailed.cancelled {
+  border-left-color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+.calendar-appointment-card-detailed.rescheduled {
+  border-left-color: var(--warning);
+}
+
+/* Appointments List Sidebar */
+.appointments-list {
+  width: 300px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.appointments-list h3 {
+  padding: 16px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.appointments-list #appointmentsContent {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+.status-badge.scheduled {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.status-badge.completed {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status-badge.cancelled {
+  background: rgba(113, 113, 122, 0.15);
+  color: var(--text-tertiary);
+}
+
+.status-badge.rescheduled {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+/* Calendar Pane Layout */
+#calendarView .pane {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Responsive Calendar */
+@media (max-width: 1024px) {
+  #calendarView .pane {
+    flex-direction: column;
+  }
+
+  .appointments-list {
+    width: 100%;
+    max-height: 300px;
+  }
+
+  .calendar-grid-week {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-grid-month {
+    gap: 4px;
+  }
+
+  .calendar-day {
+    min-height: 60px;
+    padding: 6px;
+  }
+
+  .calendar-day-number {
+    font-size: 12px;
+  }
+
+  .calendar-grid-week {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .appointments-list {
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid-month {
+    gap: 2px;
+  }
+
+  .calendar-day {
+    min-height: 50px;
+    padding: 4px;
+  }
+
+  .calendar-day-number {
+    font-size: 11px;
+  }
+
+  .calendar-day-dots {
+    gap: 2px;
+  }
+
+  .calendar-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .calendar-grid-week {
+    grid-template-columns: 1fr;
+  }
+}

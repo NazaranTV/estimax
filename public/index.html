@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Estimator | Estimates & Invoices</title>
-  <link rel="stylesheet" href="style.css?v=20260114-js-fix">
+  <link rel="stylesheet" href="style.css?v=20260114-calendar">
 </head>
 <body>
   <div class="page">
     <nav class="nav">
       <div class="nav__inner" id="topNav">
         <button class="nav__item active" data-view="overview">Overview</button>
+        <button class="nav__item" data-view="calendar">Calendar</button>
         <button class="nav__item" data-view="estimates">Estimates</button>
         <button class="nav__item" data-view="invoices">Invoices</button>
         <button class="nav__item" data-view="clients">Clients</button>
@@ -226,6 +227,45 @@
       </div>
       <div class="pane">
         <div id="notificationsList" class="notifications-list"></div>
+      </div>
+    </section>
+
+    <section class="workspace card hidden" id="calendarView">
+      <div class="workspace__header">
+        <div>
+          <p class="eyebrow">Calendar</p>
+          <h2>Scheduled Appointments</h2>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn ghost" id="calendarTodayBtn">Today</button>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn ghost small" id="calendarPrevBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button class="btn ghost small" id="calendarNextBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <select id="calendarViewMode" class="btn ghost small">
+            <option value="month">Month</option>
+            <option value="week">Week</option>
+            <option value="day">Day</option>
+          </select>
+        </div>
+      </div>
+      <div class="pane">
+        <div id="calendarContainer" class="calendar-container">
+          <div id="calendarHeader" class="calendar-header"></div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+        <div id="appointmentsList" class="appointments-list" style="margin-top: 24px;">
+          <h3 style="margin-bottom: 16px;">Upcoming Appointments</h3>
+          <div id="appointmentsContent"></div>
+        </div>
       </div>
     </section>
 
@@ -846,6 +886,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="app.js?v=20260114-js-fix3"></script>
+  <script src="app.js?v=20260114-calendar"></script>
 </body>
 </html>
