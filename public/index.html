@@ -59,16 +59,39 @@
     </section>
 
     <section class="workspace card hidden" id="workspace">
-      <div class="workspace__header">
+      <!-- Desktop Header -->
+      <div class="workspace__header desktop-only">
         <div>
           <p class="eyebrow" id="listEyebrow">Estimates</p>
           <h2 id="listTitle">All estimates</h2>
         </div>
         <button class="btn primary" id="newDocBtn" type="button">Create Estimate</button>
       </div>
+
+      <!-- Mobile Header -->
+      <div class="mobile-view-header mobile-only">
+        <div class="mobile-view-header__top">
+          <div style="width: 40px;"></div>
+          <h1 class="mobile-view-header__title" id="mobileListTitle">Estimates</h1>
+          <button class="mobile-view-header__icon-btn" id="mobileNewDocBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mobile-view-header__search">
+          <input id="mobileSearchDocs" type="text" placeholder="Search all estimates">
+        </div>
+        <div class="mobile-view-header__filters" id="mobileStatusFilters">
+          <!-- Status filter buttons will be dynamically populated -->
+        </div>
+      </div>
+
       <div class="pane">
-        <input id="searchDocs" type="text" placeholder="Search by name, client, PO, or project" class="search-input" style="margin-bottom: 16px;">
-        <div class="pill-nav" id="statusFilters">
+        <div class="mobile-view-content with-filters mobile-only"></div>
+        <input id="searchDocs" type="text" placeholder="Search by name, client, PO, or project" class="search-input desktop-only" style="margin-bottom: 16px;">
+        <div class="pill-nav desktop-only" id="statusFilters">
           <!-- Status filter buttons will be dynamically populated -->
         </div>
         <div id="typeList" class="doc-list"></div>
@@ -84,43 +107,108 @@
     </section>
 
     <section class="workspace card hidden" id="clientsView">
-      <div class="workspace__header">
+      <!-- Desktop Header -->
+      <div class="workspace__header desktop-only">
         <div>
           <p class="eyebrow">Clients</p>
           <h2>Saved clients</h2>
         </div>
         <button class="btn primary" id="addClientFromClients">Add client</button>
       </div>
+
+      <!-- Mobile Header -->
+      <div class="mobile-view-header mobile-only">
+        <div class="mobile-view-header__top">
+          <div style="width: 40px;"></div>
+          <h1 class="mobile-view-header__title">Clients</h1>
+          <button class="mobile-view-header__icon-btn" id="mobileAddClient" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mobile-view-header__search">
+          <input id="mobileClientsSearch" type="text" placeholder="Search">
+        </div>
+      </div>
+
+      <!-- Alphabet Index -->
+      <div class="alphabet-index mobile-only" id="alphabetIndex">
+        <!-- Letters will be populated by JavaScript -->
+      </div>
+
       <div class="pane">
-        <input type="text" id="clientsSearchInput" placeholder="Search clients by name, company, or email..." class="search-input">
+        <div class="mobile-view-content mobile-only"></div>
+        <input type="text" id="clientsSearchInput" placeholder="Search clients by name, company, or email..." class="search-input desktop-only">
         <div id="clientsList" class="clients-grid"></div>
       </div>
     </section>
 
     <section class="workspace card hidden" id="itemsView">
-      <div class="workspace__header">
+      <!-- Desktop Header -->
+      <div class="workspace__header desktop-only">
         <div>
           <p class="eyebrow">Items</p>
           <h2>Saved line items</h2>
         </div>
         <button class="btn primary" id="addItemFromView">Add item</button>
       </div>
+
+      <!-- Mobile Header -->
+      <div class="mobile-view-header mobile-only">
+        <div class="mobile-view-header__top">
+          <div style="width: 40px;"></div>
+          <h1 class="mobile-view-header__title">Items</h1>
+          <button class="mobile-view-header__icon-btn" id="mobileAddItem" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mobile-view-header__search">
+          <input id="mobileItemsSearch" type="text" placeholder="Search">
+        </div>
+      </div>
+
       <div class="pane">
-        <input type="text" id="itemsSearchInput" placeholder="Search items by name or description..." class="search-input">
+        <div class="mobile-view-content mobile-only"></div>
+        <input type="text" id="itemsSearchInput" placeholder="Search items by name or description..." class="search-input desktop-only">
         <div id="itemsListView" class="items-grid"></div>
       </div>
     </section>
 
     <section class="workspace card hidden" id="materialsView">
-      <div class="workspace__header">
+      <!-- Desktop Header -->
+      <div class="workspace__header desktop-only">
         <div>
           <p class="eyebrow">Materials</p>
           <h2>Saved materials</h2>
         </div>
         <button class="btn primary" id="addMaterialFromView">Add material</button>
       </div>
+
+      <!-- Mobile Header -->
+      <div class="mobile-view-header mobile-only">
+        <div class="mobile-view-header__top">
+          <div style="width: 40px;"></div>
+          <h1 class="mobile-view-header__title">Materials</h1>
+          <button class="mobile-view-header__icon-btn" id="mobileAddMaterial" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mobile-view-header__search">
+          <input id="mobileMaterialsSearch" type="text" placeholder="Search">
+        </div>
+      </div>
+
       <div class="pane">
-        <input type="text" id="materialsSearchInput" placeholder="Search materials by name or description..." class="search-input">
+        <div class="mobile-view-content mobile-only"></div>
+        <input type="text" id="materialsSearchInput" placeholder="Search materials by name or description..." class="search-input desktop-only">
         <div id="materialsListView" class="materials-grid"></div>
       </div>
     </section>
