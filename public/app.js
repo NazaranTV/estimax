@@ -1387,6 +1387,7 @@ const renderSummary = () => {
 };
 
 const renderRecent = () => {
+  if (!recentList) return; // Element doesn't exist in current layout
   recentList.innerHTML = '';
   documents.slice(0, 4).forEach((doc) => {
     const item = document.createElement('li');
