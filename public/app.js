@@ -4503,4 +4503,188 @@ window.showClientPreview = (client) => {
   clientViewModal.classList.remove('hidden');
 };
 
+// ============================================================================
+// Mobile View Enhancements
+// ============================================================================
+
+// Mobile button event listeners
+const mobileNewDocBtn = document.getElementById('mobileNewDocBtn');
+const mobileAddClient = document.getElementById('mobileAddClient');
+const mobileAddItem = document.getElementById('mobileAddItem');
+const mobileAddMaterial = document.getElementById('mobileAddMaterial');
+
+if (mobileNewDocBtn) {
+  mobileNewDocBtn.addEventListener('click', () => {
+    const btn = document.getElementById('newDocBtn');
+    if (btn) btn.click();
+  });
+}
+
+if (mobileAddClient) {
+  mobileAddClient.addEventListener('click', () => {
+    const btn = document.getElementById('addClientFromClients');
+    if (btn) btn.click();
+  });
+}
+
+if (mobileAddItem) {
+  mobileAddItem.addEventListener('click', () => {
+    const btn = document.getElementById('addItemFromView');
+    if (btn) btn.click();
+  });
+}
+
+if (mobileAddMaterial) {
+  mobileAddMaterial.addEventListener('click', () => {
+    const btn = document.getElementById('addMaterialFromView');
+    if (btn) btn.click();
+  });
+}
+
+// Mobile search sync
+const mobileSearchDocs = document.getElementById('mobileSearchDocs');
+const mobileClientsSearch = document.getElementById('mobileClientsSearch');
+const mobileItemsSearch = document.getElementById('mobileItemsSearch');
+const mobileMaterialsSearch = document.getElementById('mobileMaterialsSearch');
+
+// Sync mobile search with desktop search for estimates/invoices
+if (mobileSearchDocs && searchDocs) {
+  mobileSearchDocs.addEventListener('input', (e) => {
+    searchDocs.value = e.target.value;
+    searchDocs.dispatchEvent(new Event('input'));
+  });
+}
+
+// Sync mobile search with desktop search for clients
+if (mobileClientsSearch) {
+  const desktopSearch = document.getElementById('clientsSearchInput');
+  if (desktopSearch) {
+    mobileClientsSearch.addEventListener('input', (e) => {
+      desktopSearch.value = e.target.value;
+      desktopSearch.dispatchEvent(new Event('input'));
+    });
+  }
+}
+
+// Sync mobile search with desktop search for items
+if (mobileItemsSearch) {
+  const desktopSearch = document.getElementById('itemsSearchInput');
+  if (desktopSearch) {
+    mobileItemsSearch.addEventListener('input', (e) => {
+      desktopSearch.value = e.target.value;
+      desktopSearch.dispatchEvent(new Event('input'));
+    });
+  }
+}
+
+// Sync mobile search with desktop search for materials
+if (mobileMaterialsSearch) {
+  const desktopSearch = document.getElementById('materialsSearchInput');
+  if (desktopSearch) {
+    mobileMaterialsSearch.addEventListener('input', (e) => {
+      desktopSearch.value = e.target.value;
+      desktopSearch.dispatchEvent(new Event('input'));
+    });
+  }
+}
+
+// Alphabet index for clients view
+const alphabetIndex = document.getElementById('alphabetIndex');
+if (alphabetIndex) {
+  // Populate alphabet index
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#'.split('');
+  alphabetIndex.innerHTML = letters.map(letter =>
+    `<div class="alphabet-index__letter" data-letter="${letter}">${letter}</div>`
+  ).join('');
+
+  // Handle alphabet index clicks
+  alphabetIndex.addEventListener('click', (e) => {
+    if (e.target.classList.contains('alphabet-index__letter')) {
+      const letter = e.target.dataset.letter;
+
+      // Find first client starting with this letter
+      const clientsList = document.getElementById('clientsList');
+      if (clientsList) {
+        const clientCards = clientsList.querySelectorAll('.client-card');
+        for (const card of clientCards) {
+          const name = card.querySelector('h4')?.textContent || '';
+          const firstLetter = name.charAt(0).toUpperCase();
+
+          if (letter === '#') {
+            // Handle non-alphabetic characters
+            if (!/[A-Z]/.test(firstLetter)) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              break;
+            }
+          } else if (firstLetter === letter) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            break;
+          }
+        }
+      }
+
+      // Highlight active letter
+      alphabetIndex.querySelectorAll('.alphabet-index__letter').forEach(el => {
+        el.classList.remove('active');
+      });
+      e.target.classList.add('active');
+    }
+  });
+}
+
+// Update mobile title when switching between estimates and invoices
+const observer = new MutationObserver(() => {
+  const mobileTitle = document.getElementById('mobileListTitle');
+  const desktopTitle = document.getElementById('listTitle');
+  if (mobileTitle && desktopTitle) {
+    mobileTitle.textContent = desktopTitle.textContent.replace('All ', '');
+  }
+});
+
+const listTitle = document.getElementById('listTitle');
+if (listTitle) {
+  observer.observe(listTitle, { childList: true, characterData: true, subtree: true });
+}
+
+// Clone desktop status filters to mobile
+const cloneStatusFiltersToMobile = () => {
+  const desktopFilters = document.getElementById('statusFilters');
+  const mobileFilters = document.getElementById('mobileStatusFilters');
+
+  if (desktopFilters && mobileFilters) {
+    // Clear mobile filters
+    mobileFilters.innerHTML = '';
+
+    // Clone each button
+    const buttons = desktopFilters.querySelectorAll('button');
+    buttons.forEach(btn => {
+      const mobileBtn = document.createElement('button');
+      mobileBtn.className = 'mobile-view-header__filter-btn';
+      mobileBtn.textContent = btn.textContent;
+      mobileBtn.dataset.status = btn.dataset.status;
+
+      if (btn.classList.contains('active')) {
+        mobileBtn.classList.add('active');
+      }
+
+      // Sync click with desktop button
+      mobileBtn.addEventListener('click', () => {
+        btn.click();
+      });
+
+      mobileFilters.appendChild(mobileBtn);
+    });
+  }
+};
+
+// Watch for changes to desktop filters
+const filtersObserver = new MutationObserver(cloneStatusFiltersToMobile);
+const statusFilters = document.getElementById('statusFilters');
+if (statusFilters) {
+  filtersObserver.observe(statusFilters, { childList: true, subtree: true, attributes: true });
+}
+
+// Initial clone
+cloneStatusFiltersToMobile();
+
 } // End of initApp function
