@@ -1854,8 +1854,9 @@ const switchView = (view) => {
 };
 
 topNav.addEventListener('click', (e) => {
-  if (!e.target.dataset.view) return;
-  switchView(e.target.dataset.view);
+  const btn = e.target.closest('button[data-view]');
+  if (!btn) return;
+  switchView(btn.dataset.view);
 });
 
 // Mobile navigation handling
