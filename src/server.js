@@ -10,6 +10,8 @@ const pgSession = require('connect-pg-simple')(session);
 const { pool, initDb, toCamel } = require('./db');
 const { getMaterialData } = require('./priceScraperValueSerp');
 const authRoutes = require('./routes/auth');
+const calendarRoutes = require('./routes/calendar');
+const publicRoutes = require('./routes/public');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -50,6 +52,12 @@ app.get('/health', (req, res) => {
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+
+// Calendar routes
+app.use('/api/calendar', calendarRoutes);
+
+// Public routes (no auth required)
+app.use('/api/public', publicRoutes);
 
 initDb()
   .then(() => console.log('Database ready'))
