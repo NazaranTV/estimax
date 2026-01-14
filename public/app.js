@@ -4642,7 +4642,7 @@ const observer = new MutationObserver(() => {
   }
 });
 
-const listTitle = document.getElementById('listTitle');
+// listTitle is already declared at line 68
 if (listTitle) {
   observer.observe(listTitle, { childList: true, characterData: true, subtree: true });
 }
