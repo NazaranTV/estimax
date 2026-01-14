@@ -4680,7 +4680,7 @@ const cloneStatusFiltersToMobile = () => {
 
 // Watch for changes to desktop filters
 const filtersObserver = new MutationObserver(cloneStatusFiltersToMobile);
-const statusFilters = document.getElementById('statusFilters');
+// statusFilters is already declared at line 91
 if (statusFilters) {
   filtersObserver.observe(statusFilters, { childList: true, subtree: true, attributes: true });
 }
