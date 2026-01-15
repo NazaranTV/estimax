@@ -185,6 +185,8 @@ async function initDb() {
         ALTER TABLE documents ADD COLUMN approved_at TIMESTAMPTZ;
         ALTER TABLE documents ADD COLUMN declined_at TIMESTAMPTZ;
         ALTER TABLE documents ADD COLUMN customer_notes TEXT;
+        -- Set existing NULL values to 'pending'
+        UPDATE documents SET approval_status = 'pending' WHERE approval_status IS NULL;
       END IF;
     END $$;
 
