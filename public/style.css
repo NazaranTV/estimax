@@ -486,32 +486,24 @@ label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 999px;
-  border: 1px solid var(--border-normal);
-  background: var(--bg-elevated);
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: capitalize;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-secondary);
   transition: var(--transition);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.pill.success {
-  background: var(--success-soft);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: var(--success);
-}
-
-.pill.warning {
-  background: var(--warning-soft);
-  border-color: rgba(245, 158, 11, 0.3);
-  color: var(--warning);
-}
-
-.pill.error {
-  background: var(--error-soft);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: var(--error);
+.pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Status indicator dot */
@@ -521,6 +513,46 @@ label {
   height: 6px;
   border-radius: 50%;
   background: currentColor;
+  box-shadow: 0 0 4px currentColor;
+}
+
+/* Status-specific colors */
+.pill.success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+}
+
+.pill.success::before {
+  background: #10b981;
+}
+
+.pill.warning,
+.pill.warn {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+
+.pill.warning::before,
+.pill.warn::before {
+  background: #f59e0b;
+}
+
+.pill.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.pill.error::before {
+  background: #ef4444;
+}
+
+.pill.info {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+}
+
+.pill.info::before {
+  background: #3b82f6;
 }
 
 /* Grid layouts */
@@ -654,6 +686,76 @@ label {
 
 .dropdown-item:hover {
   background: #272532;
+}
+
+/* Status dropdown for pills */
+.status-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.status-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: #211F2D;
+  border: 1px solid #33323E;
+  border-radius: var(--radius-sm);
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.status-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  border-radius: 4px;
+}
+
+.status-dropdown-item::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.status-dropdown-item:hover {
+  background: #272532;
+}
+
+/* Status dropdown item colors */
+.status-dropdown-item[data-status="draft"] {
+  color: #9ca3af;
+}
+
+.status-dropdown-item[data-status="sent"],
+.status-dropdown-item[data-status="approved"] {
+  color: #34d399;
+}
+
+.status-dropdown-item[data-status="viewed"] {
+  color: #60a5fa;
+}
+
+.status-dropdown-item[data-status="declined"] {
+  color: #fbbf24;
 }
 
 /* Summary cards */
