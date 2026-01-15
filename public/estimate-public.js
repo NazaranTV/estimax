@@ -65,9 +65,12 @@ const renderEstimate = () => {
 
   // Treat null/undefined as pending
   const approvalStatus = doc.approvalStatus || 'pending';
+  const documentStatus = doc.status || 'draft';
   console.log('Resolved approval status:', approvalStatus);
+  console.log('Document status:', documentStatus);
 
-  if (approvalStatus === 'approved' || approvalStatus === 'declined') {
+  // Only show approval status if the estimate has been sent (not a draft)
+  if (documentStatus !== 'draft' && (approvalStatus === 'approved' || approvalStatus === 'declined')) {
     console.log('Hiding buttons, showing banner');
     statusBanner.classList.remove('hidden');
     statusBanner.classList.add(approvalStatus);
@@ -80,11 +83,16 @@ const renderEstimate = () => {
 
     // Hide action buttons
     actionButtons.classList.add('hidden');
-  } else {
+  } else if (documentStatus !== 'draft') {
     console.log('Showing buttons, hiding banner');
-    // Show action buttons for pending estimates
+    // Show action buttons for pending estimates (only if not a draft)
     statusBanner.classList.add('hidden');
     actionButtons.classList.remove('hidden');
+  } else {
+    console.log('Draft estimate - hiding both banner and buttons');
+    // Hide both for draft estimates
+    statusBanner.classList.add('hidden');
+    actionButtons.classList.add('hidden');
   }
 
   // Client info
