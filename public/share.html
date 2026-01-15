@@ -885,13 +885,15 @@
 
       if (doc.type === 'estimate') {
         const approvalStatus = doc.approvalStatus || 'pending';
+        const documentStatus = doc.status || 'draft';
 
-        if (approvalStatus === 'approved') {
+        // Only show approval status if the estimate has been sent (not a draft)
+        if (documentStatus !== 'draft' && approvalStatus === 'approved') {
           statusBannerHtml = '<div class="status-banner approved">✓ This estimate has been approved</div>';
-        } else if (approvalStatus === 'declined') {
+        } else if (documentStatus !== 'draft' && approvalStatus === 'declined') {
           statusBannerHtml = '<div class="status-banner declined">✗ This estimate has been declined</div>';
-        } else {
-          // Pending - show action buttons
+        } else if (documentStatus !== 'draft') {
+          // Pending - show action buttons only if not a draft
           actionButtonsHtml = `
             <div class="action-buttons">
               <button class="btn-approve" id="approveBtn">Approve Estimate</button>
