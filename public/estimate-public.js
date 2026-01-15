@@ -50,6 +50,9 @@ const loadEstimate = async () => {
 const renderEstimate = () => {
   const doc = currentEstimate;
 
+  console.log('Rendering estimate, doc:', doc);
+  console.log('Approval status:', doc.approvalStatus);
+
   // Header
   document.getElementById('poNumber').textContent = `PO: ${doc.poNumber || 'N/A'}`;
 
@@ -57,10 +60,15 @@ const renderEstimate = () => {
   const actionButtons = document.getElementById('actionButtons');
   const statusBanner = document.getElementById('statusBanner');
 
+  console.log('Action buttons element:', actionButtons);
+  console.log('Status banner element:', statusBanner);
+
   // Treat null/undefined as pending
   const approvalStatus = doc.approvalStatus || 'pending';
+  console.log('Resolved approval status:', approvalStatus);
 
   if (approvalStatus === 'approved' || approvalStatus === 'declined') {
+    console.log('Hiding buttons, showing banner');
     statusBanner.classList.remove('hidden');
     statusBanner.classList.add(approvalStatus);
 
@@ -73,6 +81,7 @@ const renderEstimate = () => {
     // Hide action buttons
     actionButtons.classList.add('hidden');
   } else {
+    console.log('Showing buttons, hiding banner');
     // Show action buttons for pending estimates
     statusBanner.classList.add('hidden');
     actionButtons.classList.remove('hidden');

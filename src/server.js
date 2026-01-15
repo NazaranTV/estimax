@@ -226,9 +226,9 @@ app.post('/api/documents', async (req, res) => {
       `
       INSERT INTO documents (
         type, po_number, client_id, client_name, client_email, client_billing_email, client_phone, client_billing_address, project_name,
-        service_address, line_items, subtotal, tax_rate, total, status, due_date, valid_until, notes, updated_at
+        service_address, line_items, subtotal, tax_rate, total, status, due_date, valid_until, notes, approval_status, updated_at
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,NOW())
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,NOW())
       RETURNING *
     `,
       [
@@ -250,6 +250,7 @@ app.post('/api/documents', async (req, res) => {
         dueDate || null,
         finalValidUntil || null,
         notes || null,
+        type === 'estimate' ? 'pending' : null,
       ],
     );
 
