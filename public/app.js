@@ -1420,7 +1420,18 @@ const statusPill = (doc) => {
 
   const deliveryPill = document.createElement('button');
   const deliveryStatus = doc.status || 'draft';
-  deliveryPill.className = 'pill ' + (deliveryStatus === 'sent' ? 'success' : deliveryStatus === 'viewed' ? 'info' : deliveryStatus === 'approved' ? 'success' : deliveryStatus === 'declined' ? 'warn' : 'warn');
+
+  // Map status to pill variant
+  const statusVariants = {
+    'sent': 'success',
+    'viewed': 'info',
+    'approved': 'success',
+    'declined': 'warning',
+    'draft': 'warn'
+  };
+
+  const variant = statusVariants[deliveryStatus] || 'warn';
+  deliveryPill.className = `pill ${variant}`;
   deliveryPill.textContent = deliveryStatus;
   deliveryPill.title = 'Click to change delivery status';
 
@@ -1436,6 +1447,7 @@ const statusPill = (doc) => {
     const btn = document.createElement('button');
     btn.className = 'status-dropdown-item';
     btn.textContent = status;
+    btn.dataset.status = status;
     btn.onclick = async (e) => {
       e.stopPropagation();
       deliveryMenu.classList.add('hidden');
