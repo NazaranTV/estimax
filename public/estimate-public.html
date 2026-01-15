@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Estimate</title>
+  <link rel="stylesheet" href="style.css?v=20260114-calendar">
+  <style>
+    .public-estimate-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .public-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .public-header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .public-header .po-number {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .status-banner {
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      margin-bottom: 32px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .status-banner.approved {
+      background: var(--success-soft);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    .status-banner.declined {
+      background: var(--error-soft);
+      color: var(--error);
+      border: 1px solid var(--error);
+    }
+
+    .estimate-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .estimate-section h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    .line-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .line-items-table th {
+      text-align: left;
+      padding: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .line-items-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .line-items-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .totals-section {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 2px solid var(--border-normal);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      min-width: 250px;
+      font-size: 15px;
+    }
+
+    .total-row.final {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 8px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+
+    .btn-approve {
+      background: var(--success);
+      color: white;
+      padding: 14px 32px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-approve:hover {
+      background: #059669;
+    }
+
+    .btn-decline {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      padding: 14px 32px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-normal);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-decline:hover {
+      background: var(--bg-hover);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid var(--border-normal);
+    }
+
+    .modal-header {
+      margin-bottom: 24px;
+    }
+
+    .modal-header h3 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .modal-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-normal);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-normal);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-submit {
+      background: var(--accent-primary);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-submit.danger {
+      background: var(--error);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .error {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--error);
+    }
+
+    @media (max-width: 768px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn-approve,
+      .btn-decline {
+        width: 100%;
+      }
+
+      .line-items-table {
+        font-size: 13px;
+      }
+
+      .line-items-table th,
+      .line-items-table td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="public-estimate-container" id="container">
+    <div class="loading" id="loading">Loading estimate...</div>
+    <div class="error hidden" id="error">Failed to load estimate</div>
+
+    <div id="content" class="hidden">
+      <div class="public-header">
+        <div class="po-number" id="poNumber">—</div>
+        <h1>Estimate</h1>
+      </div>
+
+      <div id="statusBanner" class="status-banner hidden"></div>
+
+      <div class="estimate-section">
+        <h2>Client Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Client Name</div>
+            <div class="info-value" id="clientName">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Email</div>
+            <div class="info-value" id="clientEmail">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Phone</div>
+            <div class="info-value" id="clientPhone">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Service Address</div>
+            <div class="info-value" id="serviceAddress">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="estimate-section">
+        <h2>Project Details</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Project Name</div>
+            <div class="info-value" id="projectName">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Valid Until</div>
+            <div class="info-value" id="validUntil">—</div>
+          </div>
+        </div>
+        <div class="info-item" style="margin-top: 16px;" id="notesSection">
+          <div class="info-label">Notes</div>
+          <div class="info-value" id="notes">—</div>
+        </div>
+      </div>
+
+      <div class="estimate-section">
+        <h2>Line Items</h2>
+        <table class="line-items-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th style="text-align: right;">Quantity</th>
+              <th style="text-align: right;">Rate</th>
+              <th style="text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="lineItemsBody">
+          </tbody>
+        </table>
+        <div class="totals-section">
+          <div class="total-row">
+            <span>Subtotal:</span>
+            <span id="subtotal">$0.00</span>
+          </div>
+          <div class="total-row final">
+            <span>Total:</span>
+            <span id="total">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons" id="actionButtons">
+        <button class="btn-approve" id="approveBtn">Approve Estimate</button>
+        <button class="btn-decline" id="declineBtn">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approve Modal -->
+  <div class="modal" id="approveModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Approve Estimate</h3>
+        <p>You're about to approve this estimate. You can add any notes or comments below.</p>
+      </div>
+      <div class="form-group">
+        <label>Notes (Optional)</label>
+        <textarea id="approveNotes" placeholder="Add any comments or special requests..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelApprove">Cancel</button>
+        <button class="btn-submit" id="submitApprove">Approve</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decline Modal -->
+  <div class="modal" id="declineModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Decline Estimate</h3>
+        <p>Please let us know why you're declining this estimate (optional).</p>
+      </div>
+      <div class="form-group">
+        <label>Reason (Optional)</label>
+        <textarea id="declineNotes" placeholder="Let us know why you're declining..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelDecline">Cancel</button>
+        <button class="btn-submit danger" id="submitDecline">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="estimate-public.js?v=20260114"></script>
+</body>
+</html>

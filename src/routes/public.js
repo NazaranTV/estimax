@@ -80,6 +80,79 @@ router.post('/estimate/:shareToken/approve', async (req, res) => {
   }
 });
 
+// Book appointment slot (public)
+router.post('/estimate/:shareToken/book', async (req, res) => {
+  try {
+    const { shareToken } = req.params;
+    const { slotId } = req.body;
+
+    // Get the document
+    const { rows: docRows } = await pool.query(`
+      SELECT * FROM documents
+      WHERE share_token = $1 AND type = 'estimate'
+    `, [shareToken]);
+
+    if (docRows.length === 0) {
+      return res.status(404).json({ error: 'Estimate not found' });
+    }
+
+    const document = docRows[0];
+
+    // Get the slot
+    const { rows: slotRows } = await pool.query(`
+      SELECT * FROM availability_slots
+      WHERE id = $1 AND document_id = $2 AND is_booked = FALSE
+    `, [slotId, document.id]);
+
+    if (slotRows.length === 0) {
+      return res.status(404).json({ error: 'Slot not available' });
+    }
+
+    const slot = slotRows[0];
+
+    // Create appointment
+    const { rows: appointmentRows } = await pool.query(`
+      INSERT INTO appointments (
+        document_id, po_number, client_name, client_email, client_phone,
+        service_address, appointment_date, appointment_time, status
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'scheduled')
+      RETURNING *
+    `, [
+      document.id,
+      document.po_number,
+      document.client_name,
+      document.client_email,
+      document.client_phone,
+      document.service_address,
+      slot.slot_date,
+      slot.slot_time
+    ]);
+
+    // Mark slot as booked
+    await pool.query(`
+      UPDATE availability_slots
+      SET is_booked = TRUE
+      WHERE id = $1
+    `, [slotId]);
+
+    // Create notification
+    await pool.query(`
+      INSERT INTO notifications (type, title, message, document_id)
+      VALUES ('appointment', $1, $2, $3)
+    `, [
+      'New Appointment Scheduled',
+      `${document.client_name} scheduled an appointment for ${slot.slot_date} at ${slot.slot_time} (${document.po_number})`,
+      document.id
+    ]);
+
+    res.json({ appointment: toCamel(appointmentRows[0]) });
+  } catch (err) {
+    console.error('Error booking appointment:', err);
+    res.status(500).json({ error: 'Failed to book appointment' });
+  }
+});
+
 // Decline estimate (public)
 router.post('/estimate/:shareToken/decline', async (req, res) => {
   try {

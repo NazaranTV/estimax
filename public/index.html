@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Estimator | Estimates & Invoices</title>
-  <link rel="stylesheet" href="style.css?v=20260114-js-fix">
+  <link rel="stylesheet" href="style.css?v=20260114-calendar">
 </head>
 <body>
   <div class="page">
     <nav class="nav">
       <div class="nav__inner" id="topNav">
         <button class="nav__item active" data-view="overview">Overview</button>
+        <button class="nav__item" data-view="calendar">Calendar</button>
         <button class="nav__item" data-view="estimates">Estimates</button>
         <button class="nav__item" data-view="invoices">Invoices</button>
         <button class="nav__item" data-view="clients">Clients</button>
@@ -226,6 +227,45 @@
       </div>
       <div class="pane">
         <div id="notificationsList" class="notifications-list"></div>
+      </div>
+    </section>
+
+    <section class="workspace card hidden" id="calendarView">
+      <div class="workspace__header">
+        <div>
+          <p class="eyebrow">Calendar</p>
+          <h2>Scheduled Appointments</h2>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn ghost" id="calendarTodayBtn">Today</button>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn ghost small" id="calendarPrevBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button class="btn ghost small" id="calendarNextBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <select id="calendarViewMode" class="btn ghost small">
+            <option value="month">Month</option>
+            <option value="week">Week</option>
+            <option value="day">Day</option>
+          </select>
+        </div>
+      </div>
+      <div class="pane">
+        <div id="calendarContainer" class="calendar-container">
+          <div id="calendarHeader" class="calendar-header"></div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+        <div id="appointmentsList" class="appointments-list" style="margin-top: 24px;">
+          <h3 style="margin-bottom: 16px;">Upcoming Appointments</h3>
+          <div id="appointmentsContent"></div>
+        </div>
       </div>
     </section>
 
@@ -780,14 +820,14 @@
       </svg>
       <span class="mobile-nav__label">Clients</span>
     </button>
-    <button class="mobile-nav__item active" data-view="overview">
+    <button class="mobile-nav__item active" data-view="calendar">
       <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
       </svg>
-      <span class="mobile-nav__label">Overview</span>
+      <span class="mobile-nav__label">Calendar</span>
     </button>
     <button class="mobile-nav__item mobile-nav__more" id="mobileMoreBtn">
       <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -799,6 +839,15 @@
     </button>
     <!-- More Menu Dropdown -->
     <div class="mobile-nav__menu hidden" id="mobileMoreMenu">
+      <button class="mobile-nav__menu-item" data-view="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Overview
+      </button>
       <button class="mobile-nav__menu-item" data-view="items">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="8" y1="6" x2="21" y2="6"/>
@@ -846,6 +895,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="app.js?v=20260114-js-fix3"></script>
+  <script src="app.js?v=20260114-mobile-nav"></script>
 </body>
 </html>

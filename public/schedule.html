@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule Appointment</title>
+  <link rel="stylesheet" href="style.css?v=20260114-calendar">
+  <style>
+    .schedule-container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .schedule-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .schedule-header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .schedule-header p {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .slot-card {
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .slot-card:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--border-normal);
+    }
+
+    .slot-card.selected {
+      background: var(--accent-soft);
+      border-color: var(--accent-primary);
+    }
+
+    .slot-date {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .slot-time {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--accent-primary);
+    }
+
+    .slot-card.selected .slot-time {
+      color: var(--accent-hover);
+    }
+
+    .no-slots {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .confirm-section {
+      margin-top: 32px;
+      padding: 24px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      display: none;
+    }
+
+    .confirm-section.active {
+      display: block;
+    }
+
+    .confirm-section h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .selected-slot-display {
+      padding: 16px;
+      background: var(--accent-soft);
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .selected-slot-display .date {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .selected-slot-display .time {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent-primary);
+      margin-top: 4px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .btn-schedule {
+      background: var(--success);
+      color: white;
+      padding: 14px 32px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-schedule:hover {
+      background: #059669;
+    }
+
+    .btn-schedule:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-cancel {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      padding: 14px 32px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-normal);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-cancel:hover {
+      background: var(--bg-hover);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .error {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--error);
+    }
+
+    .success-message {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .success-message h2 {
+      font-size: 32px;
+      color: var(--success);
+      margin-bottom: 16px;
+    }
+
+    .success-message p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .slots-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn-schedule,
+      .btn-cancel {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="schedule-container">
+    <div class="loading" id="loading">Loading available times...</div>
+    <div class="error hidden" id="error">Failed to load available times</div>
+    <div class="success-message hidden" id="success">
+      <h2>✓ Appointment Scheduled!</h2>
+      <p id="successMessage">Your appointment has been successfully scheduled. We've sent a confirmation to your email.</p>
+    </div>
+
+    <div id="content" class="hidden">
+      <div class="schedule-header">
+        <h1>Schedule Your Appointment</h1>
+        <p>Select a date and time that works best for you</p>
+      </div>
+
+      <div id="slotsContainer">
+        <div class="no-slots" id="noSlots">
+          No available time slots at the moment. Please contact us directly to schedule your appointment.
+        </div>
+        <div class="slots-grid" id="slotsGrid"></div>
+      </div>
+
+      <div class="confirm-section" id="confirmSection">
+        <h3>Confirm Your Appointment</h3>
+        <div class="selected-slot-display">
+          <div class="date" id="selectedDate">—</div>
+          <div class="time" id="selectedTime">—</div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn-cancel" id="cancelBtn">Change Time</button>
+          <button class="btn-schedule" id="scheduleBtn">Confirm Appointment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="schedule.js?v=20260114"></script>
+</body>
+</html>

@@ -43,6 +43,7 @@ let viewMode = 'contractor';
 let hasUnsavedChanges = false;
 let formSubmitted = false;
 let isInitialLoad = true;
+let availabilitySlots = [];
 
 // Utility functions
 const currency = (value) =>
@@ -601,6 +602,11 @@ docForm.addEventListener('submit', async (e) => {
       notes: docForm.notes.value.trim(),
       lineItems: readLineItems(),
     };
+
+    // Add availability slots for estimates
+    if (docType === 'estimate' && availabilitySlots.length > 0) {
+      payload.availabilitySlots = availabilitySlots;
+    }
     const url = editingId ? `/api/documents/${editingId}` : '/api/documents';
     const res = await fetch(url, {
       method: editingId ? 'PUT' : 'POST',
@@ -996,6 +1002,12 @@ const loadDocument = async () => {
     (doc.lineItems || []).forEach((item) => addLineItemRow(item));
     if (!lineItemsEl.children.length) addLineItemRow();
     recalcTotals();
+
+    // Load availability slots for estimates
+    if (doc.type === 'estimate' && doc.availabilitySlots) {
+      availabilitySlots = doc.availabilitySlots;
+      renderAvailabilitySlots();
+    }
   } catch (err) {
     console.error(err);
     alert('Failed to load document');
@@ -1419,6 +1431,76 @@ function setupAutocomplete(inputEl, dataSource) {
   }
 }
 
+// ========================================
+// AVAILABILITY SLOTS MANAGEMENT
+// ========================================
+
+const renderAvailabilitySlots = () => {
+  const availabilitySlotsList = document.getElementById('availabilitySlotsList');
+  if (!availabilitySlotsList) return;
+
+  if (availabilitySlots.length === 0) {
+    availabilitySlotsList.innerHTML = '<p style="font-size: 13px; color: var(--text-secondary); padding: 16px; text-align: center;">No availability slots added yet</p>';
+    return;
+  }
+
+  availabilitySlotsList.innerHTML = availabilitySlots.map((slot, index) => `
+    <div class="availability-slot-item">
+      <div class="availability-slot-inputs">
+        <div class="form-field">
+          <label>Date</label>
+          <input type="date" value="${slot.date}" onchange="updateAvailabilitySlot(${index}, 'date', this.value)">
+        </div>
+        <div class="form-field">
+          <label>Time</label>
+          <input type="time" value="${slot.time}" onchange="updateAvailabilitySlot(${index}, 'time', this.value)">
+        </div>
+      </div>
+      <button type="button" class="btn ghost small" onclick="removeAvailabilitySlot(${index})">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="0" y1="0" x2="14" y2="14"/>
+          <line x1="14" y1="0" x2="0" y2="14"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+};
+
+const addAvailabilitySlot = () => {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  availabilitySlots.push({
+    date: tomorrow.toISOString().split('T')[0],
+    time: '09:00'
+  });
+
+  renderAvailabilitySlots();
+  markFormAsChanged();
+};
+
+window.updateAvailabilitySlot = (index, field, value) => {
+  if (availabilitySlots[index]) {
+    availabilitySlots[index][field] = value;
+    markFormAsChanged();
+  }
+};
+
+window.removeAvailabilitySlot = (index) => {
+  availabilitySlots.splice(index, 1);
+  renderAvailabilitySlots();
+  markFormAsChanged();
+};
+
+// Show/hide availability section based on document type
+const toggleAvailabilitySection = () => {
+  const availabilitySection = document.getElementById('availabilitySection');
+  if (availabilitySection) {
+    availabilitySection.style.display = docType === 'estimate' ? 'block' : 'none';
+  }
+};
+
 // Initialize
 (async () => {
   formTitle.textContent = editingId ? `Update ${docType}` : `Create ${docType}`;
@@ -1442,6 +1524,16 @@ function setupAutocomplete(inputEl, dataSource) {
   }
 
   recalcTotals();
+
+  // Initialize availability section
+  toggleAvailabilitySection();
+  renderAvailabilitySlots();
+
+  // Availability slot button handler
+  const addAvailabilitySlotBtn = document.getElementById('addAvailabilitySlot');
+  if (addAvailabilitySlotBtn) {
+    addAvailabilitySlotBtn.addEventListener('click', addAvailabilitySlot);
+  }
 
   // Enable change tracking after initial load
   setTimeout(() => {
