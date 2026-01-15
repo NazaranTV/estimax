@@ -167,7 +167,7 @@ app.get('/api/documents/:id', async (req, res) => {
         [id]
       );
       document.availabilitySlots = slotsResult.rows.map(row => ({
-        slotDate: row.slot_date,
+        slotDate: row.slot_date instanceof Date ? row.slot_date.toISOString().split('T')[0] : row.slot_date,
         slotTime: row.slot_time,
         slotTimeEnd: row.slot_time_end
       }));
