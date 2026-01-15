@@ -157,7 +157,22 @@ app.get('/api/documents/:id', async (req, res) => {
     const { id } = req.params;
     const { rows } = await pool.query('SELECT * FROM documents WHERE id = $1', [id]);
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
-    res.json(toCamel(rows[0]));
+
+    const document = toCamel(rows[0]);
+
+    // Load availability slots for estimates
+    if (document.type === 'estimate') {
+      const slotsResult = await pool.query(
+        'SELECT slot_date, slot_time FROM availability_slots WHERE document_id = $1 AND is_booked = false ORDER BY slot_date, slot_time',
+        [id]
+      );
+      document.availabilitySlots = slotsResult.rows.map(row => ({
+        date: row.slot_date,
+        time: row.slot_time
+      }));
+    }
+
+    res.json(document);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to load document' });
@@ -182,6 +197,7 @@ app.post('/api/documents', async (req, res) => {
       notes,
       dueDate,
       validUntil,
+      availabilitySlots,
     } = req.body;
 
     if (!type || !['estimate', 'invoice'].includes(type)) {
@@ -237,7 +253,31 @@ app.post('/api/documents', async (req, res) => {
       ],
     );
 
-    res.status(201).json(toCamel(rows[0]));
+    const document = rows[0];
+
+    // Save availability slots if provided (for estimates only)
+    if (type === 'estimate' && availabilitySlots && Array.isArray(availabilitySlots) && availabilitySlots.length > 0) {
+      const values = [];
+      const params = [];
+      let paramIndex = 1;
+
+      availabilitySlots.forEach(slot => {
+        if (slot.date && slot.time) {
+          values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
+          params.push(document.id, slot.date, slot.time);
+          paramIndex += 3;
+        }
+      });
+
+      if (values.length > 0) {
+        await pool.query(`
+          INSERT INTO availability_slots (document_id, slot_date, slot_time)
+          VALUES ${values.join(', ')}
+        `, params);
+      }
+    }
+
+    res.status(201).json(toCamel(document));
   } catch (err) {
     console.error('Save document error', err);
     res.status(500).json({ error: 'Failed to save document', detail: err.message });
@@ -264,6 +304,7 @@ app.put('/api/documents/:id', async (req, res) => {
       dueDate,
       validUntil,
       status,
+      availabilitySlots,
     } = req.body;
 
     const items = Array.isArray(lineItems) ? sanitizeLineItems(lineItems) : null;
@@ -318,7 +359,38 @@ app.put('/api/documents/:id', async (req, res) => {
     );
 
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
-    res.json(toCamel(rows[0]));
+
+    const document = rows[0];
+
+    // Update availability slots if provided
+    if (availabilitySlots !== undefined && document.type === 'estimate') {
+      // Delete existing slots
+      await pool.query('DELETE FROM availability_slots WHERE document_id = $1', [id]);
+
+      // Insert new slots if any
+      if (Array.isArray(availabilitySlots) && availabilitySlots.length > 0) {
+        const values = [];
+        const params = [];
+        let paramIndex = 1;
+
+        availabilitySlots.forEach(slot => {
+          if (slot.date && slot.time) {
+            values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
+            params.push(id, slot.date, slot.time);
+            paramIndex += 3;
+          }
+        });
+
+        if (values.length > 0) {
+          await pool.query(`
+            INSERT INTO availability_slots (document_id, slot_date, slot_time)
+            VALUES ${values.join(', ')}
+          `, params);
+        }
+      }
+    }
+
+    res.json(toCamel(document));
   } catch (err) {
     console.error('Update document error', err);
     res.status(500).json({ error: 'Failed to update document', detail: err.message });

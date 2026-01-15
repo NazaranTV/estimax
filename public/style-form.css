@@ -534,3 +534,46 @@
     text-align: center;
   }
 }
+
+/* ========================================
+   AVAILABILITY SLOTS SECTION
+   ======================================== */
+
+.availability-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.availability-slot-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.availability-slot-inputs {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.availability-slot-item .form-field {
+  margin-bottom: 0;
+}
+
+.availability-slot-item .btn {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .availability-slot-inputs {
+    grid-template-columns: 1fr;
+  }
+}
