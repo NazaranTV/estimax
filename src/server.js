@@ -163,12 +163,13 @@ app.get('/api/documents/:id', async (req, res) => {
     // Load availability slots for estimates
     if (document.type === 'estimate') {
       const slotsResult = await pool.query(
-        'SELECT slot_date, slot_time FROM availability_slots WHERE document_id = $1 AND is_booked = false ORDER BY slot_date, slot_time',
+        'SELECT slot_date, slot_time, slot_time_end FROM availability_slots WHERE document_id = $1 AND is_booked = false ORDER BY slot_date, slot_time',
         [id]
       );
       document.availabilitySlots = slotsResult.rows.map(row => ({
-        date: row.slot_date,
-        time: row.slot_time
+        slotDate: row.slot_date,
+        slotTime: row.slot_time,
+        slotTimeEnd: row.slot_time_end
       }));
     }
 
