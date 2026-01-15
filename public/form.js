@@ -1453,15 +1453,31 @@ const renderAvailabilitySlots = () => {
       <div class="availability-slot-inputs">
         <div class="form-field">
           <label>Date</label>
-          <input type="date" value="${slot.date}" onchange="updateAvailabilitySlot(${index}, 'date', this.value)">
+          <input type="date" value="${slot.date || ''}" onchange="updateAvailabilitySlot(${index}, 'date', this.value)">
         </div>
         <div class="form-field">
           <label>Start Time</label>
-          <input type="time" value="${slot.startTime || slot.time || ''}" onchange="updateAvailabilitySlot(${index}, 'startTime', this.value)">
+          <div class="time-input-wrapper">
+            <input type="time" value="${slot.startTime || slot.time || ''}" step="900" onchange="updateAvailabilitySlot(${index}, 'startTime', this.value)" id="startTime_${index}">
+            <div class="time-presets">
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'startTime', '08:00')">8 AM</button>
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'startTime', '09:00')">9 AM</button>
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'startTime', '12:00')">12 PM</button>
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'startTime', '13:00')">1 PM</button>
+            </div>
+          </div>
         </div>
         <div class="form-field">
           <label>End Time</label>
-          <input type="time" value="${slot.endTime || ''}" onchange="updateAvailabilitySlot(${index}, 'endTime', this.value)">
+          <div class="time-input-wrapper">
+            <input type="time" value="${slot.endTime || ''}" step="900" onchange="updateAvailabilitySlot(${index}, 'endTime', this.value)" id="endTime_${index}">
+            <div class="time-presets">
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'endTime', '12:00')">12 PM</button>
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'endTime', '13:00')">1 PM</button>
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'endTime', '17:00')">5 PM</button>
+              <button type="button" class="time-preset-btn" onclick="setTimePreset(${index}, 'endTime', '18:00')">6 PM</button>
+            </div>
+          </div>
         </div>
       </div>
       <button type="button" class="btn ghost small" onclick="removeAvailabilitySlot(${index})">
@@ -1500,6 +1516,14 @@ window.removeAvailabilitySlot = (index) => {
   availabilitySlots.splice(index, 1);
   renderAvailabilitySlots();
   markFormAsChanged();
+};
+
+window.setTimePreset = (index, field, time) => {
+  if (availabilitySlots[index]) {
+    availabilitySlots[index][field] = time;
+    renderAvailabilitySlots();
+    markFormAsChanged();
+  }
 };
 
 // Show/hide availability section based on document type
