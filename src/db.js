@@ -188,11 +188,23 @@ async function initDb() {
       END IF;
     END $$;
 
+    -- Add slot_time_end column to availability_slots if it doesn't exist
+    DO $$
+    BEGIN
+      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='availability_slots') THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_name='availability_slots' AND column_name='slot_time_end') THEN
+          ALTER TABLE availability_slots ADD COLUMN slot_time_end TEXT;
+        END IF;
+      END IF;
+    END $$;
+
     CREATE TABLE IF NOT EXISTS availability_slots (
       id SERIAL PRIMARY KEY,
       document_id INTEGER REFERENCES documents(id) ON DELETE CASCADE,
       slot_date DATE NOT NULL,
       slot_time TEXT NOT NULL,
+      slot_time_end TEXT,
       is_booked BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );

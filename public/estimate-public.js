@@ -53,7 +53,8 @@ const renderEstimate = () => {
   // Header
   document.getElementById('poNumber').textContent = `PO: ${doc.poNumber || 'N/A'}`;
 
-  // Status banner
+  // Status banner and action buttons
+  const actionButtons = document.getElementById('actionButtons');
   if (doc.approvalStatus === 'approved' || doc.approvalStatus === 'declined') {
     const statusBanner = document.getElementById('statusBanner');
     statusBanner.classList.remove('hidden');
@@ -66,7 +67,10 @@ const renderEstimate = () => {
     }
 
     // Hide action buttons
-    document.getElementById('actionButtons').classList.add('hidden');
+    actionButtons.classList.add('hidden');
+  } else {
+    // Ensure action buttons are visible for pending estimates
+    actionButtons.classList.remove('hidden');
   }
 
   // Client info

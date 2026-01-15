@@ -147,14 +147,17 @@ router.post('/availability', requireAuth, async (req, res) => {
     let paramIndex = 1;
 
     slots.forEach((slot, i) => {
-      values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
-      params.push(documentId, slot.date, slot.time);
-      paramIndex += 3;
+      const time = slot.startTime || slot.time;
+      if (time) {
+        values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3})`);
+        params.push(documentId, slot.date, time, slot.endTime || null);
+        paramIndex += 4;
+      }
     });
 
     if (values.length > 0) {
       await pool.query(`
-        INSERT INTO availability_slots (document_id, slot_date, slot_time)
+        INSERT INTO availability_slots (document_id, slot_date, slot_time, slot_time_end)
         VALUES ${values.join(', ')}
       `, params);
     }
