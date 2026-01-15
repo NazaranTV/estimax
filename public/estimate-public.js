@@ -55,12 +55,16 @@ const renderEstimate = () => {
 
   // Status banner and action buttons
   const actionButtons = document.getElementById('actionButtons');
-  if (doc.approvalStatus === 'approved' || doc.approvalStatus === 'declined') {
-    const statusBanner = document.getElementById('statusBanner');
-    statusBanner.classList.remove('hidden');
-    statusBanner.classList.add(doc.approvalStatus);
+  const statusBanner = document.getElementById('statusBanner');
 
-    if (doc.approvalStatus === 'approved') {
+  // Treat null/undefined as pending
+  const approvalStatus = doc.approvalStatus || 'pending';
+
+  if (approvalStatus === 'approved' || approvalStatus === 'declined') {
+    statusBanner.classList.remove('hidden');
+    statusBanner.classList.add(approvalStatus);
+
+    if (approvalStatus === 'approved') {
       statusBanner.textContent = '✓ This estimate has been approved';
     } else {
       statusBanner.textContent = '✗ This estimate has been declined';
@@ -69,7 +73,8 @@ const renderEstimate = () => {
     // Hide action buttons
     actionButtons.classList.add('hidden');
   } else {
-    // Ensure action buttons are visible for pending estimates
+    // Show action buttons for pending estimates
+    statusBanner.classList.add('hidden');
     actionButtons.classList.remove('hidden');
   }
 

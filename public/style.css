@@ -762,10 +762,11 @@ label {
 
 .modal__header .dropdown-menu {
   position: absolute;
-  top: auto;
-  bottom: 100%;
+  top: calc(100% + 4px);
+  bottom: auto;
   left: 0;
-  margin-bottom: 4px;
+  right: auto;
+  margin-bottom: 0;
 }
 
 .modal__body {
