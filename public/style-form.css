@@ -559,7 +559,7 @@
 .availability-slot-inputs {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
 }
 
@@ -575,5 +575,146 @@
 @media (max-width: 640px) {
   .availability-slot-inputs {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   Materials Section
+   ======================================== */
+
+.materials-header-row {
+  display: grid;
+  grid-template-columns: 2fr 70px 70px 70px 70px 60px;
+  gap: 6px;
+  flex: 1;
+  align-items: center;
+}
+
+.materials-header-row span {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: rgba(124, 58, 237, 0.7);
+  letter-spacing: 0.5px;
+}
+
+.materials-header-row span:nth-child(2),
+.materials-header-row span:nth-child(3),
+.materials-header-row span:nth-child(4) {
+  text-align: center;
+}
+
+.materials-header-row span:nth-child(5) {
+  text-align: right;
+}
+
+.material-row {
+  display: grid;
+  grid-template-columns: 2fr 70px 70px 70px 70px 60px;
+  gap: 6px;
+  align-items: center;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.material-input {
+  padding: 4px 6px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  color: var(--text-primary);
+}
+
+.material-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.material-input-prefix {
+  position: absolute;
+  left: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+.material-input-suffix {
+  position: absolute;
+  right: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+.material-input-with-prefix {
+  padding-left: 14px;
+}
+
+.material-input-with-suffix {
+  padding-right: 16px;
+}
+
+.material-total {
+  padding: 4px 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: right;
+}
+
+.material-delete-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: #ef4444;
+}
+
+/* Mobile responsive styles for materials */
+@media (max-width: 768px) {
+  .materials-header-row {
+    display: none;
+  }
+
+  .material-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .material-row input,
+  .material-row .material-input-wrapper,
+  .material-row .material-total,
+  .material-row button {
+    grid-column: 1;
+  }
+
+  .material-row input::placeholder {
+    font-weight: 600;
+  }
+
+  .material-row input[data-field="m-name"]::before {
+    content: "Material: ";
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .material-total::before {
+    content: "Total: ";
+    font-weight: 600;
+    margin-right: 4px;
+    color: var(--text-primary);
+  }
+
+  .material-total {
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .material-delete-btn {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 }

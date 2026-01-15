@@ -262,16 +262,17 @@ app.post('/api/documents', async (req, res) => {
       let paramIndex = 1;
 
       availabilitySlots.forEach(slot => {
-        if (slot.date && slot.time) {
-          values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
-          params.push(document.id, slot.date, slot.time);
-          paramIndex += 3;
+        const time = slot.startTime || slot.time;
+        if (slot.date && time) {
+          values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3})`);
+          params.push(document.id, slot.date, time, slot.endTime || null);
+          paramIndex += 4;
         }
       });
 
       if (values.length > 0) {
         await pool.query(`
-          INSERT INTO availability_slots (document_id, slot_date, slot_time)
+          INSERT INTO availability_slots (document_id, slot_date, slot_time, slot_time_end)
           VALUES ${values.join(', ')}
         `, params);
       }
@@ -374,16 +375,17 @@ app.put('/api/documents/:id', async (req, res) => {
         let paramIndex = 1;
 
         availabilitySlots.forEach(slot => {
-          if (slot.date && slot.time) {
-            values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2})`);
-            params.push(id, slot.date, slot.time);
-            paramIndex += 3;
+          const time = slot.startTime || slot.time;
+          if (slot.date && time) {
+            values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3})`);
+            params.push(id, slot.date, time, slot.endTime || null);
+            paramIndex += 4;
           }
         });
 
         if (values.length > 0) {
           await pool.query(`
-            INSERT INTO availability_slots (document_id, slot_date, slot_time)
+            INSERT INTO availability_slots (document_id, slot_date, slot_time, slot_time_end)
             VALUES ${values.join(', ')}
           `, params);
         }

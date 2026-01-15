@@ -151,13 +151,13 @@ const renderMaterialsSection = (row) => {
   headerRow.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);';
 
   const columnsRow = document.createElement('div');
-  columnsRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; flex: 1; align-items: center;';
+  columnsRow.className = 'materials-header-row';
   columnsRow.innerHTML = `
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px;">Material</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Quantity</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Price</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: center;">Markup</span>
-    <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: rgba(124, 58, 237, 0.7); letter-spacing: 0.5px; text-align: right;">Total</span>
+    <span>Material</span>
+    <span>Quantity</span>
+    <span>Price</span>
+    <span>Markup</span>
+    <span>Total</span>
     <span></span>
   `;
 
@@ -193,20 +193,19 @@ const renderMaterialsSection = (row) => {
     const materialTotal = baseCost * (1 + markupPercent);
     const mRow = document.createElement('div');
     mRow.className = 'material-row';
-    mRow.style.cssText = 'display: grid; grid-template-columns: 2fr 70px 70px 70px 70px 60px; gap: 6px; align-items: center; padding: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px;';
     mRow.innerHTML = `
-      <input placeholder="Material" data-field="m-name" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="0" data-field="m-qty" style="padding: 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px;">
-      <div style="position: relative; display: flex; align-items: center;">
-        <span style="position: absolute; left: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">$</span>
-        <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" style="padding: 4px 6px 4px 14px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
+      <input placeholder="Material" data-field="m-name" class="material-input">
+      <input type="number" step="1" value="${m.qty ?? ''}" placeholder="0" data-field="m-qty" class="material-input">
+      <div class="material-input-wrapper">
+        <span class="material-input-prefix">$</span>
+        <input type="number" step="0.01" value="${m.rate ?? ''}" placeholder="0.00" data-field="m-rate" class="material-input material-input-with-prefix">
       </div>
-      <div style="position: relative; display: flex; align-items: center;">
-        <input type="number" step="1" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" style="padding: 4px 16px 4px 6px; font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 3px; width: 100%;">
-        <span style="position: absolute; right: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.5); pointer-events: none;">%</span>
+      <div class="material-input-wrapper">
+        <input type="number" step="1" value="${m.markup ?? ''}" placeholder="0" data-field="m-markup" class="material-input material-input-with-suffix">
+        <span class="material-input-suffix">%</span>
       </div>
-      <div data-field="m-total" style="padding: 4px 6px; font-size: 12px; color: var(--text-secondary); font-weight: 500; text-align: right;">$${materialTotal.toFixed(2)}</div>
-      <button type="button" class="btn small ghost" style="padding: 4px 8px; font-size: 11px; color: #ef4444;">Delete</button>
+      <div data-field="m-total" class="material-total">$${materialTotal.toFixed(2)}</div>
+      <button type="button" class="btn small ghost material-delete-btn">Delete</button>
     `;
     // Set the material name value after creating the element to avoid HTML escaping issues
     mRow.querySelector('[data-field="m-name"]').value = m.name || '';
@@ -1005,7 +1004,12 @@ const loadDocument = async () => {
 
     // Load availability slots for estimates
     if (doc.type === 'estimate' && doc.availabilitySlots) {
-      availabilitySlots = doc.availabilitySlots;
+      // Transform database fields to frontend structure
+      availabilitySlots = doc.availabilitySlots.map(slot => ({
+        date: slot.slotDate,
+        startTime: slot.slotTime,
+        endTime: slot.slotTimeEnd || ''
+      }));
       renderAvailabilitySlots();
     }
   } catch (err) {
@@ -1452,8 +1456,12 @@ const renderAvailabilitySlots = () => {
           <input type="date" value="${slot.date}" onchange="updateAvailabilitySlot(${index}, 'date', this.value)">
         </div>
         <div class="form-field">
-          <label>Time</label>
-          <input type="time" value="${slot.time}" onchange="updateAvailabilitySlot(${index}, 'time', this.value)">
+          <label>Start Time</label>
+          <input type="time" value="${slot.startTime || slot.time || ''}" onchange="updateAvailabilitySlot(${index}, 'startTime', this.value)">
+        </div>
+        <div class="form-field">
+          <label>End Time</label>
+          <input type="time" value="${slot.endTime || ''}" onchange="updateAvailabilitySlot(${index}, 'endTime', this.value)">
         </div>
       </div>
       <button type="button" class="btn ghost small" onclick="removeAvailabilitySlot(${index})">
@@ -1473,7 +1481,8 @@ const addAvailabilitySlot = () => {
 
   availabilitySlots.push({
     date: tomorrow.toISOString().split('T')[0],
-    time: '09:00'
+    startTime: '09:00',
+    endTime: '12:00'
   });
 
   renderAvailabilitySlots();

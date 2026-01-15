@@ -2427,4 +2427,21 @@ label {
   .calendar-grid-week {
     grid-template-columns: 1fr;
   }
+
+  /* Calendar header controls mobile */
+  #calendarView .workspace__header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  #calendarView .workspace__header > div:last-child {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  #calendarView .workspace__header select {
+    flex: 1;
+  }
 }

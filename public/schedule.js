@@ -25,6 +25,12 @@ const formatTime = (timeStr) => {
   return `${displayHour}:${minutes} ${ampm}`;
 };
 
+const formatTimeRange = (startTime, endTime) => {
+  if (!startTime) return '';
+  if (!endTime) return formatTime(startTime);
+  return `${formatTime(startTime)} - ${formatTime(endTime)}`;
+};
+
 const loadAvailableSlots = async () => {
   const loading = document.getElementById('loading');
   const error = document.getElementById('error');
@@ -78,7 +84,7 @@ const renderSlots = () => {
     slotCard.className = 'slot-card';
     slotCard.innerHTML = `
       <div class="slot-date">${formatDate(slot.slotDate)}</div>
-      <div class="slot-time">${formatTime(slot.slotTime)}</div>
+      <div class="slot-time">${formatTimeRange(slot.slotTime, slot.slotTimeEnd)}</div>
     `;
 
     slotCard.addEventListener('click', () => {
@@ -105,7 +111,7 @@ const selectSlot = (slot) => {
 
   // Update selected slot display
   document.getElementById('selectedDate').textContent = formatDate(slot.slotDate);
-  document.getElementById('selectedTime').textContent = formatTime(slot.slotTime);
+  document.getElementById('selectedTime').textContent = formatTimeRange(slot.slotTime, slot.slotTimeEnd);
 
   // Scroll to confirmation
   confirmSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -153,7 +159,7 @@ scheduleBtn.addEventListener('click', async () => {
     success.classList.remove('hidden');
 
     const successMessage = document.getElementById('successMessage');
-    successMessage.textContent = `Your appointment has been successfully scheduled for ${formatDate(selectedSlot.slotDate)} at ${formatTime(selectedSlot.slotTime)}. We look forward to seeing you!`;
+    successMessage.textContent = `Your appointment has been successfully scheduled for ${formatDate(selectedSlot.slotDate)} at ${formatTimeRange(selectedSlot.slotTime, selectedSlot.slotTimeEnd)}. We look forward to seeing you!`;
   } catch (err) {
     console.error('Error booking appointment:', err);
     alert(err.message || 'Failed to book appointment. Please try again or contact us directly.');
