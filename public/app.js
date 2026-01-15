@@ -463,7 +463,7 @@ const openClientView = (doc) => {
     }
   });
 
-  // Share View - Open share link in new tab
+  // Share View - Open share link in new tab (or Safari if webwrapped)
   previewShareView.onclick = async () => {
     shareDropdown.classList.add('hidden');
     shareDropdown.style.display = 'none';
@@ -478,7 +478,27 @@ const openClientView = (doc) => {
         const updated = await res.json();
         shareToken = updated.shareToken;
       }
-      window.open(`/share.html?token=${shareToken}`, '_blank');
+
+      const shareUrl = `/share.html?token=${shareToken}`;
+
+      // Check if running as a webwrapped app (PWA/home screen app)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                        || window.navigator.standalone
+                        || document.referrer.includes('android-app://');
+
+      if (isStandalone) {
+        // Force open in external browser (Safari on iOS)
+        // Create a temporary link and click it
+        const link = document.createElement('a');
+        link.href = window.location.origin + shareUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        window.open(shareUrl, '_blank');
+      }
     } catch (err) {
       console.error('Failed to open share link:', err);
       alert('Failed to open share link. Please try again.');
@@ -536,8 +556,6 @@ const showMaterialsListView = (doc, printable = false) => {
 
   // If printable mode, open in new window
   if (printable) {
-    const printWindow = window.open('', '_blank');
-
     // Group materials by line item
     const materialsByLineItem = {};
     (doc.lineItems || []).forEach((li) => {
@@ -575,7 +593,7 @@ const showMaterialsListView = (doc, printable = false) => {
       `;
     }
 
-    printWindow.document.write(`
+    const htmlContent = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -606,8 +624,32 @@ const showMaterialsListView = (doc, printable = false) => {
         </script>
       </body>
       </html>
-    `);
-    printWindow.document.close();
+    `;
+
+    // Check if running as a webwrapped app (PWA/home screen app)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                      || window.navigator.standalone
+                      || document.referrer.includes('android-app://');
+
+    if (isStandalone) {
+      // Use blob URL with link click to open in Safari
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Clean up after a delay
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } else {
+      // Normal browser - use window.open
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    }
     return;
   }
 
