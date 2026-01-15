@@ -820,14 +820,14 @@
       </svg>
       <span class="mobile-nav__label">Clients</span>
     </button>
-    <button class="mobile-nav__item active" data-view="overview">
+    <button class="mobile-nav__item active" data-view="calendar">
       <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
       </svg>
-      <span class="mobile-nav__label">Overview</span>
+      <span class="mobile-nav__label">Calendar</span>
     </button>
     <button class="mobile-nav__item mobile-nav__more" id="mobileMoreBtn">
       <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -839,6 +839,15 @@
     </button>
     <!-- More Menu Dropdown -->
     <div class="mobile-nav__menu hidden" id="mobileMoreMenu">
+      <button class="mobile-nav__menu-item" data-view="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Overview
+      </button>
       <button class="mobile-nav__menu-item" data-view="items">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="8" y1="6" x2="21" y2="6"/>
@@ -886,6 +895,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="app.js?v=20260114-calendar"></script>
+  <script src="app.js?v=20260114-mobile-nav"></script>
 </body>
 </html>

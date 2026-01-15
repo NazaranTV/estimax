@@ -1719,7 +1719,7 @@ const switchView = (view) => {
   const mobileNav = document.getElementById('mobileNav');
   if (mobileNav) {
     const mobileMoreMenu = document.getElementById('mobileMoreMenu');
-    const moreMenuViews = ['items', 'materials', 'notifications', 'settings'];
+    const moreMenuViews = ['overview', 'items', 'materials', 'notifications', 'settings'];
 
     // Update main mobile nav items
     mobileNav.querySelectorAll('.mobile-nav__item[data-view]').forEach((btn) => {
@@ -3749,7 +3749,12 @@ loadDocuments();
 loadClients();
 loadItems();
 loadMaterials();
-switchView('overview');
+
+// Set default view based on screen size
+// On mobile, default to calendar; on desktop, default to overview
+const isMobile = window.innerWidth < 768;
+switchView(isMobile ? 'calendar' : 'overview');
+
 setDefaultValidUntil();
 logDebug('App initialized');
 
