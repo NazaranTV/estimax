@@ -398,6 +398,71 @@
       font-size: 12px;
     }
 
+    /* Approve/Decline Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+
+    .btn-approve {
+      background: #10b981;
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-approve:hover {
+      background: #059669;
+    }
+
+    .btn-decline {
+      background: #f3f4f6;
+      color: #1a1a1a;
+      padding: 14px 32px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-decline:hover {
+      background: #e5e7eb;
+    }
+
+    .status-banner {
+      padding: 16px 24px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+      text-align: center;
+      font-weight: 500;
+      font-size: 16px;
+    }
+
+    .status-banner.approved {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+
+    .status-banner.declined {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+    }
+
+    .status-banner.hidden {
+      display: none;
+    }
+
     .loading-message,
     .error-message {
       text-align: center;
@@ -458,6 +523,15 @@
       .total-row {
         min-width: 200px;
         font-size: 16px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn-approve,
+      .btn-decline {
+        width: 100%;
       }
     }
 
@@ -805,8 +879,31 @@
         `;
       }
 
+      // Status banner for estimates
+      let statusBannerHtml = '';
+      let actionButtonsHtml = '';
+
+      if (doc.type === 'estimate') {
+        const approvalStatus = doc.approvalStatus || 'pending';
+
+        if (approvalStatus === 'approved') {
+          statusBannerHtml = '<div class="status-banner approved">✓ This estimate has been approved</div>';
+        } else if (approvalStatus === 'declined') {
+          statusBannerHtml = '<div class="status-banner declined">✗ This estimate has been declined</div>';
+        } else {
+          // Pending - show action buttons
+          actionButtonsHtml = `
+            <div class="action-buttons">
+              <button class="btn-approve" id="approveBtn">Approve Estimate</button>
+              <button class="btn-decline" id="declineBtn">Decline</button>
+            </div>
+          `;
+        }
+      }
+
       document.getElementById('docContent').innerHTML = `
         ${companyHeaderHtml}
+        ${statusBannerHtml}
         <div class="doc-header">
           <div class="client-info">
             <div class="doc-section-title">Bill To</div>
@@ -852,6 +949,8 @@
           </div>
         ` : ''}
 
+        ${actionButtonsHtml}
+
         ${doc.type === 'invoice' ? `
           <div id="paymentTrackingSection" class="payment-tracking" style="display: none;">
             <div class="payment-tracking-title">Payment Status</div>
@@ -895,6 +994,70 @@
       if (doc.type === 'invoice') {
         loadPaymentMethods();
         loadPaymentTracking(doc.id, calculatedTotal);
+      }
+
+      // Attach approve/decline handlers for estimates
+      if (doc.type === 'estimate') {
+        const approveBtn = document.getElementById('approveBtn');
+        const declineBtn = document.getElementById('declineBtn');
+
+        if (approveBtn) {
+          approveBtn.addEventListener('click', () => handleApprove(doc));
+        }
+
+        if (declineBtn) {
+          declineBtn.addEventListener('click', () => handleDecline(doc));
+        }
+      }
+    }
+
+    async function handleApprove(doc) {
+      if (!confirm('Are you sure you want to approve this estimate?')) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/public/estimate/${doc.shareToken}/approve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerNotes: '' })
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to approve estimate');
+        }
+
+        // Reload the page to show updated status
+        window.location.reload();
+      } catch (err) {
+        console.error('Error approving estimate:', err);
+        alert('Failed to approve estimate. Please try again.');
+      }
+    }
+
+    async function handleDecline(doc) {
+      const reason = prompt('Please let us know why you\'re declining this estimate (optional):');
+      if (reason === null) {
+        // User clicked cancel
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/public/estimate/${doc.shareToken}/decline`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerNotes: reason })
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to decline estimate');
+        }
+
+        // Reload the page to show updated status
+        window.location.reload();
+      } catch (err) {
+        console.error('Error declining estimate:', err);
+        alert('Failed to decline estimate. Please try again.');
       }
     }
 
