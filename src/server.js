@@ -134,6 +134,93 @@ app.get('/api/share/:token', async (req, res) => {
   }
 });
 
+// Materials list HTML endpoint (authenticated)
+app.get('/api/documents/:id/materials-list', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('SELECT * FROM documents WHERE id = $1', [id]);
+    if (!rows.length) return res.status(404).send('Document not found');
+
+    const doc = toCamel(rows[0]);
+
+    // Group materials by line item
+    const materialsByLineItem = {};
+    (doc.lineItems || []).forEach((li) => {
+      if (li.materials && li.materials.length > 0) {
+        const lineItemName = li.description || 'Untitled Item';
+        if (!materialsByLineItem[lineItemName]) {
+          materialsByLineItem[lineItemName] = [];
+        }
+        materialsByLineItem[lineItemName].push(...li.materials);
+      }
+    });
+
+    let materialsHtml = '';
+    for (const [lineItem, materials] of Object.entries(materialsByLineItem)) {
+      materialsHtml += `
+        <div style="margin-bottom: 32px;">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #000;">${lineItem}</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="padding: 8px 4px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ddd;">Material</th>
+                <th style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #ddd; width: 100px;">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${materials.map((mat) => `
+                <tr>
+                  <td style="padding: 10px 4px; border-bottom: 1px solid #f0f0f0; font-size: 14px;">${mat.name || 'Unnamed Material'}</td>
+                  <td style="padding: 10px 4px; border-bottom: 1px solid #f0f0f0; text-align: center; font-size: 14px;">${mat.qty || 0}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Materials List - ${doc.type === 'estimate' ? 'Estimate' : 'Invoice'} #${doc.poNumber}</title>
+        <style>
+          body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            color: #000;
+            padding: 40px;
+            line-height: 1.6;
+          }
+          h1 { font-size: 24px; margin-bottom: 8px; }
+          h2 { font-size: 18px; margin-bottom: 24px; color: #666; font-weight: 400; }
+          @media print {
+            body { padding: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Materials List</h1>
+        <h2>${doc.type === 'estimate' ? 'Estimate' : 'Invoice'} #${doc.poNumber || '—'} - ${doc.clientName}</h2>
+        ${materialsHtml}
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to load materials list');
+  }
+});
+
 app.get('/api/documents', async (req, res) => {
   try {
     const { type } = req.query;

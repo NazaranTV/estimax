@@ -488,9 +488,9 @@ const openClientView = (doc) => {
                         || document.referrer.includes('android-app://');
 
       if (isStandalone) {
-        // Force open in Safari by navigating the window
-        // This will open the URL in Safari while keeping the PWA in background
-        window.location.href = window.location.origin + shareUrl;
+        // For iOS PWAs, use full absolute URL to force Safari to open
+        const fullUrl = window.location.protocol + '//' + window.location.host + shareUrl;
+        window.open(fullUrl, '_blank');
       } else {
         window.open(shareUrl, '_blank');
       }
@@ -523,7 +523,21 @@ const openClientView = (doc) => {
     previewShareMaterials.onclick = () => {
       shareDropdown.classList.add('hidden');
       shareDropdown.style.display = 'none';
-      showMaterialsListView(doc, true); // Pass true for printable mode
+
+      // Check if running as a webwrapped app (PWA/home screen app)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                        || window.navigator.standalone
+                        || document.referrer.includes('android-app://');
+
+      if (isStandalone) {
+        // For iOS PWAs, use the server endpoint with full absolute URL to force Safari
+        const materialsUrl = `/api/documents/${doc.id}/materials-list`;
+        const fullUrl = window.location.protocol + '//' + window.location.host + materialsUrl;
+        window.open(fullUrl, '_blank');
+      } else {
+        // For normal browsers, use the client-side generated version
+        showMaterialsListView(doc, true);
+      }
     };
   } else {
     previewShareMaterials.style.display = 'none';
@@ -621,21 +635,13 @@ const showMaterialsListView = (doc, printable = false) => {
       </html>
     `;
 
-    // Check if running as a webwrapped app (PWA/home screen app)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                      || window.navigator.standalone
-                      || document.referrer.includes('android-app://');
-
-    if (isStandalone) {
-      // Force open in Safari using data URL navigation
-      // This will open Safari with the materials list
-      const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
-      window.location.href = dataUrl;
-    } else {
-      // Normal browser - use window.open
-      const printWindow = window.open('', '_blank');
+    // Open in new window (normal browser behavior)
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
       printWindow.document.write(htmlContent);
       printWindow.document.close();
+    } else {
+      alert('Please allow popups to view the materials list');
     }
     return;
   }
