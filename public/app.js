@@ -4877,20 +4877,17 @@ const renderMonthView = (header, grid) => {
     html += `
       <div class="calendar-day ${isToday ? 'today' : ''}" data-date="${dateStr}">
         <div class="calendar-day-number">${day}</div>
-        ${dayAppointments.length > 0 ? `
-          <div class="calendar-day-events">
-            ${dayAppointments.slice(0, 2).map(apt => {
-              const displayTitle = apt.title || apt.clientName || 'Event';
-              const eventType = apt.eventType || 'appointment';
-              const displayTime = apt.allDay ? 'All day' : (apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : '');
-              return `<div class="calendar-mini-event ${apt.status || 'scheduled'} ${eventType}" title="${displayTitle}">
-                <span class="calendar-mini-event-time">${displayTime}</span>
-                <span class="calendar-mini-event-title">${displayTitle}</span>
-              </div>`;
-            }).join('')}
-            ${dayAppointments.length > 2 ? `<div class="calendar-more-events">+${dayAppointments.length - 2} more</div>` : ''}
-          </div>
-        ` : ''}
+        <div class="calendar-day-events-container">
+          ${dayAppointments.slice(0, 3).map(apt => {
+            const displayTitle = apt.title || apt.clientName || 'Event';
+            const eventType = apt.eventType || 'appointment';
+            const displayTime = apt.allDay ? '' : (apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) + ' ' : '');
+            return `<div class="calendar-event-bar ${apt.status || 'scheduled'} ${eventType}" onclick="event.stopPropagation(); editEvent(${apt.id});" title="${displayTime}${displayTitle}">
+              <span class="calendar-event-bar-text">${displayTime}${displayTitle}</span>
+            </div>`;
+          }).join('')}
+          ${dayAppointments.length > 3 ? `<div class="calendar-more-events">+${dayAppointments.length - 3} more</div>` : ''}
+        </div>
       </div>
     `;
   }
@@ -5031,9 +5028,13 @@ const renderAppointments = () => {
 
   const upcoming = appointments
     .filter(apt => {
+      if (!apt.appointmentDate) return false;
       // Parse date in local timezone to avoid timezone issues
-      const [year, month, day] = apt.appointmentDate.split('-').map(Number);
+      const dateParts = apt.appointmentDate.split('-');
+      if (dateParts.length !== 3) return false;
+      const [year, month, day] = dateParts.map(Number);
       const aptDate = new Date(year, month - 1, day);
+      aptDate.setHours(0, 0, 0, 0);
       return aptDate >= now;
     })
     .sort((a, b) => {
@@ -5318,7 +5319,9 @@ const openEventModal = (event = null) => {
 
     document.getElementById('eventTitle').value = event.title || '';
     document.getElementById('eventDescription').value = event.description || '';
-    document.getElementById('eventDate').value = event.appointmentDate;
+    // Ensure date is in YYYY-MM-DD format for the date input
+    const dateValue = event.appointmentDate ? event.appointmentDate.split('T')[0] : '';
+    document.getElementById('eventDate').value = dateValue;
     document.getElementById('eventAllDay').checked = event.allDay || false;
     document.getElementById('eventStartTime').value = event.appointmentTime || '';
     document.getElementById('eventEndTime').value = event.endTime || '';

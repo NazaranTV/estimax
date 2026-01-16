@@ -2239,129 +2239,170 @@ label {
 .calendar-grid-month {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  gap: 0;
+  border: 1px solid var(--border-subtle);
+  border-bottom: none;
+  border-right: none;
 }
 
 .calendar-day-header {
   padding: 8px;
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
 }
 
 .calendar-day {
-  min-height: 100px;
-  padding: 8px;
+  height: 120px;
+  padding: 4px;
   background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
   cursor: pointer;
-  transition: var(--transition);
+  transition: background 0.15s ease;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  overflow: hidden;
 }
 
 .calendar-day:hover {
   background: var(--bg-hover);
-  border-color: var(--border-normal);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .calendar-day.empty {
-  background: transparent;
-  border: none;
+  background: var(--bg-secondary);
   cursor: default;
 }
 
 .calendar-day.empty:hover {
-  transform: none;
-  box-shadow: none;
+  background: var(--bg-secondary);
 }
 
 .calendar-day.today {
-  background: var(--accent-soft);
-  border-color: var(--accent-primary);
-  border-width: 2px;
-}
-
-.calendar-day-number {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
+  background: rgba(66, 133, 244, 0.05);
 }
 
 .calendar-day.today .calendar-day-number {
-  color: var(--accent-primary);
+  background: #4285f4;
+  color: white;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
 }
 
-/* New mini event styles */
-.calendar-day-events {
+.calendar-day-number {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: 4px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+/* Event bars container */
+.calendar-day-events-container {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
   overflow: hidden;
 }
 
-.calendar-mini-event {
-  padding: 4px 6px;
-  background: var(--bg-elevated);
+/* Google Calendar style event bars */
+.calendar-event-bar {
+  padding: 2px 6px;
   border-radius: 3px;
-  font-size: 10px;
-  border-left: 2px solid var(--accent-primary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: var(--transition);
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+  height: 20px;
+  display: flex;
+  align-items: center;
 }
 
-.calendar-mini-event:hover {
-  background: var(--bg-hover);
+.calendar-event-bar:hover {
+  opacity: 0.85;
 }
 
-.calendar-mini-event.scheduled {
-  border-left-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
+.calendar-event-bar-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.calendar-mini-event.completed {
-  border-left-color: var(--success);
-  background: var(--success-soft);
-  opacity: 0.8;
+/* Event type colors - appointment (blue) */
+.calendar-event-bar.appointment.scheduled {
+  background: #1a73e8;
+  color: white;
 }
 
-.calendar-mini-event.cancelled {
-  border-left-color: var(--text-tertiary);
-  background: rgba(113, 113, 122, 0.1);
+.calendar-event-bar.appointment.completed {
+  background: #0d652d;
+  color: white;
+}
+
+.calendar-event-bar.appointment.cancelled {
+  background: #5f6368;
+  color: white;
   opacity: 0.6;
   text-decoration: line-through;
 }
 
-.calendar-mini-event.rescheduled {
-  border-left-color: var(--warning);
-  background: var(--warning-soft);
+.calendar-event-bar.appointment.rescheduled {
+  background: #f9ab00;
+  color: white;
 }
 
-.calendar-mini-event-time {
-  font-weight: 600;
-  margin-right: 4px;
-  color: var(--text-primary);
+/* Holiday events (green) */
+.calendar-event-bar.holiday {
+  background: #0b8043;
+  color: white;
 }
 
-.calendar-mini-event-title {
-  color: var(--text-secondary);
+/* Task events (red) */
+.calendar-event-bar.task {
+  background: #d50000;
+  color: white;
+}
+
+/* Reminder events (purple) */
+.calendar-event-bar.reminder {
+  background: #8e24aa;
+  color: white;
+}
+
+/* Personal events (pink) */
+.calendar-event-bar.personal {
+  background: #e91e63;
+  color: white;
 }
 
 .calendar-more-events {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-secondary);
-  font-weight: 600;
-  padding: 2px 4px;
-  text-align: center;
+  font-weight: 500;
+  padding: 2px 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.calendar-more-events:hover {
+  text-decoration: underline;
 }
 
 /* Old dot styles (kept for backwards compatibility) */
