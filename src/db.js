@@ -233,6 +233,64 @@ async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_appointments_document ON appointments(document_id);
     CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
     CREATE INDEX IF NOT EXISTS idx_appointments_po ON appointments(po_number);
+
+    -- Add new calendar event fields if they don't exist
+    DO $$
+    BEGIN
+      -- Add event_type column
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='appointments' AND column_name='event_type'
+      ) THEN
+        ALTER TABLE appointments ADD COLUMN event_type TEXT DEFAULT 'appointment' CHECK (event_type IN ('appointment', 'holiday', 'task', 'reminder', 'personal'));
+      END IF;
+
+      -- Add title column
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='appointments' AND column_name='title'
+      ) THEN
+        ALTER TABLE appointments ADD COLUMN title TEXT;
+      END IF;
+
+      -- Add description column
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='appointments' AND column_name='description'
+      ) THEN
+        ALTER TABLE appointments ADD COLUMN description TEXT;
+      END IF;
+
+      -- Add location column
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='appointments' AND column_name='location'
+      ) THEN
+        ALTER TABLE appointments ADD COLUMN location TEXT;
+      END IF;
+
+      -- Add all_day column
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='appointments' AND column_name='all_day'
+      ) THEN
+        ALTER TABLE appointments ADD COLUMN all_day BOOLEAN DEFAULT FALSE;
+      END IF;
+
+      -- Add end_time column
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name='appointments' AND column_name='end_time'
+      ) THEN
+        ALTER TABLE appointments ADD COLUMN end_time TEXT;
+      END IF;
+
+      -- Make client_name nullable for non-appointment events
+      ALTER TABLE appointments ALTER COLUMN client_name DROP NOT NULL;
+    END $$;
+
+    -- Create index on event_type for filtering
+    CREATE INDEX IF NOT EXISTS idx_appointments_event_type ON appointments(event_type);
   `);
 }
 

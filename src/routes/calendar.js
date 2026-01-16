@@ -47,7 +47,7 @@ router.get('/appointments/range', requireAuth, async (req, res) => {
   }
 });
 
-// Create a new appointment
+// Create a new appointment/event
 router.post('/appointments', requireAuth, async (req, res) => {
   try {
     const {
@@ -59,25 +59,111 @@ router.post('/appointments', requireAuth, async (req, res) => {
       serviceAddress,
       appointmentDate,
       appointmentTime,
+      endTime,
       durationHours,
-      notes
+      notes,
+      eventType,
+      title,
+      description,
+      location,
+      allDay
     } = req.body;
 
     const { rows } = await pool.query(`
       INSERT INTO appointments (
         document_id, po_number, client_name, client_email, client_phone,
-        service_address, appointment_date, appointment_time, duration_hours, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        service_address, appointment_date, appointment_time, end_time, duration_hours, notes,
+        event_type, title, description, location, all_day
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *
     `, [
-      documentId, poNumber, clientName, clientEmail, clientPhone,
-      serviceAddress, appointmentDate, appointmentTime, durationHours || 2, notes
+      documentId || null,
+      poNumber || null,
+      clientName || null,
+      clientEmail || null,
+      clientPhone || null,
+      serviceAddress || null,
+      appointmentDate,
+      appointmentTime || null,
+      endTime || null,
+      durationHours || 2,
+      notes || null,
+      eventType || 'appointment',
+      title || null,
+      description || null,
+      location || null,
+      allDay || false
     ]);
 
     res.json({ appointment: toCamel(rows[0]) });
   } catch (err) {
     console.error('Error creating appointment:', err);
     res.status(500).json({ error: 'Failed to create appointment' });
+  }
+});
+
+// Update full appointment/event
+router.patch('/appointments/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      documentId,
+      poNumber,
+      clientName,
+      clientEmail,
+      clientPhone,
+      serviceAddress,
+      appointmentDate,
+      appointmentTime,
+      endTime,
+      durationHours,
+      status,
+      notes,
+      eventType,
+      title,
+      description,
+      location,
+      allDay
+    } = req.body;
+
+    const { rows } = await pool.query(`
+      UPDATE appointments
+      SET
+        document_id = COALESCE($1, document_id),
+        po_number = COALESCE($2, po_number),
+        client_name = COALESCE($3, client_name),
+        client_email = COALESCE($4, client_email),
+        client_phone = COALESCE($5, client_phone),
+        service_address = COALESCE($6, service_address),
+        appointment_date = COALESCE($7, appointment_date),
+        appointment_time = COALESCE($8, appointment_time),
+        end_time = COALESCE($9, end_time),
+        duration_hours = COALESCE($10, duration_hours),
+        status = COALESCE($11, status),
+        notes = COALESCE($12, notes),
+        event_type = COALESCE($13, event_type),
+        title = COALESCE($14, title),
+        description = COALESCE($15, description),
+        location = COALESCE($16, location),
+        all_day = COALESCE($17, all_day),
+        updated_at = NOW()
+      WHERE id = $18
+      RETURNING *
+    `, [
+      documentId, poNumber, clientName, clientEmail, clientPhone,
+      serviceAddress, appointmentDate, appointmentTime, endTime,
+      durationHours, status, notes, eventType, title, description,
+      location, allDay, id
+    ]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    res.json({ appointment: toCamel(rows[0]) });
+  } catch (err) {
+    console.error('Error updating appointment:', err);
+    res.status(500).json({ error: 'Failed to update appointment' });
   }
 });
 
