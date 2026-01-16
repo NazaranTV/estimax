@@ -488,15 +488,9 @@ const openClientView = (doc) => {
                         || document.referrer.includes('android-app://');
 
       if (isStandalone) {
-        // Force open in external browser (Safari on iOS)
-        // Create a temporary link and click it
-        const link = document.createElement('a');
-        link.href = window.location.origin + shareUrl;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Force open in Safari by navigating the window
+        // This will open the URL in Safari while keeping the PWA in background
+        window.location.href = window.location.origin + shareUrl;
       } else {
         window.open(shareUrl, '_blank');
       }
@@ -633,18 +627,10 @@ const showMaterialsListView = (doc, printable = false) => {
                       || document.referrer.includes('android-app://');
 
     if (isStandalone) {
-      // Use blob URL with link click to open in Safari
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      // Clean up after a delay
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      // Force open in Safari using data URL navigation
+      // This will open Safari with the materials list
+      const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
+      window.location.href = dataUrl;
     } else {
       // Normal browser - use window.open
       const printWindow = window.open('', '_blank');
