@@ -5065,25 +5065,32 @@ const renderAppointments = () => {
   const now = new Date();
   now.setHours(0, 0, 0, 0); // Start of today
 
+  // Helper function to parse date string
+  const parseAppointmentDate = (dateStr) => {
+    if (!dateStr) return null;
+    // Handle both 'YYYY-MM-DD' and 'YYYY-MM-DDTHH:mm:ss' formats
+    const dateOnly = dateStr.split('T')[0];
+    const [year, month, day] = dateOnly.split('-').map(Number);
+    if (!year || !month || !day) return null;
+    const date = new Date(year, month - 1, day);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
+
   const upcoming = appointments
     .filter(apt => {
-      if (!apt.appointmentDate) return false;
-      // Parse date in local timezone to avoid timezone issues
-      const dateParts = apt.appointmentDate.split('-');
-      if (dateParts.length !== 3) return false;
-      const [year, month, day] = dateParts.map(Number);
-      const aptDate = new Date(year, month - 1, day);
-      aptDate.setHours(0, 0, 0, 0);
+      const aptDate = parseAppointmentDate(apt.appointmentDate);
+      if (!aptDate || isNaN(aptDate.getTime())) {
+        console.log('Invalid date for event:', apt.title || apt.clientName, 'Date string:', apt.appointmentDate);
+        return false;
+      }
       const isUpcoming = aptDate >= now;
       console.log('Event:', apt.title || apt.clientName, 'Date:', aptDate, 'Now:', now, 'Upcoming:', isUpcoming);
       return isUpcoming;
     })
     .sort((a, b) => {
-      // Parse dates properly in local timezone
-      const [yearA, monthA, dayA] = a.appointmentDate.split('-').map(Number);
-      const dateA = new Date(yearA, monthA - 1, dayA);
-      const [yearB, monthB, dayB] = b.appointmentDate.split('-').map(Number);
-      const dateB = new Date(yearB, monthB - 1, dayB);
+      const dateA = parseAppointmentDate(a.appointmentDate);
+      const dateB = parseAppointmentDate(b.appointmentDate);
 
       // Add time to date for sorting
       if (a.appointmentTime) {
@@ -5106,8 +5113,7 @@ const renderAppointments = () => {
 
   appointmentsContent.innerHTML = upcoming.map(apt => {
     // Parse date in local timezone
-    const [year, month, day] = apt.appointmentDate.split('-').map(Number);
-    const aptDate = new Date(year, month - 1, day);
+    const aptDate = parseAppointmentDate(apt.appointmentDate);
     const displayTitle = apt.title || apt.clientName || 'Event';
     const eventIcon = getEventIcon(apt.eventType || 'appointment');
     const displayTime = apt.allDay ? 'All day' : (apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : 'TBD');

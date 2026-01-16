@@ -232,12 +232,8 @@
     </section>
 
     <section class="workspace card hidden" id="calendarView">
-      <div class="workspace__header">
-        <div>
-          <p class="eyebrow">Calendar</p>
-          <h2>Scheduled Appointments</h2>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+      <div class="pane" style="padding-top: 24px;">
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px;">
           <button class="btn primary" id="addEventBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -264,15 +260,15 @@
             <option value="day">Day</option>
           </select>
         </div>
-      </div>
-      <div class="pane">
-        <div id="calendarContainer" class="calendar-container">
-          <div id="calendarHeader" class="calendar-header"></div>
-          <div id="calendarGrid" class="calendar-grid"></div>
-        </div>
-        <div id="appointmentsList" class="appointments-list" style="margin-top: 24px;">
-          <h3 style="margin-bottom: 16px;">Upcoming Appointments</h3>
-          <div id="appointmentsContent"></div>
+        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+          <div id="calendarContainer" class="calendar-container">
+            <div id="calendarHeader" class="calendar-header"></div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+          </div>
+          <div id="appointmentsList" class="appointments-list">
+            <h3 style="margin-bottom: 16px;">Upcoming Appointments</h3>
+            <div id="appointmentsContent"></div>
+          </div>
         </div>
       </div>
     </section>
