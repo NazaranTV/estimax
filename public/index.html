@@ -233,36 +233,38 @@
 
     <section class="workspace card hidden" id="calendarView">
       <div class="pane" style="padding-top: 24px;">
-        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px;">
-          <button class="btn primary" id="addEventBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            New Event
-          </button>
-          <button class="btn ghost" id="calendarTodayBtn">Today</button>
-          <div style="display: flex; gap: 4px;">
-            <button class="btn ghost small" id="calendarPrevBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-            <button class="btn ghost small" id="calendarNextBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
-          </div>
-          <select id="calendarViewMode" class="btn ghost small">
-            <option value="month">Month</option>
-            <option value="week">Week</option>
-            <option value="day">Day</option>
-          </select>
-        </div>
         <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
           <div id="calendarContainer" class="calendar-container">
-            <div id="calendarHeader" class="calendar-header"></div>
+            <div id="calendarHeader" class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 id="calendarTitle" style="margin: 0; font-size: 18px;"></h3>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn primary" id="addEventBtn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  New Event
+                </button>
+                <button class="btn ghost" id="calendarTodayBtn">Today</button>
+                <div style="display: flex; gap: 4px;">
+                  <button class="btn ghost small" id="calendarPrevBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <button class="btn ghost small" id="calendarNextBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
+                <select id="calendarViewMode" class="btn ghost small">
+                  <option value="month">Month</option>
+                  <option value="week">Week</option>
+                  <option value="day">Day</option>
+                </select>
+              </div>
+            </div>
             <div id="calendarGrid" class="calendar-grid"></div>
           </div>
           <div id="appointmentsList" class="appointments-list">

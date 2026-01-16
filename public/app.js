@@ -4838,10 +4838,11 @@ const renderMonthView = (header, grid) => {
   const year = calendarDate.getFullYear();
   const month = calendarDate.getMonth();
 
-  // Header with month/year
+  // Update title
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
-  header.innerHTML = `<h3 style="margin: 0; font-size: 18px;">${monthNames[month]} ${year}</h3>`;
+  const titleEl = document.getElementById('calendarTitle');
+  if (titleEl) titleEl.textContent = `${monthNames[month]} ${year}`;
 
   // Get first day of month and number of days
   const firstDay = new Date(year, month, 1).getDay();
@@ -4912,7 +4913,9 @@ const renderWeekView = (header, grid) => {
   const startOfWeek = new Date(calendarDate);
   startOfWeek.setDate(calendarDate.getDate() - calendarDate.getDay());
 
-  header.innerHTML = `<h3 style="margin: 0; font-size: 18px;">Week of ${startOfWeek.toLocaleDateString()}</h3>`;
+  // Update title
+  const titleEl = document.getElementById('calendarTitle');
+  if (titleEl) titleEl.textContent = `Week of ${startOfWeek.toLocaleDateString()}`;
 
   let html = '<div class="calendar-week-view-google">';
   const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -4979,7 +4982,10 @@ const renderWeekView = (header, grid) => {
 
 const renderDayView = (header, grid) => {
   const dateStr = calendarDate.toISOString().split('T')[0];
-  header.innerHTML = `<h3 style="margin: 0; font-size: 18px;">${calendarDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>`;
+
+  // Update title
+  const titleEl = document.getElementById('calendarTitle');
+  if (titleEl) titleEl.textContent = calendarDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const dayAppointments = appointments.filter(apt =>
     apt.appointmentDate && apt.appointmentDate.startsWith(dateStr)
