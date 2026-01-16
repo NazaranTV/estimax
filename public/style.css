@@ -682,10 +682,13 @@ label {
   cursor: pointer;
   transition: var(--transition);
   font-family: inherit;
+  text-decoration: none;
 }
 
 .dropdown-item:hover {
   background: #272532;
+  text-decoration: none;
+  color: var(--text-primary);
 }
 
 /* Status dropdown for pills */
