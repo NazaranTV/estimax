@@ -2448,7 +2448,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: white;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
   height: calc(100vh - 300px);
   overflow-y: auto;
@@ -2504,7 +2504,7 @@ label {
 .calendar-week-view-google {
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
   height: calc(100vh - 300px);
   overflow-y: auto;
