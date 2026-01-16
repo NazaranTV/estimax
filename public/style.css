@@ -2258,8 +2258,8 @@ label {
 }
 
 .calendar-day {
-  height: 120px;
-  padding: 4px;
+  height: 90px;
+  padding: 3px;
   background: var(--bg-tertiary);
   border-radius: 0;
   border-bottom: 1px solid var(--border-subtle);
@@ -2291,8 +2291,8 @@ label {
 .calendar-day.today .calendar-day-number {
   background: #4285f4;
   color: white;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -2301,11 +2301,11 @@ label {
 }
 
 .calendar-day-number {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-primary);
-  padding: 4px;
-  margin-bottom: 2px;
+  padding: 3px;
+  margin-bottom: 1px;
   flex-shrink: 0;
 }
 
@@ -2320,9 +2320,9 @@ label {
 
 /* Google Calendar style event bars */
 .calendar-event-bar {
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: 10px;
   font-weight: 500;
   cursor: pointer;
   overflow: hidden;
@@ -2330,7 +2330,7 @@ label {
   white-space: nowrap;
   transition: opacity 0.15s ease;
   flex-shrink: 0;
-  height: 20px;
+  height: 18px;
   display: flex;
   align-items: center;
 }
@@ -2441,6 +2441,146 @@ label {
   font-size: 9px;
   color: var(--text-secondary);
   font-weight: 600;
+}
+
+/* Google Calendar Style Day View */
+.calendar-day-view-google {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: white;
+  border: 1px solid var(--border-subtle);
+  height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.calendar-allday-section {
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--border-subtle);
+  min-height: 40px;
+}
+
+.calendar-allday-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.calendar-time-slot {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  border-bottom: 1px solid #e8eaed;
+  min-height: 48px;
+  position: relative;
+}
+
+.calendar-time-label {
+  padding: 4px 8px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-align: right;
+  border-right: 1px solid #e8eaed;
+}
+
+.calendar-time-content {
+  position: relative;
+  padding: 2px;
+}
+
+.calendar-event-bar-day {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Google Calendar Style Week View */
+.calendar-week-view-google {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid var(--border-subtle);
+  height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.calendar-week-header-row {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 2px solid var(--border-subtle);
+  background: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.calendar-week-header-cell {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 11px;
+  border-right: 1px solid #e8eaed;
+}
+
+.calendar-week-header-cell:last-child {
+  border-right: none;
+}
+
+.calendar-week-day-name {
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.calendar-week-day-date {
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.calendar-week-day-date.today {
+  background: #4285f4;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-week-time-row {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 1px solid #e8eaed;
+  min-height: 48px;
+}
+
+.calendar-week-time-cell {
+  padding: 2px;
+  border-right: 1px solid #e8eaed;
+  position: relative;
+}
+
+.calendar-week-time-cell:last-child {
+  border-right: none;
+}
+
+.calendar-event-bar-week {
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-size: 10px;
+  cursor: pointer;
+  margin-bottom: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Week View Grid */

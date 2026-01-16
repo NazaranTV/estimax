@@ -4808,7 +4808,10 @@ const loadCalendar = async () => {
   try {
     const res = await fetch('/api/calendar/appointments');
     const data = await res.json();
+    console.log('Calendar API response:', data);
     appointments = data.appointments || [];
+    console.log('Loaded appointments count:', appointments.length);
+    console.log('Appointments data:', appointments);
     renderCalendar();
     renderAppointments();
   } catch (err) {
@@ -4911,61 +4914,67 @@ const renderWeekView = (header, grid) => {
 
   header.innerHTML = `<h3 style="margin: 0; font-size: 18px;">Week of ${startOfWeek.toLocaleDateString()}</h3>`;
 
-  let html = '<div class="calendar-grid-week">';
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  let html = '<div class="calendar-week-view-google">';
+  const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
+  // Week header
+  html += '<div class="calendar-week-header-row">';
+  html += '<div class="calendar-week-time-gutter"></div>';
   for (let i = 0; i < 7; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
-    const dateStr = date.toISOString().split('T')[0];
-    const dayAppointments = appointments.filter(apt =>
-      apt.appointmentDate && apt.appointmentDate.startsWith(dateStr)
-    ).sort((a, b) => {
-      if (a.allDay && !b.allDay) return -1;
-      if (!a.allDay && b.allDay) return 1;
-      return (a.appointmentTime || '').localeCompare(b.appointmentTime || '');
-    });
-
+    const isToday = date.toDateString() === new Date().toDateString();
     html += `
-      <div class="calendar-week-day" data-date="${dateStr}">
-        <div class="calendar-week-day-header">
-          <div>${dayNames[i]}</div>
-          <div>${date.getDate()}</div>
-        </div>
-        <div class="calendar-week-day-appointments">
-          ${dayAppointments.map(apt => {
-            const displayTitle = apt.title || apt.clientName || 'Event';
-            const eventIcon = getEventIcon(apt.eventType || 'appointment');
-            const displayTime = apt.allDay ? 'All day' : (apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : '');
-            const displayLocation = apt.location || apt.serviceAddress;
-            return `
-            <div class="calendar-appointment-card ${apt.status || 'scheduled'}" onclick="editEvent(${apt.id})" style="cursor: pointer;">
-              <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
-                ${eventIcon}
-                <div style="font-weight: 500; font-size: 11px;">${displayTime}</div>
-              </div>
-              <div style="font-size: 12px; font-weight: 500;">${displayTitle}</div>
-              ${displayLocation ? `<div style="font-size: 10px; color: var(--text-tertiary); margin-top: 2px;">📍 ${displayLocation}</div>` : ''}
-            </div>
-          `;
-          }).join('')}
-        </div>
+      <div class="calendar-week-day-col-header ${isToday ? 'today' : ''}">
+        <div class="calendar-week-day-name">${dayNames[i]}</div>
+        <div class="calendar-week-day-number ${isToday ? 'today' : ''}">${date.getDate()}</div>
       </div>
     `;
   }
-
   html += '</div>';
-  grid.innerHTML = html;
 
-  // Add click handlers to week days
-  grid.querySelectorAll('.calendar-week-day[data-date]').forEach(dayEl => {
-    dayEl.addEventListener('click', (e) => {
-      // Only open modal if clicking on the day header, not an event
-      if (e.target.closest('.calendar-appointment-card')) return;
-      const date = dayEl.dataset.date;
-      showDayAppointmentsModal(date);
-    });
-  });
+  // Week grid
+  html += '<div class="calendar-week-grid">';
+
+  // Time slots with events
+  for (let hour = 6; hour <= 22; hour++) {
+    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+    const displayTime = formatTime12Hour(timeStr);
+
+    html += '<div class="calendar-week-time-row">';
+    html += `<div class="calendar-week-time-label">${displayTime}</div>`;
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const hourEvents = appointments.filter(apt => {
+        if (!apt.appointmentDate || !apt.appointmentDate.startsWith(dateStr)) return false;
+        if (apt.allDay) return false;
+        if (!apt.appointmentTime) return false;
+        const [h] = apt.appointmentTime.split(':').map(Number);
+        return h === hour;
+      });
+
+      html += `<div class="calendar-week-time-cell" data-date="${dateStr}">`;
+      hourEvents.forEach(apt => {
+        const displayTitle = apt.title || apt.clientName || 'Event';
+        const eventType = apt.eventType || 'appointment';
+        html += `
+          <div class="calendar-event-bar-week ${apt.status || 'scheduled'} ${eventType}" onclick="event.stopPropagation(); editEvent(${apt.id});">
+            <span class="calendar-event-bar-text">${displayTitle}</span>
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+  }
+
+  html += '</div></div>';
+  grid.innerHTML = html;
 };
 
 const renderDayView = (header, grid) => {
@@ -4980,47 +4989,77 @@ const renderDayView = (header, grid) => {
     return (a.appointmentTime || '').localeCompare(b.appointmentTime || '');
   });
 
-  let html = '<div class="calendar-day-view">';
+  let html = '<div class="calendar-day-view-google">';
 
-  if (dayAppointments.length === 0) {
-    html += '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">No events scheduled</div>';
-  } else {
-    dayAppointments.forEach(apt => {
-      const eventIcon = getEventIcon(apt.eventType || 'appointment');
+  // All-day events section
+  const allDayEvents = dayAppointments.filter(apt => apt.allDay);
+  if (allDayEvents.length > 0) {
+    html += '<div class="calendar-allday-section">';
+    html += '<div class="calendar-time-label">All day</div>';
+    html += '<div class="calendar-allday-events">';
+    allDayEvents.forEach(apt => {
       const displayTitle = apt.title || apt.clientName || 'Untitled Event';
-      const displayLocation = apt.location || apt.serviceAddress;
-
-      const displayTimeRange = apt.allDay ? 'All Day' :
-        `${apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : 'No time'}${apt.endTime ? ' - ' + formatTime12Hour(apt.endTime) : ''}`;
-
+      const eventType = apt.eventType || 'appointment';
       html += `
-        <div class="calendar-appointment-card-detailed ${apt.status || 'scheduled'}" onclick="editEvent(${apt.id})" style="cursor: pointer;">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div style="flex: 1;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                ${eventIcon}
-                <div style="font-weight: 600; font-size: 16px;">${displayTitle}</div>
-              </div>
-              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${displayTimeRange}</div>
-              ${apt.description ? `<div style="font-size: 13px; margin-top: 8px;">${apt.description}</div>` : ''}
-              ${displayLocation ? `<div style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">📍 ${displayLocation}</div>` : ''}
-              ${apt.clientName && apt.eventType === 'appointment' ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Client: ${apt.clientName}</div>` : ''}
-            </div>
-            <div class="status-badge ${apt.status || 'scheduled'}">${apt.status || 'scheduled'}</div>
-          </div>
-          ${apt.notes ? `<div style="margin-top: 8px; font-size: 12px; padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm);">${apt.notes}</div>` : ''}
+        <div class="calendar-event-bar-day ${apt.status || 'scheduled'} ${eventType}" onclick="editEvent(${apt.id})">
+          <span class="calendar-event-bar-text">${displayTitle}</span>
         </div>
       `;
     });
+    html += '</div></div>';
   }
 
-  html += '</div>';
+  // Timed events section
+  const timedEvents = dayAppointments.filter(apt => !apt.allDay);
+  html += '<div class="calendar-timed-section">';
+
+  // Create time grid (6 AM to 10 PM)
+  for (let hour = 6; hour <= 22; hour++) {
+    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+    const displayTime = formatTime12Hour(timeStr);
+
+    html += `<div class="calendar-time-slot">`;
+    html += `<div class="calendar-time-label">${displayTime}</div>`;
+    html += `<div class="calendar-time-content">`;
+
+    // Find events that start at this hour
+    const hourEvents = timedEvents.filter(apt => {
+      if (!apt.appointmentTime) return false;
+      const [h] = apt.appointmentTime.split(':').map(Number);
+      return h === hour;
+    });
+
+    hourEvents.forEach(apt => {
+      const displayTitle = apt.title || apt.clientName || 'Untitled Event';
+      const displayTime = formatTime12Hour(apt.appointmentTime);
+      const displayLocation = apt.location || apt.serviceAddress;
+      const eventType = apt.eventType || 'appointment';
+
+      html += `
+        <div class="calendar-event-bar-day ${apt.status || 'scheduled'} ${eventType}" onclick="editEvent(${apt.id})">
+          <div class="calendar-event-bar-text">
+            <div style="font-weight: 600;">${displayTime} ${displayTitle}</div>
+            ${displayLocation ? `<div style="font-size: 10px; opacity: 0.9; margin-top: 2px;">📍 ${displayLocation}</div>` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div></div>`;
+  }
+
+  html += '</div></div>';
   grid.innerHTML = html;
 };
 
 const renderAppointments = () => {
   const appointmentsContent = document.getElementById('appointmentsContent');
-  if (!appointmentsContent) return;
+  if (!appointmentsContent) {
+    console.log('appointmentsContent not found');
+    return;
+  }
+
+  console.log('Rendering appointments, total:', appointments.length);
 
   // Show next 10 upcoming events
   const now = new Date();
@@ -5035,7 +5074,9 @@ const renderAppointments = () => {
       const [year, month, day] = dateParts.map(Number);
       const aptDate = new Date(year, month - 1, day);
       aptDate.setHours(0, 0, 0, 0);
-      return aptDate >= now;
+      const isUpcoming = aptDate >= now;
+      console.log('Event:', apt.title || apt.clientName, 'Date:', aptDate, 'Now:', now, 'Upcoming:', isUpcoming);
+      return isUpcoming;
     })
     .sort((a, b) => {
       // Parse dates properly in local timezone
