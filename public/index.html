@@ -1033,9 +1033,9 @@
             </select>
           </label>
           <label>Link to Estimate/Invoice
-            <select id="eventDocumentId" name="documentId">
-              <option value="">None</option>
-            </select>
+            <input type="text" id="eventDocumentSearch" list="eventDocumentList" placeholder="Search or select..." autocomplete="off">
+            <datalist id="eventDocumentList"></datalist>
+            <input type="hidden" id="eventDocumentId" name="documentId">
           </label>
         </div>
 
@@ -1075,6 +1075,17 @@
 
         <div id="appointmentFields" style="display: none;">
           <h4 style="margin: 24px 0 12px 0; font-size: 14px; color: var(--text-secondary);">Appointment Details</h4>
+          <div class="client-select">
+            <div class="client-select__top">
+              <label>Client</label>
+              <div class="client-actions">
+                <button type="button" class="btn small ghost" id="addClientFromEvent">Add client</button>
+              </div>
+            </div>
+            <select id="eventClientPicker">
+              <option value="">Select saved client or enter manually below</option>
+            </select>
+          </div>
           <div class="grid three">
             <label>Client Name
               <input type="text" id="eventClientName" name="clientName" placeholder="Client name">
@@ -1086,19 +1097,14 @@
               <input type="tel" id="eventClientPhone" name="clientPhone" placeholder="(555) 123-4567">
             </label>
           </div>
-          <div class="grid two">
-            <label>Service Address
-              <input type="text" id="eventServiceAddress" name="serviceAddress" placeholder="Where work will be performed">
-            </label>
-            <label>Status
-              <select id="eventStatus" name="status">
-                <option value="scheduled">Scheduled</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="rescheduled">Rescheduled</option>
-              </select>
-            </label>
-          </div>
+          <label>Status
+            <select id="eventStatus" name="status">
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="rescheduled">Rescheduled</option>
+            </select>
+          </label>
         </div>
 
         <label>Notes
