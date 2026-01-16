@@ -238,6 +238,13 @@
           <h2>Scheduled Appointments</h2>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn primary" id="addEventBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New Event
+          </button>
           <button class="btn ghost" id="calendarTodayBtn">Today</button>
           <div style="display: flex; gap: 4px;">
             <button class="btn ghost small" id="calendarPrevBtn">
@@ -1002,6 +1009,130 @@
       <div style="display: flex; gap: 8px; justify-content: flex-end;">
         <button class="btn ghost" id="cancelDelete">Cancel</button>
         <button class="btn primary" id="confirmDelete" style="background: #ef4444; border-color: #ef4444;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Creation/Edit Modal -->
+  <div class="modal hidden wide" id="eventModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h3 id="eventModalTitle">Create Event</h3>
+        <button class="btn small ghost" id="closeEventModal">Close</button>
+      </div>
+      <form id="eventForm">
+        <div class="grid two">
+          <label>Event Type
+            <select id="eventType" name="eventType" required>
+              <option value="appointment">Appointment</option>
+              <option value="holiday">Holiday</option>
+              <option value="task">Task</option>
+              <option value="reminder">Reminder</option>
+              <option value="personal">Personal</option>
+            </select>
+          </label>
+          <label>Link to Estimate/Invoice
+            <select id="eventDocumentId" name="documentId">
+              <option value="">None</option>
+            </select>
+          </label>
+        </div>
+
+        <label>Title
+          <input type="text" id="eventTitle" name="title" placeholder="Event title" required>
+        </label>
+
+        <label>Description
+          <textarea id="eventDescription" name="description" rows="3" placeholder="Event description"></textarea>
+        </label>
+
+        <div class="grid two">
+          <label>Date
+            <input type="date" id="eventDate" name="appointmentDate" required>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="eventAllDay" name="allDay" style="width: auto; margin: 0;">
+            <span>All Day Event</span>
+          </label>
+        </div>
+
+        <div class="grid three" id="eventTimeFields">
+          <label>Start Time
+            <input type="time" id="eventStartTime" name="appointmentTime">
+          </label>
+          <label>End Time
+            <input type="time" id="eventEndTime" name="endTime">
+          </label>
+          <label>Duration (hours)
+            <input type="number" id="eventDuration" name="durationHours" min="0" step="0.5" value="2" placeholder="2.0">
+          </label>
+        </div>
+
+        <label>Location
+          <input type="text" id="eventLocation" name="location" placeholder="Event location">
+        </label>
+
+        <div id="appointmentFields" style="display: none;">
+          <h4 style="margin: 24px 0 12px 0; font-size: 14px; color: var(--text-secondary);">Appointment Details</h4>
+          <div class="grid three">
+            <label>Client Name
+              <input type="text" id="eventClientName" name="clientName" placeholder="Client name">
+            </label>
+            <label>Client Email
+              <input type="email" id="eventClientEmail" name="clientEmail" placeholder="client@email.com">
+            </label>
+            <label>Client Phone
+              <input type="tel" id="eventClientPhone" name="clientPhone" placeholder="(555) 123-4567">
+            </label>
+          </div>
+          <div class="grid two">
+            <label>Service Address
+              <input type="text" id="eventServiceAddress" name="serviceAddress" placeholder="Where work will be performed">
+            </label>
+            <label>Status
+              <select id="eventStatus" name="status">
+                <option value="scheduled">Scheduled</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="rescheduled">Rescheduled</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <label>Notes
+          <textarea id="eventNotes" name="notes" rows="2" placeholder="Additional notes"></textarea>
+        </label>
+
+        <div class="form__actions">
+          <button class="btn primary" type="submit" id="submitEventBtn">Save Event</button>
+          <button class="btn ghost" type="button" id="deleteEventBtn" style="display: none; color: var(--error);">Delete Event</button>
+          <button class="btn ghost" type="button" id="cancelEventBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Day View Modal -->
+  <div class="modal hidden wide" id="dayViewModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h3 id="dayViewModalTitle">Events for Day</h3>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn small primary" id="addEventFromDayView">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New Event
+          </button>
+          <button class="btn small ghost" id="closeDayViewModal">Close</button>
+        </div>
+      </div>
+      <div id="dayViewModalContent" class="calendar-day-view" style="padding: 20px; max-height: 600px; overflow-y: auto;">
+        <!-- Events will be rendered here -->
       </div>
     </div>
   </div>
