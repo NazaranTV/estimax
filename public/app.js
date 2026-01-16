@@ -60,6 +60,7 @@ const clientsView = document.getElementById('clientsView');
 const materialsView = document.getElementById('materialsView');
 const itemsView = document.getElementById('itemsView');
 const settingsView = document.getElementById('settingsView');
+const toolsView = document.getElementById('toolsView');
 const calendarView = document.getElementById('calendarView');
 const aiView = document.getElementById('aiView'); // May not exist in HTML
 const typeList = document.getElementById('typeList');
@@ -1748,6 +1749,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
@@ -1764,6 +1766,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
@@ -1784,6 +1787,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
@@ -1794,6 +1798,7 @@ const switchView = (view) => {
     clientsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     materialsView.classList.remove('hidden');
@@ -1806,6 +1811,7 @@ const switchView = (view) => {
     clientsView.classList.add('hidden');
     materialsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     itemsView.classList.remove('hidden');
@@ -1820,6 +1826,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     aiView?.classList.add('hidden');
@@ -1832,6 +1839,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
@@ -1846,8 +1854,21 @@ const switchView = (view) => {
     calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     aiView?.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
     settingsView.classList.remove('hidden');
+  } else if (view === 'tools') {
+    overviewView.classList.add('hidden');
+    workspace.classList.add('hidden');
+    clientsView.classList.add('hidden');
+    materialsView.classList.add('hidden');
+    itemsView.classList.add('hidden');
+    settingsView.classList.add('hidden');
+    calendarView?.classList.add('hidden');
+    placeholder.classList.add('hidden');
+    aiView?.classList.add('hidden');
+    document.getElementById('notificationsView').classList.add('hidden');
+    toolsView?.classList.remove('hidden');
   } else if (view === 'ai') {
     overviewView.classList.add('hidden');
     workspace.classList.add('hidden');
@@ -1855,6 +1876,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     placeholder.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
@@ -1866,6 +1888,7 @@ const switchView = (view) => {
     materialsView.classList.add('hidden');
     itemsView.classList.add('hidden');
     settingsView.classList.add('hidden');
+    toolsView?.classList.add('hidden');
     calendarView?.classList.add('hidden');
     aiView?.classList.add('hidden');
     document.getElementById('notificationsView').classList.add('hidden');
@@ -4984,6 +5007,127 @@ if (calendarViewModeSelect) {
   calendarViewModeSelect.addEventListener('change', (e) => {
     calendarViewMode = e.target.value;
     renderCalendar();
+  });
+}
+
+// ====================================
+// Electrical Load Calculator (NEC 2017)
+// ====================================
+
+const calculateLoadBtn = document.getElementById('calculateLoadBtn');
+
+if (calculateLoadBtn) {
+  calculateLoadBtn.addEventListener('click', () => {
+    // Get input values
+    const occupancyType = parseFloat(document.getElementById('occupancyType').value) || 0;
+    const squareFootage = parseFloat(document.getElementById('squareFootage').value) || 0;
+    const smallApplianceCircuits = parseFloat(document.getElementById('smallApplianceCircuits').value) || 0;
+    const laundryCircuits = parseFloat(document.getElementById('laundryCircuits').value) || 0;
+    const numRanges = parseFloat(document.getElementById('numRanges').value) || 0;
+    const cooktopKW = parseFloat(document.getElementById('cooktopKW').value) || 0;
+    const dryerWatts = parseFloat(document.getElementById('dryerWatts').value) || 0;
+    const acWatts = parseFloat(document.getElementById('acWatts').value) || 0;
+    const heatingWatts = parseFloat(document.getElementById('heatingWatts').value) || 0;
+    const waterHeaterWatts = parseFloat(document.getElementById('waterHeaterWatts').value) || 0;
+    const otherAppliancesWatts = parseFloat(document.getElementById('otherAppliancesWatts').value) || 0;
+    const motorWatts = parseFloat(document.getElementById('motorWatts').value) || 0;
+
+    // Calculate General Lighting Load (NEC Table 220.12)
+    const generalLightingLoad = squareFootage * occupancyType; // in VA
+
+    // Calculate Small Appliance & Laundry (NEC 220.52)
+    const applianceLoad = (smallApplianceCircuits * 1500) + (laundryCircuits * 1500); // in VA
+
+    // Calculate Cooking Equipment Load (NEC Table 220.55)
+    let cookingLoad = 0;
+    if (numRanges === 1) {
+      cookingLoad = 8000; // Column C for 1 range (12kW or less)
+    } else if (numRanges === 2) {
+      cookingLoad = 11000;
+    } else if (numRanges === 3) {
+      cookingLoad = 14000;
+    } else if (numRanges === 4) {
+      cookingLoad = 17000;
+    } else if (numRanges === 5) {
+      cookingLoad = 20000;
+    } else if (numRanges >= 6) {
+      cookingLoad = 20000 + ((numRanges - 5) * 3000);
+    }
+
+    // Add separate cooktop/oven if applicable
+    if (cooktopKW > 0) {
+      cookingLoad += (cooktopKW * 1000);
+    }
+
+    // Dryer Load (NEC 220.54) - minimum 5000W or nameplate
+    const dryerLoad = Math.max(dryerWatts, 5000);
+
+    // HVAC Load (NEC 220.60) - use larger of heating or cooling
+    const hvacLoad = Math.max(acWatts, heatingWatts);
+
+    // Other Loads
+    const otherLoad = waterHeaterWatts + otherAppliancesWatts;
+
+    // Motor Load (NEC 220.50)
+    const motorLoad = motorWatts;
+
+    // Calculate Subtotal (before demand factors)
+    const subtotal = generalLightingLoad + applianceLoad + cookingLoad + dryerLoad + hvacLoad + otherLoad + motorLoad;
+
+    // Apply Demand Factors (NEC 220.42 & 220.82 for dwelling units)
+    // First 3000 VA at 100%, next 117,000 VA at 35%, remainder at 25%
+    let demandedGeneralAndAppliances = 0;
+    const generalAndAppliances = generalLightingLoad + applianceLoad;
+
+    if (generalAndAppliances <= 3000) {
+      demandedGeneralAndAppliances = generalAndAppliances;
+    } else if (generalAndAppliances <= 120000) {
+      demandedGeneralAndAppliances = 3000 + ((generalAndAppliances - 3000) * 0.35);
+    } else {
+      demandedGeneralAndAppliances = 3000 + (117000 * 0.35) + ((generalAndAppliances - 120000) * 0.25);
+    }
+
+    // Total with demand factors
+    // Cooking, dryer, HVAC, other, and motors are at 100% (already calculated)
+    const totalWithDemand = demandedGeneralAndAppliances + cookingLoad + dryerLoad + hvacLoad + otherLoad + motorLoad;
+
+    // Calculate amperage at 240V
+    const amperage = totalWithDemand / 240;
+
+    // Recommend service size (round up to standard sizes)
+    let recommendedService = 100;
+    if (amperage <= 100) {
+      recommendedService = 100;
+    } else if (amperage <= 150) {
+      recommendedService = 150;
+    } else if (amperage <= 200) {
+      recommendedService = 200;
+    } else if (amperage <= 300) {
+      recommendedService = 300;
+    } else if (amperage <= 400) {
+      recommendedService = 400;
+    } else {
+      recommendedService = Math.ceil(amperage / 100) * 100;
+    }
+
+    // Display results
+    document.getElementById('resultLighting').textContent = `${generalLightingLoad.toLocaleString()} VA`;
+    document.getElementById('resultAppliances').textContent = `${applianceLoad.toLocaleString()} VA`;
+    document.getElementById('resultCooking').textContent = `${cookingLoad.toLocaleString()} W`;
+    document.getElementById('resultDryer').textContent = `${dryerLoad.toLocaleString()} W`;
+    document.getElementById('resultHVAC').textContent = `${hvacLoad.toLocaleString()} W`;
+    document.getElementById('resultOther').textContent = `${otherLoad.toLocaleString()} W`;
+    document.getElementById('resultMotors').textContent = `${motorLoad.toLocaleString()} W`;
+    document.getElementById('resultSubtotal').textContent = `${subtotal.toLocaleString()} W`;
+    document.getElementById('resultTotal').textContent = `${Math.round(totalWithDemand).toLocaleString()} W`;
+    document.getElementById('resultAmps').textContent = `${amperage.toFixed(1)} A`;
+    document.getElementById('resultService').textContent = `${recommendedService} A`;
+
+    // Show results section
+    document.getElementById('loadResults').style.display = 'block';
+
+    // Scroll to results
+    document.getElementById('loadResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 }
 

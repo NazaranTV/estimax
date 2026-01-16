@@ -20,6 +20,7 @@
         <button class="nav__item" data-view="notifications" id="notificationsTab">
           Notifications <span id="notificationsBadge" class="badge hidden">0</span>
         </button>
+        <button class="nav__item" data-view="tools">Tools</button>
         <button class="nav__item" data-view="settings">Settings</button>
       </div>
     </nav>
@@ -353,6 +354,220 @@
           </div>
           <div class="client-actions">
             <button class="btn small" id="logoutBtn">Logout</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace card hidden" id="toolsView">
+      <div class="workspace__header">
+        <div>
+          <p class="eyebrow">Tools</p>
+          <h2>Electrical Load Calculator</h2>
+        </div>
+      </div>
+      <div class="pane">
+        <div style="max-width: 900px; margin: 0 auto;">
+          <div style="margin-bottom: 24px;">
+            <p class="meta">Calculate electrical loads based on NEC 2017 Article 220 (Branch-Circuit, Feeder, and Service Load Calculations)</p>
+          </div>
+
+          <!-- General Lighting Load -->
+          <div class="client-card" style="margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <h4>General Lighting Load</h4>
+              <p class="meta">Based on NEC Table 220.12</p>
+              <div class="grid two" style="margin-top: 12px;">
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Occupancy Type</span>
+                  <select id="occupancyType" style="width: 100%;">
+                    <option value="3">Dwelling Units (3 VA/sq ft)</option>
+                    <option value="2">Hotels/Motels (2 VA/sq ft)</option>
+                    <option value="3.5">Hospitals (2 VA/sq ft min)</option>
+                    <option value="1">Storage Warehouses (0.25 VA/sq ft)</option>
+                    <option value="1.5">Schools (3 VA/sq ft)</option>
+                    <option value="3.5">Offices (3.5 VA/sq ft)</option>
+                    <option value="1.5">Churches (1 VA/sq ft)</option>
+                  </select>
+                </label>
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Square Footage</span>
+                  <input type="number" id="squareFootage" placeholder="e.g., 2000" min="0" style="width: 100%;">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Small Appliance and Laundry Circuits -->
+          <div class="client-card" style="margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <h4>Small Appliance & Laundry Circuits</h4>
+              <p class="meta">NEC 220.52 - Minimum 1500 VA per circuit</p>
+              <div class="grid two" style="margin-top: 12px;">
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Small Appliance Circuits (min. 2)</span>
+                  <input type="number" id="smallApplianceCircuits" placeholder="e.g., 2" min="0" value="2" style="width: 100%;">
+                </label>
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Laundry Circuits</span>
+                  <input type="number" id="laundryCircuits" placeholder="e.g., 1" min="0" value="1" style="width: 100%;">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Range/Cooking Equipment -->
+          <div class="client-card" style="margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <h4>Range & Cooking Equipment</h4>
+              <p class="meta">NEC Table 220.55</p>
+              <div class="grid two" style="margin-top: 12px;">
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Number of Ranges (12 kW or less)</span>
+                  <input type="number" id="numRanges" placeholder="e.g., 1" min="0" value="0" style="width: 100%;">
+                </label>
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Cooktop/Oven kW (if separate)</span>
+                  <input type="number" id="cooktopKW" placeholder="e.g., 8" min="0" step="0.1" value="0" style="width: 100%;">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dryer -->
+          <div class="client-card" style="margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <h4>Dryer Load</h4>
+              <p class="meta">NEC 220.54 - Minimum 5000W or nameplate rating</p>
+              <div class="grid two" style="margin-top: 12px;">
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Dryer Wattage</span>
+                  <input type="number" id="dryerWatts" placeholder="e.g., 5000" min="0" value="0" style="width: 100%;">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- HVAC -->
+          <div class="client-card" style="margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <h4>Heating & Air Conditioning</h4>
+              <p class="meta">NEC 220.60 - Use largest of heating or cooling load</p>
+              <div class="grid two" style="margin-top: 12px;">
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Air Conditioning (Watts)</span>
+                  <input type="number" id="acWatts" placeholder="e.g., 3600" min="0" value="0" style="width: 100%;">
+                </label>
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Heating (Watts)</span>
+                  <input type="number" id="heatingWatts" placeholder="e.g., 10000" min="0" value="0" style="width: 100%;">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Loads -->
+          <div class="client-card" style="margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <h4>Additional Fixed Appliances</h4>
+              <p class="meta">Water heaters, dishwashers, disposals, etc.</p>
+              <div class="grid two" style="margin-top: 12px;">
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Water Heater (Watts)</span>
+                  <input type="number" id="waterHeaterWatts" placeholder="e.g., 4500" min="0" value="0" style="width: 100%;">
+                </label>
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Other Appliances (Watts)</span>
+                  <input type="number" id="otherAppliancesWatts" placeholder="e.g., 2000" min="0" value="0" style="width: 100%;">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Motor Loads -->
+          <div class="client-card" style="margin-bottom: 16px;">
+            <div style="flex: 1;">
+              <h4>Motor Loads</h4>
+              <p class="meta">NEC 220.50 - Motors rated at nameplate</p>
+              <div class="grid two" style="margin-top: 12px;">
+                <label style="display: block;">
+                  <span style="font-weight: 600; margin-bottom: 8px; display: block;">Total Motor Load (Watts)</span>
+                  <input type="number" id="motorWatts" placeholder="e.g., 1500" min="0" value="0" style="width: 100%;">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calculate Button -->
+          <div style="margin-top: 24px; text-align: center;">
+            <button class="btn primary large" id="calculateLoadBtn" type="button">Calculate Total Load</button>
+          </div>
+
+          <!-- Results -->
+          <div id="loadResults" style="display: none; margin-top: 32px;">
+            <div class="client-card" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3);">
+              <div style="flex: 1;">
+                <h3 style="margin-bottom: 16px;">Calculated Load Summary</h3>
+
+                <div style="display: grid; gap: 12px; margin-bottom: 16px;">
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>General Lighting Load:</span>
+                    <strong id="resultLighting">0 VA</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>Small Appliance & Laundry:</span>
+                    <strong id="resultAppliances">0 VA</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>Cooking Equipment:</span>
+                    <strong id="resultCooking">0 W</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>Dryer:</span>
+                    <strong id="resultDryer">0 W</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>HVAC (Larger of AC/Heat):</span>
+                    <strong id="resultHVAC">0 W</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>Water Heater & Other:</span>
+                    <strong id="resultOther">0 W</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>Motor Loads:</span>
+                    <strong id="resultMotors">0 W</strong>
+                  </div>
+                </div>
+
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid var(--border);">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 18px; font-weight: 600;">Subtotal (before demand factors):</span>
+                    <strong style="font-size: 18px;" id="resultSubtotal">0 W</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 18px; font-weight: 600;">Total with Demand Factors:</span>
+                    <strong style="font-size: 18px; color: #3b82f6;" id="resultTotal">0 W</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 16px;">Amperage @ 240V:</span>
+                    <strong style="font-size: 16px;" id="resultAmps">0 A</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 16px;">Recommended Service:</span>
+                    <strong style="font-size: 16px; color: #10b981;" id="resultService">0 A</strong>
+                  </div>
+                </div>
+
+                <div style="margin-top: 16px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                  <p class="meta" style="font-size: 13px; line-height: 1.6;">
+                    <strong>Note:</strong> Demand factors applied per NEC 220.42 & 220.82 for dwelling units.
+                    First 3000 VA @ 100%, next 117,000 VA @ 35%, remainder @ 25%.
+                    Always verify calculations with local code requirements and consider future loads.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
