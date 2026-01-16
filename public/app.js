@@ -464,10 +464,12 @@ const openClientView = (doc) => {
     }
   });
 
-  // Share View - Open share link in new tab (or Safari if webwrapped)
-  previewShareView.onclick = async () => {
+  // Share View - Set up the link
+  previewShareView.onclick = async (e) => {
+    e.preventDefault();
     shareDropdown.classList.add('hidden');
     shareDropdown.style.display = 'none';
+
     try {
       let shareToken = doc.shareToken;
       if (!shareToken) {
@@ -478,27 +480,29 @@ const openClientView = (doc) => {
         if (!res.ok) throw new Error('Failed to generate share token');
         const updated = await res.json();
         shareToken = updated.shareToken;
+        doc.shareToken = shareToken; // Update local doc
       }
 
       const shareUrl = `/share.html?token=${shareToken}`;
+      const fullUrl = window.location.protocol + '//' + window.location.host + shareUrl;
 
-      // Check if running as a webwrapped app (PWA/home screen app)
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                        || window.navigator.standalone
-                        || document.referrer.includes('android-app://');
+      // Update the href and trigger the link
+      previewShareView.href = fullUrl;
 
-      if (isStandalone) {
-        // For iOS PWAs, use full absolute URL to force Safari to open
-        const fullUrl = window.location.protocol + '//' + window.location.host + shareUrl;
-        window.open(fullUrl, '_blank');
-      } else {
-        window.open(shareUrl, '_blank');
-      }
+      // Manually open with window.open as fallback
+      window.open(fullUrl, '_blank', 'noopener');
     } catch (err) {
       console.error('Failed to open share link:', err);
       alert('Failed to open share link. Please try again.');
     }
   };
+
+  // Pre-load share token if available
+  if (doc.shareToken) {
+    const shareUrl = `/share.html?token=${doc.shareToken}`;
+    const fullUrl = window.location.protocol + '//' + window.location.host + shareUrl;
+    previewShareView.href = fullUrl;
+  }
 
   // Share Email
   previewShareEmail.onclick = () => {
@@ -520,7 +524,13 @@ const openClientView = (doc) => {
   const hasMaterials = (doc.lineItems || []).some(li => (li.materials || []).length > 0);
   if (hasMaterials) {
     previewShareMaterials.style.display = 'block';
-    previewShareMaterials.onclick = () => {
+
+    // Set the href to the materials list endpoint
+    const materialsUrl = `/api/documents/${doc.id}/materials-list`;
+    const fullUrl = window.location.protocol + '//' + window.location.host + materialsUrl;
+    previewShareMaterials.href = fullUrl;
+
+    previewShareMaterials.onclick = (e) => {
       shareDropdown.classList.add('hidden');
       shareDropdown.style.display = 'none';
 
@@ -529,15 +539,12 @@ const openClientView = (doc) => {
                         || window.navigator.standalone
                         || document.referrer.includes('android-app://');
 
-      if (isStandalone) {
-        // For iOS PWAs, use the server endpoint with full absolute URL to force Safari
-        const materialsUrl = `/api/documents/${doc.id}/materials-list`;
-        const fullUrl = window.location.protocol + '//' + window.location.host + materialsUrl;
-        window.open(fullUrl, '_blank');
-      } else {
-        // For normal browsers, use the client-side generated version
+      if (!isStandalone) {
+        // For normal browsers, prevent default and use client-side generated version
+        e.preventDefault();
         showMaterialsListView(doc, true);
       }
+      // For standalone PWA, let the link naturally open (will open in Safari)
     };
   } else {
     previewShareMaterials.style.display = 'none';
