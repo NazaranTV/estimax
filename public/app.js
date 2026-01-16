@@ -4882,8 +4882,9 @@ const renderMonthView = (header, grid) => {
             ${dayAppointments.slice(0, 2).map(apt => {
               const displayTitle = apt.title || apt.clientName || 'Event';
               const eventType = apt.eventType || 'appointment';
+              const displayTime = apt.allDay ? 'All day' : (apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : '');
               return `<div class="calendar-mini-event ${apt.status || 'scheduled'} ${eventType}" title="${displayTitle}">
-                <span class="calendar-mini-event-time">${apt.allDay ? 'All day' : (apt.appointmentTime || '')}</span>
+                <span class="calendar-mini-event-time">${displayTime}</span>
                 <span class="calendar-mini-event-title">${displayTitle}</span>
               </div>`;
             }).join('')}
@@ -4938,14 +4939,16 @@ const renderWeekView = (header, grid) => {
           ${dayAppointments.map(apt => {
             const displayTitle = apt.title || apt.clientName || 'Event';
             const eventIcon = getEventIcon(apt.eventType || 'appointment');
+            const displayTime = apt.allDay ? 'All day' : (apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : '');
+            const displayLocation = apt.location || apt.serviceAddress;
             return `
             <div class="calendar-appointment-card ${apt.status || 'scheduled'}" onclick="editEvent(${apt.id})" style="cursor: pointer;">
               <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
                 ${eventIcon}
-                <div style="font-weight: 500; font-size: 11px;">${apt.allDay ? 'All day' : (apt.appointmentTime || '')}</div>
+                <div style="font-weight: 500; font-size: 11px;">${displayTime}</div>
               </div>
               <div style="font-size: 12px; font-weight: 500;">${displayTitle}</div>
-              ${apt.location || apt.serviceAddress ? `<div style="font-size: 10px; color: var(--text-tertiary); margin-top: 2px;">📍 ${apt.location || apt.serviceAddress}</div>` : ''}
+              ${displayLocation ? `<div style="font-size: 10px; color: var(--text-tertiary); margin-top: 2px;">📍 ${displayLocation}</div>` : ''}
             </div>
           `;
           }).join('')}
@@ -4990,6 +4993,9 @@ const renderDayView = (header, grid) => {
       const displayTitle = apt.title || apt.clientName || 'Untitled Event';
       const displayLocation = apt.location || apt.serviceAddress;
 
+      const displayTimeRange = apt.allDay ? 'All Day' :
+        `${apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : 'No time'}${apt.endTime ? ' - ' + formatTime12Hour(apt.endTime) : ''}`;
+
       html += `
         <div class="calendar-appointment-card-detailed ${apt.status || 'scheduled'}" onclick="editEvent(${apt.id})" style="cursor: pointer;">
           <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -4998,10 +5004,7 @@ const renderDayView = (header, grid) => {
                 ${eventIcon}
                 <div style="font-weight: 600; font-size: 16px;">${displayTitle}</div>
               </div>
-              ${apt.allDay ?
-                '<div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">All Day</div>' :
-                `<div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${apt.appointmentTime || 'No time'}${apt.endTime ? ' - ' + apt.endTime : ''}</div>`
-              }
+              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${displayTimeRange}</div>
               ${apt.description ? `<div style="font-size: 13px; margin-top: 8px;">${apt.description}</div>` : ''}
               ${displayLocation ? `<div style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">📍 ${displayLocation}</div>` : ''}
               ${apt.clientName && apt.eventType === 'appointment' ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Client: ${apt.clientName}</div>` : ''}
@@ -5024,14 +5027,32 @@ const renderAppointments = () => {
 
   // Show next 10 upcoming events
   const now = new Date();
+  now.setHours(0, 0, 0, 0); // Start of today
+
   const upcoming = appointments
     .filter(apt => {
-      const aptDate = new Date(apt.appointmentDate);
+      // Parse date in local timezone to avoid timezone issues
+      const [year, month, day] = apt.appointmentDate.split('-').map(Number);
+      const aptDate = new Date(year, month - 1, day);
       return aptDate >= now;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.appointmentDate + ' ' + (a.appointmentTime || '00:00'));
-      const dateB = new Date(b.appointmentDate + ' ' + (b.appointmentTime || '00:00'));
+      // Parse dates properly in local timezone
+      const [yearA, monthA, dayA] = a.appointmentDate.split('-').map(Number);
+      const dateA = new Date(yearA, monthA - 1, dayA);
+      const [yearB, monthB, dayB] = b.appointmentDate.split('-').map(Number);
+      const dateB = new Date(yearB, monthB - 1, dayB);
+
+      // Add time to date for sorting
+      if (a.appointmentTime) {
+        const [hoursA, minutesA] = a.appointmentTime.split(':').map(Number);
+        dateA.setHours(hoursA, minutesA);
+      }
+      if (b.appointmentTime) {
+        const [hoursB, minutesB] = b.appointmentTime.split(':').map(Number);
+        dateB.setHours(hoursB, minutesB);
+      }
+
       return dateA - dateB;
     })
     .slice(0, 10);
@@ -5042,9 +5063,14 @@ const renderAppointments = () => {
   }
 
   appointmentsContent.innerHTML = upcoming.map(apt => {
-    const aptDate = new Date(apt.appointmentDate);
+    // Parse date in local timezone
+    const [year, month, day] = apt.appointmentDate.split('-').map(Number);
+    const aptDate = new Date(year, month - 1, day);
     const displayTitle = apt.title || apt.clientName || 'Event';
     const eventIcon = getEventIcon(apt.eventType || 'appointment');
+    const displayTime = apt.allDay ? 'All day' : (apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : 'TBD');
+    const displayLocation = apt.location || apt.serviceAddress;
+
     return `
       <div class="appointment-item" style="padding: 12px; border-bottom: 1px solid var(--border-subtle); cursor: pointer;" onclick="editEvent(${apt.id})">
         <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -5055,9 +5081,9 @@ const renderAppointments = () => {
             </div>
             <div style="font-size: 12px; color: var(--text-secondary);">
               ${aptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              ${apt.allDay ? ' - All day' : ` at ${apt.appointmentTime || 'TBD'}`}
+              ${apt.allDay ? ' - All day' : ` at ${displayTime}`}
             </div>
-            ${apt.location || apt.serviceAddress ? `<div style="font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">📍 ${apt.location || apt.serviceAddress}</div>` : ''}
+            ${displayLocation ? `<div style="font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">📍 ${displayLocation}</div>` : ''}
           </div>
           <div class="status-badge ${apt.status || 'scheduled'}" style="font-size: 11px; padding: 4px 8px;">${apt.status || 'scheduled'}</div>
         </div>
@@ -5120,9 +5146,32 @@ if (calendarViewModeSelect) {
   });
 }
 
+// Helper function to format time from 24-hour to 12-hour AM/PM
+const formatTime12Hour = (time24) => {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
+// Helper function to format time from 12-hour to 24-hour
+const formatTime24Hour = (time12) => {
+  if (!time12) return '';
+  const match = time12.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!match) return time12;
+  let [, hours, minutes, ampm] = match;
+  hours = parseInt(hours);
+  if (ampm.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+  if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+  return `${hours.toString().padStart(2, '0')}:${minutes}`;
+};
+
 // Event Modal Functionality
 let currentEditingEventId = null;
 let currentEventDate = null;
+let allDocuments = [];
 
 const eventModal = document.getElementById('eventModal');
 const eventForm = document.getElementById('eventForm');
@@ -5137,23 +5186,94 @@ const appointmentFields = document.getElementById('appointmentFields');
 const dayViewModal = document.getElementById('dayViewModal');
 const closeDayViewModal = document.getElementById('closeDayViewModal');
 const addEventFromDayView = document.getElementById('addEventFromDayView');
+const eventClientPicker = document.getElementById('eventClientPicker');
+const eventDocumentSearch = document.getElementById('eventDocumentSearch');
+const addClientFromEvent = document.getElementById('addClientFromEvent');
 
 // Load documents for event linking
 const loadDocumentsForEvents = async () => {
   try {
     const res = await fetch('/api/documents');
     const data = await res.json();
-    const select = document.getElementById('eventDocumentId');
-    select.innerHTML = '<option value="">None</option>';
-    data.documents.forEach(doc => {
+    allDocuments = data.documents;
+
+    const datalist = document.getElementById('eventDocumentList');
+    datalist.innerHTML = '';
+
+    allDocuments.forEach(doc => {
       const option = document.createElement('option');
-      option.value = doc.id;
-      option.textContent = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
-      select.appendChild(option);
+      option.value = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
+      option.dataset.id = doc.id;
+      datalist.appendChild(option);
     });
   } catch (err) {
     console.error('Error loading documents:', err);
   }
+};
+
+// Load clients for event form
+const loadClientsForEvents = async () => {
+  try {
+    const res = await fetch('/api/clients');
+    const data = await res.json();
+    const select = document.getElementById('eventClientPicker');
+    if (!select) return;
+    select.innerHTML = '<option value="">Select saved client or enter manually below</option>';
+    data.clients.forEach(client => {
+      const option = document.createElement('option');
+      option.value = client.id;
+      option.textContent = client.name;
+      option.dataset.email = client.email || '';
+      option.dataset.phone = client.phone || '';
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error('Error loading clients:', err);
+  }
+};
+
+// Handle document search selection
+if (eventDocumentSearch) {
+  eventDocumentSearch.addEventListener('input', (e) => {
+    const value = e.target.value;
+    const doc = allDocuments.find(d =>
+      `${d.type.toUpperCase()} ${d.poNumber} - ${d.clientName}` === value
+    );
+    if (doc) {
+      document.getElementById('eventDocumentId').value = doc.id;
+    } else {
+      document.getElementById('eventDocumentId').value = '';
+    }
+  });
+}
+
+// Handle client selection from saved clients
+if (eventClientPicker) {
+  eventClientPicker.addEventListener('change', (e) => {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    if (selectedOption.value) {
+      document.getElementById('eventClientName').value = selectedOption.textContent;
+      document.getElementById('eventClientEmail').value = selectedOption.dataset.email || '';
+      document.getElementById('eventClientPhone').value = selectedOption.dataset.phone || '';
+    }
+  });
+}
+
+// Handle add client from event modal
+if (addClientFromEvent) {
+  addClientFromEvent.addEventListener('click', () => {
+    const clientName = document.getElementById('eventClientName').value;
+    const clientEmail = document.getElementById('eventClientEmail').value;
+    const clientPhone = document.getElementById('eventClientPhone').value;
+
+    // Pre-fill client modal with event data
+    if (clientName) document.getElementById('newClientName').value = clientName;
+    if (clientEmail) document.getElementById('newClientEmail').value = clientEmail;
+    if (clientPhone) document.getElementById('newClientPhone').value = clientPhone;
+
+    // Open client modal
+    document.getElementById('clientModal').classList.remove('hidden');
+  });
 };
 
 // Open event modal for new event
@@ -5177,6 +5297,7 @@ if (addEventFromDayView) {
 // Open event modal
 const openEventModal = (event = null) => {
   loadDocumentsForEvents();
+  loadClientsForEvents();
 
   if (event) {
     // Edit mode
@@ -5184,6 +5305,17 @@ const openEventModal = (event = null) => {
     document.getElementById('eventModalTitle').textContent = 'Edit Event';
     document.getElementById('eventType').value = event.eventType || 'appointment';
     document.getElementById('eventDocumentId').value = event.documentId || '';
+
+    // Set document search field
+    if (event.documentId) {
+      const doc = allDocuments.find(d => d.id === event.documentId);
+      if (doc) {
+        document.getElementById('eventDocumentSearch').value = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
+      }
+    } else {
+      document.getElementById('eventDocumentSearch').value = '';
+    }
+
     document.getElementById('eventTitle').value = event.title || '';
     document.getElementById('eventDescription').value = event.description || '';
     document.getElementById('eventDate').value = event.appointmentDate;
@@ -5191,11 +5323,10 @@ const openEventModal = (event = null) => {
     document.getElementById('eventStartTime').value = event.appointmentTime || '';
     document.getElementById('eventEndTime').value = event.endTime || '';
     document.getElementById('eventDuration').value = event.durationHours || 2;
-    document.getElementById('eventLocation').value = event.location || '';
+    document.getElementById('eventLocation').value = event.location || event.serviceAddress || '';
     document.getElementById('eventClientName').value = event.clientName || '';
     document.getElementById('eventClientEmail').value = event.clientEmail || '';
     document.getElementById('eventClientPhone').value = event.clientPhone || '';
-    document.getElementById('eventServiceAddress').value = event.serviceAddress || '';
     document.getElementById('eventStatus').value = event.status || 'scheduled';
     document.getElementById('eventNotes').value = event.notes || '';
     deleteEventBtn.style.display = 'block';
@@ -5205,6 +5336,7 @@ const openEventModal = (event = null) => {
     document.getElementById('eventModalTitle').textContent = 'Create Event';
     eventForm.reset();
     document.getElementById('eventDate').value = currentEventDate || new Date().toISOString().split('T')[0];
+    document.getElementById('eventDocumentSearch').value = '';
     deleteEventBtn.style.display = 'none';
   }
 
@@ -5251,7 +5383,7 @@ if (eventForm) {
     const formData = new FormData(eventForm);
     const data = {
       eventType: formData.get('eventType'),
-      documentId: formData.get('documentId') || null,
+      documentId: document.getElementById('eventDocumentId').value || null,
       title: formData.get('title'),
       description: formData.get('description'),
       appointmentDate: formData.get('appointmentDate'),
@@ -5263,7 +5395,6 @@ if (eventForm) {
       clientName: formData.get('clientName') || null,
       clientEmail: formData.get('clientEmail') || null,
       clientPhone: formData.get('clientPhone') || null,
-      serviceAddress: formData.get('serviceAddress') || null,
       status: formData.get('status') || 'scheduled',
       notes: formData.get('notes')
     };
@@ -5348,6 +5479,8 @@ const showDayAppointmentsModal = (dateStr) => {
       const eventIcon = getEventIcon(apt.eventType || 'appointment');
       const displayTitle = apt.title || apt.clientName || 'Untitled Event';
       const displayLocation = apt.location || apt.serviceAddress;
+      const displayTimeRange = apt.allDay ? 'All Day' :
+        `${apt.appointmentTime ? formatTime12Hour(apt.appointmentTime) : 'No time'}${apt.endTime ? ' - ' + formatTime12Hour(apt.endTime) : ''}`;
 
       return `
         <div class="calendar-appointment-card-detailed ${apt.status || 'scheduled'}" onclick="editEvent(${apt.id})" style="cursor: pointer;">
@@ -5357,10 +5490,7 @@ const showDayAppointmentsModal = (dateStr) => {
                 ${eventIcon}
                 <div style="font-weight: 600; font-size: 16px;">${displayTitle}</div>
               </div>
-              ${apt.allDay ?
-                '<div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">All Day</div>' :
-                `<div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${apt.appointmentTime || 'No time'}${apt.endTime ? ' - ' + apt.endTime : ''}</div>`
-              }
+              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${displayTimeRange}</div>
               ${apt.description ? `<div style="font-size: 13px; margin-top: 8px;">${apt.description}</div>` : ''}
               ${displayLocation ? `<div style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">📍 ${displayLocation}</div>` : ''}
               ${apt.clientName && apt.eventType === 'appointment' ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Client: ${apt.clientName}</div>` : ''}
