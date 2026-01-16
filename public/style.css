@@ -268,6 +268,10 @@ h4 {
   transition: var(--transition);
   font-family: inherit;
   white-space: nowrap;
+  -webkit-tap-highlight-color: rgba(124, 58, 237, 0.3);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .btn:hover {

@@ -5074,7 +5074,7 @@ if (calendarViewModeSelect) {
 const calculateLoadBtn = document.getElementById('calculateLoadBtn');
 
 if (calculateLoadBtn) {
-  calculateLoadBtn.addEventListener('click', () => {
+  const handleCalculate = () => {
     // Get input values
     const occupancyType = parseFloat(document.getElementById('occupancyType').value) || 0;
     const squareFootage = parseFloat(document.getElementById('squareFootage').value) || 0;
@@ -5185,6 +5185,13 @@ if (calculateLoadBtn) {
 
     // Scroll to results
     document.getElementById('loadResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  // Add both click and touch event listeners for better mobile compatibility
+  calculateLoadBtn.addEventListener('click', handleCalculate);
+  calculateLoadBtn.addEventListener('touchend', (e) => {
+    e.preventDefault(); // Prevent the click event from also firing
+    handleCalculate();
   });
 }
 
