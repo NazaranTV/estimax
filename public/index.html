@@ -1155,6 +1155,39 @@
     </div>
   </div>
 
+  <!-- Reschedule Modal -->
+  <div class="modal hidden" id="rescheduleModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h3>Reschedule Appointment</h3>
+        <button class="btn small ghost" id="closeRescheduleModal">Close</button>
+      </div>
+      <form id="rescheduleForm" style="padding: 20px;">
+        <label>Date
+          <input type="date" id="rescheduleDate" required>
+        </label>
+
+        <div class="grid three" style="margin-top: 16px;">
+          <label>Start Time
+            <input type="time" id="rescheduleStartTime">
+          </label>
+          <label>End Time
+            <input type="time" id="rescheduleEndTime">
+          </label>
+          <label>Duration (hours)
+            <input type="number" id="rescheduleDuration" min="0" step="0.5" placeholder="Duration">
+          </label>
+        </div>
+
+        <div class="form__actions" style="margin-top: 24px;">
+          <button type="submit" class="btn primary">Save Changes</button>
+          <button type="button" class="btn ghost" id="cancelRescheduleBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Day View Modal -->
   <div class="modal hidden wide" id="dayViewModal">
     <div class="modal__backdrop"></div>

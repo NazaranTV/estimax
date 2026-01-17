@@ -5260,6 +5260,17 @@ const previewCancelBtn = document.getElementById('previewCancelBtn');
 const previewModalContent = document.getElementById('previewModalContent');
 let currentPreviewEvent = null;
 
+// Reschedule Modal
+const rescheduleModal = document.getElementById('rescheduleModal');
+const closeRescheduleModal = document.getElementById('closeRescheduleModal');
+const cancelRescheduleBtn = document.getElementById('cancelRescheduleBtn');
+const rescheduleForm = document.getElementById('rescheduleForm');
+const rescheduleDate = document.getElementById('rescheduleDate');
+const rescheduleStartTime = document.getElementById('rescheduleStartTime');
+const rescheduleEndTime = document.getElementById('rescheduleEndTime');
+const rescheduleDuration = document.getElementById('rescheduleDuration');
+let currentRescheduleEvent = null;
+
 // Load documents for event linking
 const loadDocumentsForEvents = async () => {
   try {
@@ -5276,16 +5287,31 @@ const loadDocumentsForEvents = async () => {
 const renderDocumentList = (searchTerm = '') => {
   if (!documentSelectionList) return;
 
-  const filteredDocs = allDocuments.filter(doc => {
-    const searchStr = searchTerm.toLowerCase();
-    const poMatch = doc.poNumber && doc.poNumber.toLowerCase().includes(searchStr);
-    const clientMatch = doc.clientName && doc.clientName.toLowerCase().includes(searchStr);
-    const typeMatch = doc.type && doc.type.toLowerCase().includes(searchStr);
-    return poMatch || clientMatch || typeMatch;
-  });
+  console.log('Rendering documents, total count:', allDocuments.length);
+  console.log('Search term:', searchTerm);
+
+  if (!allDocuments || allDocuments.length === 0) {
+    documentSelectionList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No documents available. Create an estimate or invoice first.</div>';
+    return;
+  }
+
+  let filteredDocs = allDocuments;
+
+  // Only filter if there's a search term
+  if (searchTerm && searchTerm.trim()) {
+    filteredDocs = allDocuments.filter(doc => {
+      const searchStr = searchTerm.toLowerCase();
+      const poMatch = doc.poNumber && doc.poNumber.toLowerCase().includes(searchStr);
+      const clientMatch = doc.clientName && doc.clientName.toLowerCase().includes(searchStr);
+      const typeMatch = doc.type && doc.type.toLowerCase().includes(searchStr);
+      return poMatch || clientMatch || typeMatch;
+    });
+  }
+
+  console.log('Filtered documents count:', filteredDocs.length);
 
   if (filteredDocs.length === 0) {
-    documentSelectionList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No documents found</div>';
+    documentSelectionList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No documents match your search</div>';
     return;
   }
 
@@ -5920,12 +5946,7 @@ if (appointmentPreviewModal) {
 
       if (eventToReschedule) {
         setTimeout(() => {
-          openEventModal(eventToReschedule);
-          // Focus on the date field after a short delay
-          setTimeout(() => {
-            const dateField = document.getElementById('eventDate');
-            if (dateField) dateField.focus();
-          }, 100);
+          openRescheduleModal(eventToReschedule);
         }, 50);
       }
       return;
@@ -5944,6 +5965,155 @@ if (appointmentPreviewModal) {
     if (e.target.id === 'closePreviewModal' || e.target.closest('#closePreviewModal')) {
       closePreviewModalFunc();
       return;
+    }
+  });
+}
+
+// ====================================
+// Reschedule Modal Functions
+// ====================================
+
+// Open reschedule modal
+const openRescheduleModal = (event) => {
+  currentRescheduleEvent = event;
+
+  // Pre-fill the form with current appointment data
+  if (event.appointmentDate) {
+    rescheduleDate.value = event.appointmentDate.split('T')[0];
+  }
+  rescheduleStartTime.value = event.appointmentTime || '';
+  rescheduleEndTime.value = event.endTime || '';
+  rescheduleDuration.value = event.durationHours || '';
+
+  rescheduleModal.classList.remove('hidden');
+  rescheduleDate.focus();
+};
+
+// Close reschedule modal
+const closeRescheduleModalFunc = () => {
+  if (rescheduleModal) {
+    rescheduleModal.classList.add('hidden');
+  }
+  currentRescheduleEvent = null;
+  if (rescheduleForm) {
+    rescheduleForm.reset();
+  }
+};
+
+// Close button handlers
+if (closeRescheduleModal) {
+  closeRescheduleModal.addEventListener('click', closeRescheduleModalFunc);
+}
+
+if (cancelRescheduleBtn) {
+  cancelRescheduleBtn.addEventListener('click', closeRescheduleModalFunc);
+}
+
+// Click backdrop to close
+if (rescheduleModal) {
+  rescheduleModal.addEventListener('click', (e) => {
+    if (e.target === rescheduleModal || e.target.classList.contains('modal__backdrop')) {
+      closeRescheduleModalFunc();
+    }
+  });
+}
+
+// Bidirectional auto-calculation for reschedule time fields
+const calculateRescheduleDurationFromTimes = () => {
+  const startTime = rescheduleStartTime.value;
+  const endTime = rescheduleEndTime.value;
+
+  if (startTime && endTime) {
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    let durationMinutes = endMinutes - startMinutes;
+
+    if (durationMinutes < 0) {
+      durationMinutes += 24 * 60;
+    }
+
+    const durationHours = durationMinutes / 60;
+    rescheduleDuration.value = durationHours > 0 ? durationHours.toFixed(1) : '';
+  }
+};
+
+const calculateRescheduleEndTimeFromDuration = () => {
+  const startTime = rescheduleStartTime.value;
+  const duration = parseFloat(rescheduleDuration.value);
+
+  if (startTime && duration > 0) {
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = startMinutes + (duration * 60);
+    const endHour = Math.floor(endMinutes / 60) % 24;
+    const endMin = Math.floor(endMinutes % 60);
+    const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+    rescheduleEndTime.value = endTimeStr;
+  }
+};
+
+if (rescheduleStartTime) {
+  rescheduleStartTime.addEventListener('change', () => {
+    if (rescheduleStartTime.value && rescheduleEndTime.value) {
+      calculateRescheduleDurationFromTimes();
+    } else if (rescheduleStartTime.value && rescheduleDuration.value) {
+      calculateRescheduleEndTimeFromDuration();
+    }
+  });
+}
+
+if (rescheduleEndTime) {
+  rescheduleEndTime.addEventListener('change', () => {
+    if (rescheduleStartTime.value && rescheduleEndTime.value) {
+      calculateRescheduleDurationFromTimes();
+    }
+  });
+}
+
+if (rescheduleDuration) {
+  rescheduleDuration.addEventListener('input', () => {
+    if (rescheduleStartTime.value && rescheduleDuration.value) {
+      calculateRescheduleEndTimeFromDuration();
+    }
+  });
+}
+
+// Handle reschedule form submission
+if (rescheduleForm) {
+  rescheduleForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!currentRescheduleEvent) {
+      console.error('No event to reschedule!');
+      return;
+    }
+
+    try {
+      const updatedData = {
+        appointmentDate: rescheduleDate.value,
+        appointmentTime: rescheduleStartTime.value,
+        endTime: rescheduleEndTime.value,
+        durationHours: parseFloat(rescheduleDuration.value) || null
+      };
+
+      const response = await fetch(`/api/calendar/appointments/${currentRescheduleEvent.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+      });
+
+      if (!response.ok) throw new Error('Failed to reschedule appointment');
+
+      closeRescheduleModalFunc();
+      await loadCalendar();
+
+      // Show success message
+      console.log('Appointment rescheduled successfully!');
+    } catch (err) {
+      console.error('Error rescheduling appointment:', err);
+      alert('Failed to reschedule appointment. Please try again.');
     }
   });
 }
