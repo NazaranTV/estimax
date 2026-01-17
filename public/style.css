@@ -882,6 +882,27 @@ label {
   padding: 24px;
 }
 
+/* Appointment Preview Modal */
+.preview-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preview-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.preview-value {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
 /* Modal forms */
 .modal-form {
   display: flex;
@@ -2211,6 +2232,12 @@ label {
    CALENDAR STYLES
    ======================================== */
 
+.calendar-main-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+
 .calendar-container {
   flex: 1;
   display: flex;
@@ -2220,10 +2247,7 @@ label {
 }
 
 .calendar-header {
-  padding: 16px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
+  /* Inline styles handle layout, this just provides fallback styling */
 }
 
 .calendar-grid {
@@ -2777,6 +2801,10 @@ label {
 
 /* Responsive Calendar */
 @media (max-width: 1024px) {
+  .calendar-main-layout {
+    grid-template-columns: 1fr;
+  }
+
   #calendarView .pane {
     flex-direction: column;
   }
@@ -2792,6 +2820,12 @@ label {
 }
 
 @media (max-width: 768px) {
+  .calendar-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+
   .calendar-grid-month {
     gap: 4px;
   }
