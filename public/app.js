@@ -5460,7 +5460,7 @@ const openEventModal = (event = null) => {
     document.getElementById('eventAllDay').checked = event.allDay || false;
     document.getElementById('eventStartTime').value = event.appointmentTime || '';
     document.getElementById('eventEndTime').value = event.endTime || '';
-    document.getElementById('eventDuration').value = event.durationHours || 2;
+    document.getElementById('eventDuration').value = event.durationHours || '';
     document.getElementById('eventLocation').value = event.location || event.serviceAddress || '';
     document.getElementById('eventClientName').value = event.clientName || '';
     document.getElementById('eventClientEmail').value = event.clientEmail || '';
@@ -5515,11 +5515,18 @@ if (eventAllDayCheckbox) {
   eventAllDayCheckbox.addEventListener('change', toggleTimeFields);
 }
 
-// Auto-calculate duration when start/end time changes
-const calculateDuration = () => {
-  const startTime = document.getElementById('eventStartTime').value;
-  const endTime = document.getElementById('eventEndTime').value;
-  const durationField = document.getElementById('eventDuration');
+// Bidirectional auto-calculation for time fields
+// When start + end are filled, calculate duration
+// When start + duration are filled, calculate end time
+
+const startTimeField = document.getElementById('eventStartTime');
+const endTimeField = document.getElementById('eventEndTime');
+const durationField = document.getElementById('eventDuration');
+
+// Calculate duration from start and end times
+const calculateDurationFromTimes = () => {
+  const startTime = startTimeField.value;
+  const endTime = endTimeField.value;
 
   if (startTime && endTime) {
     // Parse times
@@ -5537,19 +5544,63 @@ const calculateDuration = () => {
     }
 
     const durationHours = durationMinutes / 60;
-    durationField.value = durationHours.toFixed(1);
+    durationField.value = durationHours > 0 ? durationHours.toFixed(1) : '';
   }
 };
 
-const startTimeField = document.getElementById('eventStartTime');
-const endTimeField = document.getElementById('eventEndTime');
+// Calculate end time from start time and duration
+const calculateEndTimeFromDuration = () => {
+  const startTime = startTimeField.value;
+  const duration = parseFloat(durationField.value);
 
+  if (startTime && duration > 0) {
+    // Parse start time
+    const [startHour, startMin] = startTime.split(':').map(Number);
+
+    // Calculate end time
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = startMinutes + (duration * 60);
+
+    // Handle day overflow
+    const endHour = Math.floor(endMinutes / 60) % 24;
+    const endMin = Math.floor(endMinutes % 60);
+
+    // Format as HH:MM
+    const endTimeStr = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+    endTimeField.value = endTimeStr;
+  }
+};
+
+// When start or end time changes, calculate duration
 if (startTimeField) {
-  startTimeField.addEventListener('change', calculateDuration);
+  startTimeField.addEventListener('change', () => {
+    // If both start and end are filled, calculate duration
+    if (startTimeField.value && endTimeField.value) {
+      calculateDurationFromTimes();
+    }
+    // If start and duration are filled, calculate end time
+    else if (startTimeField.value && durationField.value) {
+      calculateEndTimeFromDuration();
+    }
+  });
 }
 
 if (endTimeField) {
-  endTimeField.addEventListener('change', calculateDuration);
+  endTimeField.addEventListener('change', () => {
+    // Calculate duration when end time changes and start is filled
+    if (startTimeField.value && endTimeField.value) {
+      calculateDurationFromTimes();
+    }
+  });
+}
+
+// When duration changes, calculate end time if start time is filled
+if (durationField) {
+  durationField.addEventListener('input', () => {
+    if (startTimeField.value && durationField.value) {
+      calculateEndTimeFromDuration();
+    }
+  });
 }
 
 // Submit event form
@@ -5838,12 +5889,20 @@ if (appointmentPreviewModal) {
 // Edit button in preview modal
 if (previewEditBtn) {
   previewEditBtn.addEventListener('click', (e) => {
+    console.log('Edit button clicked');
+    e.preventDefault();
     e.stopPropagation();
+    console.log('Current preview event:', currentPreviewEvent);
     closePreviewModalFunc();
     if (currentPreviewEvent) {
+      console.log('Opening event modal for:', currentPreviewEvent);
       openEventModal(currentPreviewEvent);
+    } else {
+      console.error('No current preview event!');
     }
   });
+} else {
+  console.error('previewEditBtn element not found!');
 }
 
 // Reschedule button in preview modal
