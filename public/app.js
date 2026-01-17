@@ -5241,8 +5241,15 @@ const dayViewModal = document.getElementById('dayViewModal');
 const closeDayViewModal = document.getElementById('closeDayViewModal');
 const addEventFromDayView = document.getElementById('addEventFromDayView');
 const eventClientPicker = document.getElementById('eventClientPicker');
-const eventDocumentSearch = document.getElementById('eventDocumentSearch');
+const eventDocumentSearchBtn = document.getElementById('eventDocumentSearchBtn');
+const eventDocumentSearchLabel = document.getElementById('eventDocumentSearchLabel');
 const addClientFromEvent = document.getElementById('addClientFromEvent');
+
+// Document Selection Modal
+const documentSelectionModal = document.getElementById('documentSelectionModal');
+const closeDocumentSelectionModal = document.getElementById('closeDocumentSelectionModal');
+const documentSearchInput = document.getElementById('documentSearchInput');
+const documentSelectionList = document.getElementById('documentSelectionList');
 
 // Appointment Preview Modal
 const appointmentPreviewModal = document.getElementById('appointmentPreviewModal');
@@ -5259,24 +5266,96 @@ const loadDocumentsForEvents = async () => {
     const res = await fetch('/api/documents');
     const data = await res.json();
     allDocuments = data.documents || [];
-
-    const datalist = document.getElementById('eventDocumentList');
-    if (!datalist) return;
-    datalist.innerHTML = '';
-
-    if (Array.isArray(allDocuments)) {
-      allDocuments.forEach(doc => {
-        const option = document.createElement('option');
-        option.value = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
-        option.dataset.id = doc.id;
-        datalist.appendChild(option);
-      });
-    }
   } catch (err) {
     console.error('Error loading documents:', err);
     allDocuments = [];
   }
 };
+
+// Render document list in selection modal
+const renderDocumentList = (searchTerm = '') => {
+  if (!documentSelectionList) return;
+
+  const filteredDocs = allDocuments.filter(doc => {
+    const searchStr = searchTerm.toLowerCase();
+    const poMatch = doc.poNumber && doc.poNumber.toLowerCase().includes(searchStr);
+    const clientMatch = doc.clientName && doc.clientName.toLowerCase().includes(searchStr);
+    const typeMatch = doc.type && doc.type.toLowerCase().includes(searchStr);
+    return poMatch || clientMatch || typeMatch;
+  });
+
+  if (filteredDocs.length === 0) {
+    documentSelectionList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No documents found</div>';
+    return;
+  }
+
+  documentSelectionList.innerHTML = filteredDocs.map(doc => {
+    const docLabel = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
+    return `
+      <button type="button" class="btn ghost document-list-item" data-doc-id="${doc.id}" data-doc-label="${docLabel}" style="justify-content: flex-start; text-align: left; padding: 12px;">
+        <div>
+          <div style="font-weight: 600;">${doc.type.toUpperCase()} ${doc.poNumber}</div>
+          <div style="font-size: 13px; color: var(--text-secondary);">${doc.clientName}</div>
+        </div>
+      </button>
+    `;
+  }).join('');
+
+  // Add click handlers to document list items
+  documentSelectionList.querySelectorAll('.document-list-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const docId = btn.dataset.docId;
+      const docLabel = btn.dataset.docLabel;
+      document.getElementById('eventDocumentId').value = docId;
+      eventDocumentSearchLabel.textContent = docLabel;
+      documentSelectionModal.classList.add('hidden');
+    });
+  });
+};
+
+// Open document selection modal
+const openDocumentSelectionModal = () => {
+  loadDocumentsForEvents().then(() => {
+    renderDocumentList();
+    documentSelectionModal.classList.remove('hidden');
+    if (documentSearchInput) {
+      documentSearchInput.value = '';
+      documentSearchInput.focus();
+    }
+  });
+};
+
+// Close document selection modal
+const closeDocumentSelectionModalFunc = () => {
+  if (documentSelectionModal) {
+    documentSelectionModal.classList.add('hidden');
+  }
+};
+
+if (closeDocumentSelectionModal) {
+  closeDocumentSelectionModal.addEventListener('click', closeDocumentSelectionModalFunc);
+}
+
+// Click backdrop to close document selection modal
+if (documentSelectionModal) {
+  documentSelectionModal.addEventListener('click', (e) => {
+    if (e.target === documentSelectionModal || e.target.classList.contains('modal__backdrop')) {
+      closeDocumentSelectionModalFunc();
+    }
+  });
+}
+
+// Search documents
+if (documentSearchInput) {
+  documentSearchInput.addEventListener('input', (e) => {
+    renderDocumentList(e.target.value);
+  });
+}
+
+// Open document selection when button clicked
+if (eventDocumentSearchBtn) {
+  eventDocumentSearchBtn.addEventListener('click', openDocumentSelectionModal);
+}
 
 // Load clients for event form
 const loadClientsForEvents = async () => {
@@ -5302,20 +5381,7 @@ const loadClientsForEvents = async () => {
   }
 };
 
-// Handle document search selection
-if (eventDocumentSearch) {
-  eventDocumentSearch.addEventListener('input', (e) => {
-    const value = e.target.value;
-    const doc = allDocuments.find(d =>
-      `${d.type.toUpperCase()} ${d.poNumber} - ${d.clientName}` === value
-    );
-    if (doc) {
-      document.getElementById('eventDocumentId').value = doc.id;
-    } else {
-      document.getElementById('eventDocumentId').value = '';
-    }
-  });
-}
+// (Document search handler removed - now using modal)
 
 // Handle client selection from saved clients
 if (eventClientPicker) {
@@ -5376,14 +5442,14 @@ const openEventModal = (event = null) => {
     document.getElementById('eventType').value = event.eventType || 'appointment';
     document.getElementById('eventDocumentId').value = event.documentId || '';
 
-    // Set document search field
-    if (event.documentId) {
+    // Set document search button label
+    if (event.documentId && eventDocumentSearchLabel) {
       const doc = allDocuments.find(d => d.id === event.documentId);
       if (doc) {
-        document.getElementById('eventDocumentSearch').value = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
+        eventDocumentSearchLabel.textContent = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
       }
-    } else {
-      document.getElementById('eventDocumentSearch').value = '';
+    } else if (eventDocumentSearchLabel) {
+      eventDocumentSearchLabel.textContent = 'Click to select document...';
     }
 
     document.getElementById('eventTitle').value = event.title || '';
@@ -5408,7 +5474,9 @@ const openEventModal = (event = null) => {
     document.getElementById('eventModalTitle').textContent = 'Create Event';
     eventForm.reset();
     document.getElementById('eventDate').value = currentEventDate || new Date().toISOString().split('T')[0];
-    document.getElementById('eventDocumentSearch').value = '';
+    if (eventDocumentSearchLabel) {
+      eventDocumentSearchLabel.textContent = 'Click to select document...';
+    }
     deleteEventBtn.style.display = 'none';
   }
 
@@ -5445,6 +5513,43 @@ const toggleTimeFields = () => {
 
 if (eventAllDayCheckbox) {
   eventAllDayCheckbox.addEventListener('change', toggleTimeFields);
+}
+
+// Auto-calculate duration when start/end time changes
+const calculateDuration = () => {
+  const startTime = document.getElementById('eventStartTime').value;
+  const endTime = document.getElementById('eventEndTime').value;
+  const durationField = document.getElementById('eventDuration');
+
+  if (startTime && endTime) {
+    // Parse times
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+
+    // Calculate duration in hours
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    let durationMinutes = endMinutes - startMinutes;
+
+    // Handle next day scenario
+    if (durationMinutes < 0) {
+      durationMinutes += 24 * 60;
+    }
+
+    const durationHours = durationMinutes / 60;
+    durationField.value = durationHours.toFixed(1);
+  }
+};
+
+const startTimeField = document.getElementById('eventStartTime');
+const endTimeField = document.getElementById('eventEndTime');
+
+if (startTimeField) {
+  startTimeField.addEventListener('change', calculateDuration);
+}
+
+if (endTimeField) {
+  endTimeField.addEventListener('change', calculateDuration);
 }
 
 // Submit event form
@@ -5519,11 +5624,22 @@ if (deleteEventBtn) {
 
 // Day View Modal
 const closeDayViewModalFunc = () => {
-  dayViewModal.classList.add('hidden');
+  if (dayViewModal) {
+    dayViewModal.classList.add('hidden');
+  }
 };
 
 if (closeDayViewModal) {
   closeDayViewModal.addEventListener('click', closeDayViewModalFunc);
+}
+
+// Click backdrop to close day view modal
+if (dayViewModal) {
+  dayViewModal.addEventListener('click', (e) => {
+    if (e.target === dayViewModal || e.target.classList.contains('modal__backdrop')) {
+      closeDayViewModalFunc();
+    }
+  });
 }
 
 // Update showDayAppointments to use modal instead of changing view
@@ -5700,7 +5816,9 @@ const showAppointmentPreview = (event) => {
 
 // Close preview modal
 const closePreviewModalFunc = () => {
-  appointmentPreviewModal.classList.add('hidden');
+  if (appointmentPreviewModal) {
+    appointmentPreviewModal.classList.add('hidden');
+  }
   currentPreviewEvent = null;
 };
 
@@ -5708,9 +5826,19 @@ if (closePreviewModal) {
   closePreviewModal.addEventListener('click', closePreviewModalFunc);
 }
 
+// Click backdrop to close preview modal
+if (appointmentPreviewModal) {
+  appointmentPreviewModal.addEventListener('click', (e) => {
+    if (e.target === appointmentPreviewModal || e.target.classList.contains('modal__backdrop')) {
+      closePreviewModalFunc();
+    }
+  });
+}
+
 // Edit button in preview modal
 if (previewEditBtn) {
-  previewEditBtn.addEventListener('click', () => {
+  previewEditBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     closePreviewModalFunc();
     if (currentPreviewEvent) {
       openEventModal(currentPreviewEvent);
@@ -5720,7 +5848,8 @@ if (previewEditBtn) {
 
 // Reschedule button in preview modal
 if (previewRescheduleBtn) {
-  previewRescheduleBtn.addEventListener('click', () => {
+  previewRescheduleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     closePreviewModalFunc();
     if (currentPreviewEvent) {
       // Open edit modal with focus on date/time fields
@@ -5736,8 +5865,11 @@ if (previewRescheduleBtn) {
 
 // Cancel button in preview modal - just closes the preview
 if (previewCancelBtn) {
-  previewCancelBtn.addEventListener('click', closePreviewModalFunc);
-};
+  previewCancelBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closePreviewModalFunc();
+  });
+}
 
 // ====================================
 // Electrical Load Calculator (NEC 2017)
