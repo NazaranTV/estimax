@@ -5287,7 +5287,8 @@ const loadDocumentsForEvents = async () => {
     const data = await res.json();
     console.log('Documents response data:', data);
 
-    allDocuments = data.documents || [];
+    // Handle both response formats: direct array or {documents: array}
+    allDocuments = Array.isArray(data) ? data : (data.documents || []);
     console.log('Loaded documents count:', allDocuments.length);
     console.log('Documents:', allDocuments);
   } catch (err) {
