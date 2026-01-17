@@ -5877,56 +5877,66 @@ if (closePreviewModal) {
   closePreviewModal.addEventListener('click', closePreviewModalFunc);
 }
 
-// Click backdrop to close preview modal
+// Click backdrop to close preview modal, and handle button clicks via event delegation
 if (appointmentPreviewModal) {
   appointmentPreviewModal.addEventListener('click', (e) => {
+    // Close on backdrop click
     if (e.target === appointmentPreviewModal || e.target.classList.contains('modal__backdrop')) {
       closePreviewModalFunc();
+      return;
     }
-  });
-}
 
-// Edit button in preview modal
-if (previewEditBtn) {
-  previewEditBtn.addEventListener('click', (e) => {
-    console.log('Edit button clicked');
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Current preview event:', currentPreviewEvent);
-    closePreviewModalFunc();
-    if (currentPreviewEvent) {
-      console.log('Opening event modal for:', currentPreviewEvent);
-      openEventModal(currentPreviewEvent);
-    } else {
-      console.error('No current preview event!');
+    // Handle Edit button click
+    if (e.target.id === 'previewEditBtn' || e.target.closest('#previewEditBtn')) {
+      console.log('Edit button clicked via delegation');
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Current preview event:', currentPreviewEvent);
+      closePreviewModalFunc();
+      if (currentPreviewEvent) {
+        console.log('Opening event modal for:', currentPreviewEvent);
+        setTimeout(() => {
+          openEventModal(currentPreviewEvent);
+        }, 50);
+      } else {
+        console.error('No current preview event!');
+      }
+      return;
     }
-  });
-} else {
-  console.error('previewEditBtn element not found!');
-}
 
-// Reschedule button in preview modal
-if (previewRescheduleBtn) {
-  previewRescheduleBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    closePreviewModalFunc();
-    if (currentPreviewEvent) {
-      // Open edit modal with focus on date/time fields
-      openEventModal(currentPreviewEvent);
-      // Focus on the date field after a short delay to ensure modal is open
-      setTimeout(() => {
-        const dateField = document.getElementById('eventDate');
-        if (dateField) dateField.focus();
-      }, 100);
+    // Handle Reschedule button click
+    if (e.target.id === 'previewRescheduleBtn' || e.target.closest('#previewRescheduleBtn')) {
+      console.log('Reschedule button clicked via delegation');
+      e.preventDefault();
+      e.stopPropagation();
+      closePreviewModalFunc();
+      if (currentPreviewEvent) {
+        setTimeout(() => {
+          openEventModal(currentPreviewEvent);
+          // Focus on the date field after a short delay
+          setTimeout(() => {
+            const dateField = document.getElementById('eventDate');
+            if (dateField) dateField.focus();
+          }, 100);
+        }, 50);
+      }
+      return;
     }
-  });
-}
 
-// Cancel button in preview modal - just closes the preview
-if (previewCancelBtn) {
-  previewCancelBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    closePreviewModalFunc();
+    // Handle Cancel button click
+    if (e.target.id === 'previewCancelBtn' || e.target.closest('#previewCancelBtn')) {
+      console.log('Cancel button clicked via delegation');
+      e.preventDefault();
+      e.stopPropagation();
+      closePreviewModalFunc();
+      return;
+    }
+
+    // Handle Close button click
+    if (e.target.id === 'closePreviewModal' || e.target.closest('#closePreviewModal')) {
+      closePreviewModalFunc();
+      return;
+    }
   });
 }
 
