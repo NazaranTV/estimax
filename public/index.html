@@ -1019,96 +1019,119 @@
         <h3 id="eventModalTitle">Create Event</h3>
         <button class="btn small ghost" id="closeEventModal">Close</button>
       </div>
-      <form id="eventForm">
-        <div class="grid two">
-          <label>Event Type
-            <select id="eventType" name="eventType" required>
-              <option value="appointment">Appointment</option>
-              <option value="holiday">Holiday</option>
-              <option value="task">Task</option>
-              <option value="reminder">Reminder</option>
-              <option value="personal">Personal</option>
-            </select>
-          </label>
-          <label>Link to Estimate/Invoice
-            <button type="button" class="btn ghost" id="eventDocumentSearchBtn" style="justify-content: flex-start; text-align: left;">
-              <span id="eventDocumentSearchLabel">Click to select document...</span>
-            </button>
-            <input type="hidden" id="eventDocumentId" name="documentId">
-          </label>
-        </div>
-
-        <label>Title
-          <input type="text" id="eventTitle" name="title" placeholder="Event title" required>
-        </label>
-
-        <label>Description
-          <textarea id="eventDescription" name="description" rows="3" placeholder="Event description"></textarea>
-        </label>
-
-        <div class="grid two">
-          <label>Date
-            <input type="date" id="eventDate" name="appointmentDate" required>
-          </label>
-          <label style="display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" id="eventAllDay" name="allDay" style="width: auto; margin: 0;">
-            <span>All Day Event</span>
-          </label>
-        </div>
-
-        <div class="grid three" id="eventTimeFields">
-          <label>Start Time
-            <input type="time" id="eventStartTime" name="appointmentTime">
-          </label>
-          <label>End Time
-            <input type="time" id="eventEndTime" name="endTime">
-          </label>
-          <label>Duration (hours)
-            <input type="number" id="eventDuration" name="durationHours" min="0" step="0.5" placeholder="Duration">
-          </label>
-        </div>
-
-        <label>Location
-          <input type="text" id="eventLocation" name="location" placeholder="Event location">
-        </label>
-
-        <div id="appointmentFields" style="display: none;">
-          <h4 style="margin: 24px 0 12px 0; font-size: 14px; color: var(--text-secondary);">Appointment Details</h4>
-          <div class="client-select">
-            <div class="client-select__top">
-              <label>Client</label>
-              <div class="client-actions">
-                <button type="button" class="btn small ghost" id="addClientFromEvent">Add client</button>
-              </div>
+      <form id="eventForm" style="padding: 24px;">
+        <!-- Basic Information Section -->
+        <div class="form-section">
+          <h4 class="form-section__title">Basic Information</h4>
+          <div class="form-section__content">
+            <div class="grid two">
+              <label>Event Type
+                <select id="eventType" name="eventType" required>
+                  <option value="appointment">Appointment</option>
+                  <option value="holiday">Holiday</option>
+                  <option value="task">Task</option>
+                  <option value="reminder">Reminder</option>
+                  <option value="personal">Personal</option>
+                </select>
+              </label>
+              <label>Link to Document
+                <button type="button" class="btn ghost" id="eventDocumentSearchBtn" style="justify-content: flex-start; text-align: left;">
+                  <span id="eventDocumentSearchLabel">Click to select...</span>
+                </button>
+                <input type="hidden" id="eventDocumentId" name="documentId">
+              </label>
             </div>
-            <select id="eventClientPicker">
-              <option value="">Select saved client or enter manually below</option>
-            </select>
-          </div>
-          <div class="grid three">
-            <label>Client Name
-              <input type="text" id="eventClientName" name="clientName" placeholder="Client name">
+
+            <label>Title
+              <input type="text" id="eventTitle" name="title" placeholder="Event title" required>
             </label>
-            <label>Client Email
-              <input type="email" id="eventClientEmail" name="clientEmail" placeholder="client@email.com">
-            </label>
-            <label>Client Phone
-              <input type="tel" id="eventClientPhone" name="clientPhone" placeholder="(555) 123-4567">
+
+            <label>Description
+              <textarea id="eventDescription" name="description" rows="2" placeholder="Event description"></textarea>
             </label>
           </div>
-          <label>Status
-            <select id="eventStatus" name="status">
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="rescheduled">Rescheduled</option>
-            </select>
-          </label>
         </div>
 
-        <label>Notes
-          <textarea id="eventNotes" name="notes" rows="2" placeholder="Additional notes"></textarea>
-        </label>
+        <!-- Date & Time Section -->
+        <div class="form-section">
+          <h4 class="form-section__title">Date & Time</h4>
+          <div class="form-section__content">
+            <div class="grid two">
+              <label>Date
+                <input type="date" id="eventDate" name="appointmentDate" required>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; padding-top: 24px;">
+                <input type="checkbox" id="eventAllDay" name="allDay" style="width: auto; margin: 0;">
+                <span>All Day Event</span>
+              </label>
+            </div>
+
+            <div class="grid three" id="eventTimeFields">
+              <label>Start Time
+                <input type="time" id="eventStartTime" name="appointmentTime">
+              </label>
+              <label>End Time
+                <input type="time" id="eventEndTime" name="endTime">
+              </label>
+              <label>Duration (hours)
+                <input type="number" id="eventDuration" name="durationHours" min="0" step="0.5" placeholder="Duration">
+              </label>
+            </div>
+
+            <label>Location
+              <input type="text" id="eventLocation" name="location" placeholder="Event location">
+            </label>
+          </div>
+        </div>
+
+        <!-- Appointment Details Section -->
+        <div id="appointmentFields" class="form-section" style="display: none;">
+          <h4 class="form-section__title">Appointment Details</h4>
+          <div class="form-section__content">
+            <div class="client-select">
+              <div class="client-select__top">
+                <label>Client</label>
+                <div class="client-actions">
+                  <button type="button" class="btn small ghost" id="addClientFromEvent">Add client</button>
+                </div>
+              </div>
+              <select id="eventClientPicker">
+                <option value="">Select saved client or enter manually below</option>
+              </select>
+            </div>
+
+            <div class="grid three">
+              <label>Client Name
+                <input type="text" id="eventClientName" name="clientName" placeholder="Client name">
+              </label>
+              <label>Client Email
+                <input type="email" id="eventClientEmail" name="clientEmail" placeholder="client@email.com">
+              </label>
+              <label>Client Phone
+                <input type="tel" id="eventClientPhone" name="clientPhone" placeholder="(555) 123-4467">
+              </label>
+            </div>
+
+            <label>Status
+              <select id="eventStatus" name="status">
+                <option value="scheduled">Scheduled</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="rescheduled">Rescheduled</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="form-section">
+          <h4 class="form-section__title">Additional Notes</h4>
+          <div class="form-section__content">
+            <label>Notes
+              <textarea id="eventNotes" name="notes" rows="3" placeholder="Additional notes"></textarea>
+            </label>
+          </div>
+        </div>
 
         <div class="form__actions">
           <button class="btn primary" type="submit" id="submitEventBtn">Save Event</button>
