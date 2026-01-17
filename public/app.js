@@ -5892,11 +5892,15 @@ if (appointmentPreviewModal) {
       e.preventDefault();
       e.stopPropagation();
       console.log('Current preview event:', currentPreviewEvent);
+
+      // Save the event reference BEFORE closing modal (which clears it)
+      const eventToEdit = currentPreviewEvent;
       closePreviewModalFunc();
-      if (currentPreviewEvent) {
-        console.log('Opening event modal for:', currentPreviewEvent);
+
+      if (eventToEdit) {
+        console.log('Opening event modal for:', eventToEdit);
         setTimeout(() => {
-          openEventModal(currentPreviewEvent);
+          openEventModal(eventToEdit);
         }, 50);
       } else {
         console.error('No current preview event!');
@@ -5909,10 +5913,14 @@ if (appointmentPreviewModal) {
       console.log('Reschedule button clicked via delegation');
       e.preventDefault();
       e.stopPropagation();
+
+      // Save the event reference BEFORE closing modal (which clears it)
+      const eventToReschedule = currentPreviewEvent;
       closePreviewModalFunc();
-      if (currentPreviewEvent) {
+
+      if (eventToReschedule) {
         setTimeout(() => {
-          openEventModal(currentPreviewEvent);
+          openEventModal(eventToReschedule);
           // Focus on the date field after a short delay
           setTimeout(() => {
             const dateField = document.getElementById('eventDate');
