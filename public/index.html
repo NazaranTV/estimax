@@ -233,7 +233,7 @@
 
     <section class="workspace card hidden" id="calendarView">
       <div class="pane" style="padding-top: 24px;">
-        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+        <div class="calendar-main-layout">
           <div id="calendarContainer" class="calendar-container">
             <div id="calendarHeader" class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h3 id="calendarTitle" style="margin: 0; font-size: 18px;"></h3>
@@ -1115,6 +1115,25 @@
           <button class="btn ghost" type="button" id="cancelEventBtn">Cancel</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Appointment Preview Modal -->
+  <div class="modal hidden" id="appointmentPreviewModal">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h3 id="previewModalTitle">Appointment Details</h3>
+        <button class="btn small ghost" id="closePreviewModal">Close</button>
+      </div>
+      <div id="previewModalContent" style="padding: 20px;">
+        <!-- Appointment details will be rendered here -->
+      </div>
+      <div class="form__actions" style="padding: 0 20px 20px 20px;">
+        <button class="btn primary" id="previewEditBtn">Edit Appointment</button>
+        <button class="btn ghost" id="previewRescheduleBtn">Reschedule</button>
+        <button class="btn ghost" id="previewCancelBtn">Cancel</button>
+      </div>
     </div>
   </div>
 

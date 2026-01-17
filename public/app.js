@@ -5244,24 +5244,37 @@ const eventClientPicker = document.getElementById('eventClientPicker');
 const eventDocumentSearch = document.getElementById('eventDocumentSearch');
 const addClientFromEvent = document.getElementById('addClientFromEvent');
 
+// Appointment Preview Modal
+const appointmentPreviewModal = document.getElementById('appointmentPreviewModal');
+const closePreviewModal = document.getElementById('closePreviewModal');
+const previewEditBtn = document.getElementById('previewEditBtn');
+const previewRescheduleBtn = document.getElementById('previewRescheduleBtn');
+const previewCancelBtn = document.getElementById('previewCancelBtn');
+const previewModalContent = document.getElementById('previewModalContent');
+let currentPreviewEvent = null;
+
 // Load documents for event linking
 const loadDocumentsForEvents = async () => {
   try {
     const res = await fetch('/api/documents');
     const data = await res.json();
-    allDocuments = data.documents;
+    allDocuments = data.documents || [];
 
     const datalist = document.getElementById('eventDocumentList');
+    if (!datalist) return;
     datalist.innerHTML = '';
 
-    allDocuments.forEach(doc => {
-      const option = document.createElement('option');
-      option.value = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
-      option.dataset.id = doc.id;
-      datalist.appendChild(option);
-    });
+    if (Array.isArray(allDocuments)) {
+      allDocuments.forEach(doc => {
+        const option = document.createElement('option');
+        option.value = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
+        option.dataset.id = doc.id;
+        datalist.appendChild(option);
+      });
+    }
   } catch (err) {
     console.error('Error loading documents:', err);
+    allDocuments = [];
   }
 };
 
@@ -5273,14 +5286,17 @@ const loadClientsForEvents = async () => {
     const select = document.getElementById('eventClientPicker');
     if (!select) return;
     select.innerHTML = '<option value="">Select saved client or enter manually below</option>';
-    data.clients.forEach(client => {
-      const option = document.createElement('option');
-      option.value = client.id;
-      option.textContent = client.name;
-      option.dataset.email = client.email || '';
-      option.dataset.phone = client.phone || '';
-      select.appendChild(option);
-    });
+    const clients = data.clients || [];
+    if (Array.isArray(clients)) {
+      clients.forEach(client => {
+        const option = document.createElement('option');
+        option.value = client.id;
+        option.textContent = client.name;
+        option.dataset.email = client.email || '';
+        option.dataset.phone = client.phone || '';
+        select.appendChild(option);
+      });
+    }
   } catch (err) {
     console.error('Error loading clients:', err);
   }
@@ -5574,17 +5590,153 @@ const getEventIcon = (eventType) => {
   return icons[eventType] || icons.appointment;
 };
 
-// Global function to edit event
+// Global function to edit event - now shows preview first
 window.editEvent = async (eventId) => {
   try {
     const event = appointments.find(apt => apt.id === eventId);
     if (event) {
       closeDayViewModalFunc();
-      openEventModal(event);
+      showAppointmentPreview(event);
     }
   } catch (err) {
     console.error('Error loading event:', err);
   }
+};
+
+// Show appointment preview modal
+const showAppointmentPreview = (event) => {
+  currentPreviewEvent = event;
+
+  const eventIcon = getEventIcon(event.eventType || 'appointment');
+  const displayTitle = event.title || event.clientName || 'Untitled Event';
+  const displayLocation = event.location || event.serviceAddress || 'Not specified';
+  const displayDate = event.appointmentDate ? new Date(event.appointmentDate).toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  }) : 'Not specified';
+  const displayTimeRange = event.allDay ? 'All Day' :
+    `${event.appointmentTime ? formatTime12Hour(event.appointmentTime) : 'No time'}${event.endTime ? ' - ' + formatTime12Hour(event.endTime) : ''}`;
+
+  // Get linked document info if available
+  let documentInfo = '';
+  if (event.documentId && allDocuments && Array.isArray(allDocuments)) {
+    const doc = allDocuments.find(d => d.id === event.documentId);
+    if (doc) {
+      documentInfo = `
+        <div class="preview-field">
+          <div class="preview-label">Linked Document</div>
+          <div class="preview-value">${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}</div>
+        </div>
+      `;
+    }
+  }
+
+  const statusBadgeColors = {
+    scheduled: '#2563eb',
+    completed: '#16a34a',
+    cancelled: '#dc2626',
+    rescheduled: '#ea580c'
+  };
+  const statusColor = statusBadgeColors[event.status] || '#6b7280';
+
+  previewModalContent.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+      ${eventIcon}
+      <div>
+        <h2 style="margin: 0; font-size: 20px;">${displayTitle}</h2>
+        <div style="display: inline-block; margin-top: 8px; padding: 4px 12px; background: ${statusColor}; color: white; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+          ${event.status || 'scheduled'}
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; gap: 16px;">
+      <div class="preview-field">
+        <div class="preview-label">Date & Time</div>
+        <div class="preview-value">${displayDate}</div>
+        <div class="preview-value" style="color: var(--text-secondary); font-size: 14px;">${displayTimeRange}</div>
+      </div>
+
+      <div class="preview-field">
+        <div class="preview-label">Location</div>
+        <div class="preview-value">${displayLocation}</div>
+      </div>
+
+      ${event.description ? `
+        <div class="preview-field">
+          <div class="preview-label">Description</div>
+          <div class="preview-value">${event.description}</div>
+        </div>
+      ` : ''}
+
+      ${documentInfo}
+
+      ${event.eventType === 'appointment' ? `
+        <div class="preview-field">
+          <div class="preview-label">Client Information</div>
+          <div class="preview-value">${event.clientName || 'Not specified'}</div>
+          ${event.clientEmail ? `<div class="preview-value" style="color: var(--text-secondary); font-size: 14px;">${event.clientEmail}</div>` : ''}
+          ${event.clientPhone ? `<div class="preview-value" style="color: var(--text-secondary); font-size: 14px;">${event.clientPhone}</div>` : ''}
+        </div>
+      ` : ''}
+
+      ${event.durationHours ? `
+        <div class="preview-field">
+          <div class="preview-label">Duration</div>
+          <div class="preview-value">${event.durationHours} hour(s)</div>
+        </div>
+      ` : ''}
+
+      ${event.notes ? `
+        <div class="preview-field">
+          <div class="preview-label">Notes</div>
+          <div class="preview-value" style="white-space: pre-wrap;">${event.notes}</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  appointmentPreviewModal.classList.remove('hidden');
+};
+
+// Close preview modal
+const closePreviewModalFunc = () => {
+  appointmentPreviewModal.classList.add('hidden');
+  currentPreviewEvent = null;
+};
+
+if (closePreviewModal) {
+  closePreviewModal.addEventListener('click', closePreviewModalFunc);
+}
+
+// Edit button in preview modal
+if (previewEditBtn) {
+  previewEditBtn.addEventListener('click', () => {
+    closePreviewModalFunc();
+    if (currentPreviewEvent) {
+      openEventModal(currentPreviewEvent);
+    }
+  });
+}
+
+// Reschedule button in preview modal
+if (previewRescheduleBtn) {
+  previewRescheduleBtn.addEventListener('click', () => {
+    closePreviewModalFunc();
+    if (currentPreviewEvent) {
+      // Open edit modal with focus on date/time fields
+      openEventModal(currentPreviewEvent);
+      // Focus on the date field after a short delay to ensure modal is open
+      setTimeout(() => {
+        const dateField = document.getElementById('eventDate');
+        if (dateField) dateField.focus();
+      }, 100);
+    }
+  });
+}
+
+// Cancel button in preview modal - just closes the preview
+if (previewCancelBtn) {
+  previewCancelBtn.addEventListener('click', closePreviewModalFunc);
 };
 
 // ====================================
