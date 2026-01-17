@@ -5274,9 +5274,22 @@ let currentRescheduleEvent = null;
 // Load documents for event linking
 const loadDocumentsForEvents = async () => {
   try {
+    console.log('Loading documents from /api/documents...');
     const res = await fetch('/api/documents');
+    console.log('Response status:', res.status);
+
+    if (!res.ok) {
+      console.error('Failed to fetch documents:', res.statusText);
+      allDocuments = [];
+      return;
+    }
+
     const data = await res.json();
+    console.log('Documents response data:', data);
+
     allDocuments = data.documents || [];
+    console.log('Loaded documents count:', allDocuments.length);
+    console.log('Documents:', allDocuments);
   } catch (err) {
     console.error('Error loading documents:', err);
     allDocuments = [];
@@ -5340,15 +5353,21 @@ const renderDocumentList = (searchTerm = '') => {
 };
 
 // Open document selection modal
-const openDocumentSelectionModal = () => {
-  loadDocumentsForEvents().then(() => {
+const openDocumentSelectionModal = async () => {
+  console.log('Opening document selection modal...');
+  try {
+    await loadDocumentsForEvents();
+    console.log('Documents loaded, rendering list...');
     renderDocumentList();
     documentSelectionModal.classList.remove('hidden');
     if (documentSearchInput) {
       documentSearchInput.value = '';
       documentSearchInput.focus();
     }
-  });
+  } catch (err) {
+    console.error('Error opening document selection modal:', err);
+    documentSelectionModal.classList.remove('hidden');
+  }
 };
 
 // Close document selection modal
