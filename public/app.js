@@ -5318,7 +5318,8 @@ const renderDocumentList = (searchTerm = '') => {
       const poMatch = doc.poNumber && doc.poNumber.toLowerCase().includes(searchStr);
       const clientMatch = doc.clientName && doc.clientName.toLowerCase().includes(searchStr);
       const typeMatch = doc.type && doc.type.toLowerCase().includes(searchStr);
-      return poMatch || clientMatch || typeMatch;
+      const projectMatch = doc.projectName && doc.projectName.toLowerCase().includes(searchStr);
+      return poMatch || clientMatch || typeMatch || projectMatch;
     });
   }
 
@@ -5331,11 +5332,24 @@ const renderDocumentList = (searchTerm = '') => {
 
   documentSelectionList.innerHTML = filteredDocs.map(doc => {
     const docLabel = `${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}`;
+    const projectName = doc.projectName || 'No project name';
+    const docData = JSON.stringify({
+      id: doc.id,
+      label: docLabel,
+      projectName: doc.projectName || '',
+      serviceAddress: doc.serviceAddress || '',
+      billingAddress: doc.billingAddress || '',
+      clientName: doc.clientName || '',
+      clientEmail: doc.clientEmail || '',
+      clientPhone: doc.clientPhone || ''
+    });
+
     return `
-      <button type="button" class="btn ghost document-list-item" data-doc-id="${doc.id}" data-doc-label="${docLabel}" style="justify-content: flex-start; text-align: left; padding: 12px;">
-        <div>
+      <button type="button" class="btn ghost document-list-item" data-doc='${docData.replace(/'/g, '&apos;')}' style="justify-content: flex-start; text-align: left; padding: 12px;">
+        <div style="width: 100%;">
           <div style="font-weight: 600;">${doc.type.toUpperCase()} ${doc.poNumber}</div>
-          <div style="font-size: 13px; color: var(--text-secondary);">${doc.clientName}</div>
+          <div style="font-size: 13px; color: var(--text-secondary);">${projectName}</div>
+          <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">${doc.clientName}</div>
         </div>
       </button>
     `;
@@ -5344,11 +5358,41 @@ const renderDocumentList = (searchTerm = '') => {
   // Add click handlers to document list items
   documentSelectionList.querySelectorAll('.document-list-item').forEach(btn => {
     btn.addEventListener('click', () => {
-      const docId = btn.dataset.docId;
-      const docLabel = btn.dataset.docLabel;
-      document.getElementById('eventDocumentId').value = docId;
-      eventDocumentSearchLabel.textContent = docLabel;
-      documentSelectionModal.classList.add('hidden');
+      try {
+        const docData = JSON.parse(btn.dataset.doc);
+
+        // Set the document ID
+        document.getElementById('eventDocumentId').value = docData.id;
+        eventDocumentSearchLabel.textContent = docData.label;
+
+        // Auto-fill title with project name
+        if (docData.projectName) {
+          document.getElementById('eventTitle').value = docData.projectName;
+        }
+
+        // Auto-fill location with service address (or billing address if no service)
+        const location = docData.serviceAddress || docData.billingAddress;
+        if (location) {
+          document.getElementById('eventLocation').value = location;
+        }
+
+        // Auto-fill client info (only if appointment type is selected)
+        if (document.getElementById('eventType').value === 'appointment') {
+          if (docData.clientName) {
+            document.getElementById('eventClientName').value = docData.clientName;
+          }
+          if (docData.clientEmail) {
+            document.getElementById('eventClientEmail').value = docData.clientEmail;
+          }
+          if (docData.clientPhone) {
+            document.getElementById('eventClientPhone').value = docData.clientPhone;
+          }
+        }
+
+        documentSelectionModal.classList.add('hidden');
+      } catch (err) {
+        console.error('Error parsing document data:', err);
+      }
     });
   });
 };
