@@ -2898,12 +2898,18 @@ label {
     min-width: 100px;
   }
 
+  .calendar-grid {
+    height: auto;
+    flex: none;
+  }
+
   .calendar-grid-month {
     gap: 2px;
   }
 
   .calendar-day {
     min-height: 60px;
+    height: auto;
     padding: 4px;
   }
 
@@ -2941,6 +2947,11 @@ label {
 
   .calendar-main-layout {
     min-height: 500px;
+    height: auto;
+  }
+
+  .calendar-container {
+    height: auto;
   }
 
   .calendar-header {
@@ -2963,7 +2974,9 @@ label {
 
   .calendar-grid {
     min-height: 350px;
+    height: auto;
     padding: 8px;
+    flex: none;
   }
 
   .calendar-day-header {
@@ -2977,6 +2990,7 @@ label {
 
   .calendar-day {
     min-height: 50px;
+    height: auto;
     padding: 2px;
   }
 
