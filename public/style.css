@@ -2844,10 +2844,16 @@ label {
 @media (max-width: 1024px) {
   .calendar-main-layout {
     grid-template-columns: 1fr;
+    height: auto;
   }
 
   #calendarView .pane {
     flex-direction: column;
+    height: auto;
+  }
+
+  .calendar-container {
+    height: auto;
   }
 
   .appointments-list {
@@ -2867,6 +2873,8 @@ label {
 
   #calendarView .pane {
     padding: 12px;
+    height: auto;
+    min-height: 0;
   }
 
   .calendar-header {
@@ -2943,15 +2951,20 @@ label {
 
   #calendarView .pane {
     padding: 8px;
+    height: auto;
+    min-height: 0;
   }
 
   .calendar-main-layout {
     min-height: 500px;
     height: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .calendar-container {
     height: auto;
+    flex: none;
   }
 
   .calendar-header {
