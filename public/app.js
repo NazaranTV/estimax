@@ -5338,7 +5338,7 @@ const renderDocumentList = (searchTerm = '') => {
       label: docLabel,
       projectName: doc.projectName || '',
       serviceAddress: doc.serviceAddress || '',
-      billingAddress: doc.billingAddress || '',
+      clientBillingAddress: doc.clientBillingAddress || '',
       clientName: doc.clientName || '',
       clientEmail: doc.clientEmail || '',
       clientPhone: doc.clientPhone || ''
@@ -5371,7 +5371,7 @@ const renderDocumentList = (searchTerm = '') => {
         }
 
         // Auto-fill location with service address (or billing address if no service)
-        const location = docData.serviceAddress || docData.billingAddress;
+        const location = docData.serviceAddress || docData.clientBillingAddress;
         if (location) {
           document.getElementById('eventLocation').value = location;
         }
