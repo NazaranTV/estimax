@@ -5881,7 +5881,9 @@ const showAppointmentPreview = (event) => {
       documentInfo = `
         <div class="preview-field">
           <div class="preview-label">Linked Document</div>
-          <div class="preview-value">${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}</div>
+          <div class="preview-value" style="cursor: pointer; color: var(--primary); text-decoration: underline;" data-document-id="${event.documentId}" id="previewLinkedDocument">
+            ${doc.type.toUpperCase()} ${doc.poNumber} - ${doc.clientName}
+          </div>
         </div>
       `;
     }
@@ -6028,6 +6030,20 @@ if (appointmentPreviewModal) {
     // Handle Close button click
     if (e.target.id === 'closePreviewModal' || e.target.closest('#closePreviewModal')) {
       closePreviewModalFunc();
+      return;
+    }
+
+    // Handle Linked Document click
+    if (e.target.id === 'previewLinkedDocument' || e.target.closest('#previewLinkedDocument')) {
+      e.preventDefault();
+      e.stopPropagation();
+      const documentId = e.target.getAttribute('data-document-id') || e.target.closest('#previewLinkedDocument')?.getAttribute('data-document-id');
+      if (documentId) {
+        closePreviewModalFunc();
+        setTimeout(() => {
+          viewDocumentFromNotification(documentId);
+        }, 50);
+      }
       return;
     }
   });
