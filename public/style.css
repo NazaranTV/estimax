@@ -2861,23 +2861,60 @@ label {
 }
 
 @media (max-width: 768px) {
+  #calendarView.card {
+    padding: 12px;
+  }
+
+  #calendarView .pane {
+    padding: 12px;
+  }
+
   .calendar-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .calendar-header h3 {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .calendar-header > div {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .calendar-header .btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .calendar-header .btn.small {
+    padding: 4px 8px;
+  }
+
+  .calendar-header select {
+    flex: 1;
+    min-width: 100px;
   }
 
   .calendar-grid-month {
-    gap: 4px;
+    gap: 2px;
   }
 
   .calendar-day {
     min-height: 60px;
-    padding: 6px;
+    padding: 4px;
   }
 
   .calendar-day-number {
-    font-size: 12px;
+    font-size: 11px;
+  }
+
+  .calendar-event-bar {
+    font-size: 9px;
+    padding: 1px 3px;
+    height: 16px;
   }
 
   .calendar-grid-week {
@@ -2887,20 +2924,70 @@ label {
   .appointments-list {
     max-height: 250px;
   }
+
+  .appointments-list h3 {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
+  #calendarView.card {
+    padding: 8px;
+  }
+
+  #calendarView .pane {
+    padding: 8px;
+  }
+
+  .calendar-main-layout {
+    min-height: 500px;
+  }
+
+  .calendar-header {
+    margin-bottom: 8px;
+  }
+
+  .calendar-header h3 {
+    font-size: 16px;
+  }
+
+  .calendar-header .btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .calendar-header .btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .calendar-grid {
+    min-height: 350px;
+    padding: 8px;
+  }
+
+  .calendar-day-header {
+    padding: 4px;
+    font-size: 9px;
+  }
+
   .calendar-grid-month {
-    gap: 2px;
+    gap: 1px;
   }
 
   .calendar-day {
     min-height: 50px;
-    padding: 4px;
+    padding: 2px;
   }
 
   .calendar-day-number {
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  .calendar-event-bar {
+    font-size: 8px;
+    padding: 0px 2px;
+    height: 14px;
   }
 
   .calendar-day-dots {
@@ -2916,20 +3003,11 @@ label {
     grid-template-columns: 1fr;
   }
 
-  /* Calendar header controls mobile */
-  #calendarView .workspace__header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
+  .appointments-list {
+    max-height: 200px;
   }
 
-  #calendarView .workspace__header > div:last-child {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  #calendarView .workspace__header select {
-    flex: 1;
+  .appointments-list h3 {
+    font-size: 14px;
   }
 }
