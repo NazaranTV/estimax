@@ -4822,23 +4822,8 @@ const loadCalendar = async () => {
 const renderCalendar = () => {
   const calendarHeader = document.getElementById('calendarHeader');
   const calendarGrid = document.getElementById('calendarGrid');
-  const mobileDebug = document.getElementById('mobileDebug');
 
-  console.log('renderCalendar called', { calendarHeader, calendarGrid, calendarViewMode });
-
-  // Show mobile debug on small screens
-  if (mobileDebug && window.innerWidth <= 768) {
-    mobileDebug.style.display = 'block';
-    mobileDebug.innerHTML = `Debug: Width=${window.innerWidth}, Grid=${calendarGrid ? 'found' : 'missing'}, Mode=${calendarViewMode}, CSS v=20260119-mobile-fix-v2`;
-  }
-
-  if (!calendarHeader || !calendarGrid) {
-    console.error('Calendar elements not found!');
-    if (mobileDebug) {
-      mobileDebug.innerHTML += '<br>ERROR: Calendar elements not found!';
-    }
-    return;
-  }
+  if (!calendarHeader || !calendarGrid) return;
 
   if (calendarViewMode === 'month') {
     renderMonthView(calendarHeader, calendarGrid);
@@ -4846,13 +4831,6 @@ const renderCalendar = () => {
     renderWeekView(calendarHeader, calendarGrid);
   } else {
     renderDayView(calendarHeader, calendarGrid);
-  }
-
-  console.log('Calendar rendered, grid innerHTML length:', calendarGrid.innerHTML.length);
-
-  if (mobileDebug && window.innerWidth <= 768) {
-    const gridComputedStyle = window.getComputedStyle(calendarGrid);
-    mobileDebug.innerHTML += `<br>Grid rendered: ${calendarGrid.innerHTML.length} chars, Display: ${gridComputedStyle.display}, Height: ${gridComputedStyle.height}`;
   }
 };
 
@@ -4919,13 +4897,7 @@ const renderMonthView = (header, grid) => {
   }
 
   html += '</div>';
-
-  console.log('Month view HTML generated, length:', html.length);
-  console.log('First 500 chars:', html.substring(0, 500));
-
   grid.innerHTML = html;
-
-  console.log('Grid innerHTML set, element count:', grid.querySelectorAll('.calendar-day').length);
 
   // Add click handlers to days
   grid.querySelectorAll('.calendar-day[data-date]').forEach(dayEl => {
