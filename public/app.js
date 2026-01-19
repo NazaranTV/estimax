@@ -4817,10 +4817,19 @@ const loadCalendar = async () => {
 };
 
 const renderCalendar = () => {
+  console.log('renderCalendar called');
   const calendarHeader = document.getElementById('calendarHeader');
   const calendarGrid = document.getElementById('calendarGrid');
 
-  if (!calendarHeader || !calendarGrid) return;
+  console.log('calendarHeader:', calendarHeader);
+  console.log('calendarGrid:', calendarGrid);
+
+  if (!calendarHeader || !calendarGrid) {
+    console.log('Calendar elements not found, returning');
+    return;
+  }
+
+  console.log('Calendar view mode:', calendarViewMode);
 
   if (calendarViewMode === 'month') {
     renderMonthView(calendarHeader, calendarGrid);
@@ -4832,8 +4841,11 @@ const renderCalendar = () => {
 };
 
 const renderMonthView = (header, grid) => {
+  console.log('renderMonthView called');
   const year = calendarDate.getFullYear();
   const month = calendarDate.getMonth();
+
+  console.log('Year:', year, 'Month:', month);
 
   // Update title
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -4845,6 +4857,8 @@ const renderMonthView = (header, grid) => {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = new Date();
+
+  console.log('First day:', firstDay, 'Days in month:', daysInMonth);
 
   // Build grid
   let html = '<div class="calendar-grid-month">';
@@ -4894,7 +4908,12 @@ const renderMonthView = (header, grid) => {
   }
 
   html += '</div>';
+  console.log('HTML length:', html.length);
+  console.log('Setting grid innerHTML');
   grid.innerHTML = html;
+  console.log('Grid innerHTML set');
+  console.log('Grid children count:', grid.children.length);
+  console.log('Grid.innerHTML:', grid.innerHTML.substring(0, 200));
 
   // Add click handlers to days
   grid.querySelectorAll('.calendar-day[data-date]').forEach(dayEl => {
