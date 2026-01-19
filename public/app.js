@@ -4823,7 +4823,12 @@ const renderCalendar = () => {
   const calendarHeader = document.getElementById('calendarHeader');
   const calendarGrid = document.getElementById('calendarGrid');
 
-  if (!calendarHeader || !calendarGrid) return;
+  console.log('renderCalendar called', { calendarHeader, calendarGrid, calendarViewMode });
+
+  if (!calendarHeader || !calendarGrid) {
+    console.error('Calendar elements not found!');
+    return;
+  }
 
   if (calendarViewMode === 'month') {
     renderMonthView(calendarHeader, calendarGrid);
@@ -4832,6 +4837,8 @@ const renderCalendar = () => {
   } else {
     renderDayView(calendarHeader, calendarGrid);
   }
+
+  console.log('Calendar rendered, grid innerHTML length:', calendarGrid.innerHTML.length);
 };
 
 const renderMonthView = (header, grid) => {
@@ -4897,7 +4904,13 @@ const renderMonthView = (header, grid) => {
   }
 
   html += '</div>';
+
+  console.log('Month view HTML generated, length:', html.length);
+  console.log('First 500 chars:', html.substring(0, 500));
+
   grid.innerHTML = html;
+
+  console.log('Grid innerHTML set, element count:', grid.querySelectorAll('.calendar-day').length);
 
   // Add click handlers to days
   grid.querySelectorAll('.calendar-day[data-date]').forEach(dayEl => {

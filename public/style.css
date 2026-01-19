@@ -2916,19 +2916,24 @@ label {
   }
 
   .calendar-grid {
-    height: auto;
-    flex: none;
-    overflow: visible;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+    overflow: visible !important;
+    display: block !important;
   }
 
   .calendar-grid-month {
     gap: 2px;
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
   }
 
   .calendar-day {
     min-height: 60px;
     height: auto;
     padding: 4px;
+    display: flex !important;
   }
 
   .calendar-day-number {
@@ -2997,11 +3002,12 @@ label {
   }
 
   .calendar-grid {
-    min-height: auto;
-    height: auto;
+    min-height: 0 !important;
+    height: auto !important;
     padding: 8px;
-    flex: none;
-    overflow: visible;
+    flex: none !important;
+    overflow: visible !important;
+    display: block !important;
   }
 
   .calendar-day-header {
@@ -3011,12 +3017,15 @@ label {
 
   .calendar-grid-month {
     gap: 1px;
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
   }
 
   .calendar-day {
     min-height: 50px;
     height: auto;
     padding: 2px;
+    display: flex !important;
   }
 
   .calendar-day-number {
