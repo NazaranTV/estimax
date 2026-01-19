@@ -2924,6 +2924,8 @@ label {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
     width: 100% !important;
+    min-height: 350px !important;
+    grid-auto-rows: minmax(60px, auto) !important;
   }
 
   .calendar-day {
@@ -3017,6 +3019,8 @@ label {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
     width: 100% !important;
+    min-height: 300px !important;
+    grid-auto-rows: minmax(50px, auto) !important;
   }
 
   .calendar-day {
