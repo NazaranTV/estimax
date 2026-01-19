@@ -2877,6 +2877,15 @@ label {
     min-height: 0;
   }
 
+  .calendar-main-layout {
+    height: auto;
+  }
+
+  .calendar-container {
+    height: auto;
+    flex: none;
+  }
+
   .calendar-header {
     flex-wrap: wrap !important;
     gap: 8px !important;
@@ -2909,6 +2918,7 @@ label {
   .calendar-grid {
     height: auto;
     flex: none;
+    overflow: visible;
   }
 
   .calendar-grid-month {
@@ -2936,7 +2946,8 @@ label {
   }
 
   .appointments-list {
-    max-height: 250px;
+    max-height: none;
+    overflow: visible;
   }
 
   .appointments-list h3 {
@@ -2956,7 +2967,7 @@ label {
   }
 
   .calendar-main-layout {
-    min-height: 500px;
+    min-height: auto;
     height: auto;
     display: flex;
     flex-direction: column;
@@ -2986,10 +2997,11 @@ label {
   }
 
   .calendar-grid {
-    min-height: 350px;
+    min-height: auto;
     height: auto;
     padding: 8px;
     flex: none;
+    overflow: visible;
   }
 
   .calendar-day-header {
@@ -3031,7 +3043,8 @@ label {
   }
 
   .appointments-list {
-    max-height: 200px;
+    max-height: none;
+    overflow: visible;
   }
 
   .appointments-list h3 {
