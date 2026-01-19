@@ -4623,28 +4623,45 @@ const mobileAddItem = document.getElementById('mobileAddItem');
 const mobileAddMaterial = document.getElementById('mobileAddMaterial');
 
 if (mobileNewDocBtn) {
+  console.log('mobileNewDocBtn found, adding event listener');
   mobileNewDocBtn.addEventListener('click', () => {
+    console.log('mobileNewDocBtn clicked! activeView:', activeView);
     const type = activeView === 'invoices' ? 'invoice' : 'estimate';
+    console.log('Navigating to:', `/${type}-form.html`);
     window.location.href = `/${type}-form.html`;
   });
+} else {
+  console.log('mobileNewDocBtn NOT found');
 }
 
 if (mobileAddClient) {
+  console.log('mobileAddClient found, adding event listener');
   mobileAddClient.addEventListener('click', () => {
+    console.log('mobileAddClient clicked!');
     openClientModal();
   });
+} else {
+  console.log('mobileAddClient NOT found');
 }
 
 if (mobileAddItem) {
+  console.log('mobileAddItem found, adding event listener');
   mobileAddItem.addEventListener('click', () => {
+    console.log('mobileAddItem clicked!');
     openItemCreateModal();
   });
+} else {
+  console.log('mobileAddItem NOT found');
 }
 
 if (mobileAddMaterial) {
+  console.log('mobileAddMaterial found, adding event listener');
   mobileAddMaterial.addEventListener('click', () => {
+    console.log('mobileAddMaterial clicked!');
     openMaterialCreateModal();
   });
+} else {
+  console.log('mobileAddMaterial NOT found');
 }
 
 // Mobile search sync
