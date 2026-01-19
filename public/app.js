@@ -4624,29 +4624,26 @@ const mobileAddMaterial = document.getElementById('mobileAddMaterial');
 
 if (mobileNewDocBtn) {
   mobileNewDocBtn.addEventListener('click', () => {
-    const btn = document.getElementById('newDocBtn');
-    if (btn) btn.click();
+    const type = activeView === 'invoices' ? 'invoice' : 'estimate';
+    window.location.href = `/${type}-form.html`;
   });
 }
 
 if (mobileAddClient) {
   mobileAddClient.addEventListener('click', () => {
-    const btn = document.getElementById('addClientFromClients');
-    if (btn) btn.click();
+    openClientModal();
   });
 }
 
 if (mobileAddItem) {
   mobileAddItem.addEventListener('click', () => {
-    const btn = document.getElementById('addItemFromView');
-    if (btn) btn.click();
+    openItemCreateModal();
   });
 }
 
 if (mobileAddMaterial) {
   mobileAddMaterial.addEventListener('click', () => {
-    const btn = document.getElementById('addMaterialFromView');
-    if (btn) btn.click();
+    openMaterialCreateModal();
   });
 }
 
