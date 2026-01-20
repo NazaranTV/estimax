@@ -119,12 +119,28 @@ const renderEstimate = () => {
 
   if (doc.lineItems && doc.lineItems.length > 0) {
     doc.lineItems.forEach(item => {
+      // Calculate materials cost
+      let materialsCost = 0;
+      if (item.materials && Array.isArray(item.materials) && item.materials.length > 0) {
+        materialsCost = item.materials.reduce((sum, m) => {
+          const baseCost = (Number(m.qty) || 0) * (Number(m.rate) || 0);
+          const markupPercent = (Number(m.markup) || 0) / 100;
+          return sum + (baseCost * (1 + markupPercent));
+        }, 0);
+      }
+
+      // Calculate line item total: (qty * rate) + markup% + materials
+      const baseTotal = (item.quantity || 0) * (item.rate || 0);
+      const markupAmount = baseTotal * ((item.markup || 0) / 100);
+      const lineItemTotal = baseTotal + markupAmount;
+      const total = lineItemTotal + materialsCost;
+
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${item.description || '—'}</td>
         <td style="text-align: right;">${item.quantity || 0}</td>
         <td style="text-align: right;">${currency(item.rate)}</td>
-        <td style="text-align: right;">${currency((item.quantity || 0) * (item.rate || 0))}</td>
+        <td style="text-align: right;">${currency(total)}</td>
       `;
       lineItemsBody.appendChild(row);
     });
