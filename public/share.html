@@ -832,8 +832,11 @@
           }, 0);
         }
 
-        const rateWithMaterials = (item.rate || 0) + materialsCost;
-        const total = (item.qty * rateWithMaterials) + (item.markup || 0);
+        // Calculate line item total: (qty * rate) + markup% + materials
+        const baseTotal = (item.qty || 0) * (item.rate || 0);
+        const markupAmount = baseTotal * ((item.markup || 0) / 100);
+        const lineItemTotal = baseTotal + markupAmount;
+        const total = lineItemTotal + materialsCost;
         calculatedTotal += total;
 
         return `
@@ -842,7 +845,7 @@
               <div class="item-description">${item.description}</div>
               ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
             </td>
-            <td>${currency(rateWithMaterials)}</td>
+            <td>${currency(item.rate || 0)}</td>
             <td>${item.qty}</td>
             <td>${currency(total)}</td>
           </tr>
