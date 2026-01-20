@@ -7,41 +7,52 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260119-v6">
   <style>
-    .preview-page {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-      background: var(--bg);
-      min-height: 100vh;
+    .preview-container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .preview-modal-like {
+      max-width: 1000px;
+      margin: 24px auto;
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
     }
 
     .preview-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface);
+      position: relative;
+      z-index: 3;
     }
 
-    .preview-header h1 {
-      font-size: 24px;
+    .preview-header h3 {
+      font-size: 18px;
       font-weight: 600;
       margin: 0;
     }
 
-    .preview-actions {
+    .preview-header-buttons {
       display: flex;
-      gap: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .preview-content {
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 32px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    .preview-body {
+      padding: 32px 24px;
+      position: relative;
+      z-index: 3;
     }
 
     .preview-info-grid {
@@ -254,29 +265,79 @@
       align-items: center;
       min-height: 400px;
       font-size: 16px;
+      position: relative;
+      z-index: 3;
     }
 
     .error-state {
       color: var(--error);
     }
+
+    @media (max-width: 768px) {
+      .preview-modal-like {
+        margin: 12px;
+        border-radius: 12px;
+      }
+
+      .preview-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .preview-header-buttons {
+        justify-content: stretch;
+      }
+
+      .preview-header-buttons .btn {
+        flex: 1;
+      }
+
+      .preview-body {
+        padding: 16px;
+      }
+
+      .preview-info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="preview-page">
-    <div class="preview-header">
-      <h1 id="previewTitle">Estimate Preview - Contractor View</h1>
-      <div class="preview-actions">
-        <button class="btn ghost" id="editBtn">Edit</button>
-        <button class="btn ghost" id="shareBtn">Share</button>
-        <button class="btn ghost" id="closeBtn">Close</button>
+  <div class="page">
+    <nav class="nav">
+      <div class="nav__inner" id="topNav">
+        <button class="nav__item" data-view="overview" onclick="window.location.href='/'">Overview</button>
+        <button class="nav__item" data-view="calendar" onclick="window.location.href='/'">Calendar</button>
+        <button class="nav__item" data-view="estimates" onclick="window.location.href='/'">Estimates</button>
+        <button class="nav__item" data-view="invoices" onclick="window.location.href='/'">Invoices</button>
+        <button class="nav__item" data-view="clients" onclick="window.location.href='/'">Clients</button>
+        <button class="nav__item" data-view="items" onclick="window.location.href='/'">Items</button>
+        <button class="nav__item" data-view="materials" onclick="window.location.href='/'">Materials</button>
+        <button class="nav__item" data-view="notifications" onclick="window.location.href='/'">Notifications</button>
+        <button class="nav__item" data-view="tools" onclick="window.location.href='/'">Tools</button>
+        <button class="nav__item" data-view="settings" onclick="window.location.href='/'">Settings</button>
       </div>
-    </div>
+    </nav>
 
-    <div id="loadingState" class="loading-state">Loading...</div>
-    <div id="errorState" class="error-state" style="display: none;">Failed to load document</div>
+    <div class="preview-container">
+      <div id="loadingState" class="loading-state">Loading...</div>
+      <div id="errorState" class="error-state" style="display: none;">Failed to load document</div>
 
-    <div id="previewContent" class="preview-content" style="display: none;">
-      <!-- Content will be dynamically inserted here -->
+      <div id="previewModalLike" class="preview-modal-like" style="display: none;">
+        <div class="preview-header">
+          <h3 id="previewTitle">Estimate Preview - Contractor View</h3>
+          <div class="preview-header-buttons">
+            <button class="btn small" id="editBtn">Edit</button>
+            <button class="btn small" id="shareBtn">Share</button>
+            <button class="btn small ghost" id="closeBtn">Close</button>
+          </div>
+        </div>
+        <div id="previewBody" class="preview-body">
+          <!-- Content will be dynamically inserted here -->
+        </div>
+      </div>
     </div>
   </div>
 

@@ -1572,7 +1572,7 @@ const renderList = () => {
     `;
 
     // Make the card clickable to open view
-    card.onclick = () => window.open(`/preview.html?id=${doc.id}`, '_blank');
+    card.onclick = () => window.location.href = `/preview.html?id=${doc.id}`;
 
     const actions = card.querySelector('.doc-card__actions');
 
@@ -1587,7 +1587,7 @@ const renderList = () => {
     viewBtn.textContent = 'View';
     viewBtn.onclick = (e) => {
       e.stopPropagation();
-      window.open(`/preview.html?id=${doc.id}`, '_blank');
+      window.location.href = `/preview.html?id=${doc.id}`;
     };
     actions.appendChild(viewBtn);
 
@@ -1712,7 +1712,7 @@ const renderTypeList = () => {
     `;
 
     // Make the card clickable to open view
-    card.onclick = () => window.open(`/preview.html?id=${doc.id}`, '_blank');
+    card.onclick = () => window.location.href = `/preview.html?id=${doc.id}`;
 
     const actions = card.querySelector('.doc-card__actions');
 
@@ -1727,7 +1727,7 @@ const renderTypeList = () => {
     viewBtn.textContent = 'View';
     viewBtn.onclick = (e) => {
       e.stopPropagation();
-      window.open(`/preview.html?id=${doc.id}`, '_blank');
+      window.location.href = `/preview.html?id=${doc.id}`;
     };
     actions.appendChild(viewBtn);
 

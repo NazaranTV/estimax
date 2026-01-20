@@ -11,7 +11,7 @@ const currency = (value) =>
 const loadDocument = async () => {
   const loadingState = document.getElementById('loadingState');
   const errorState = document.getElementById('errorState');
-  const previewContent = document.getElementById('previewContent');
+  const previewModalLike = document.getElementById('previewModalLike');
 
   try {
     if (!documentId) {
@@ -28,7 +28,7 @@ const loadDocument = async () => {
 
     // Hide loading, show content
     loadingState.style.display = 'none';
-    previewContent.style.display = 'block';
+    previewModalLike.style.display = 'block';
 
     // Render the document
     renderDocument();
@@ -122,8 +122,8 @@ const renderDocument = () => {
     `;
   }).join('');
 
-  const previewContent = document.getElementById('previewContent');
-  previewContent.innerHTML = `
+  const previewBody = document.getElementById('previewBody');
+  previewBody.innerHTML = `
     <div class="preview-info-grid">
       <div class="preview-info-section">
         <h4>Bill To</h4>
@@ -177,11 +177,7 @@ const renderDocument = () => {
 
 // Button handlers
 document.getElementById('closeBtn').addEventListener('click', () => {
-  window.close();
-  // Fallback if window.close() doesn't work (opened via direct navigation)
-  setTimeout(() => {
-    window.location.href = '/';
-  }, 100);
+  window.location.href = '/';
 });
 
 document.getElementById('editBtn').addEventListener('click', () => {
