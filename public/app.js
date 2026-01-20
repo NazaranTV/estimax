@@ -254,10 +254,12 @@ const openClientView = (doc) => {
       }, 0);
     }
 
-    const rateWithMaterials = (li.rate || 0) + materialsCost;
+    // Calculate line item total: (qty * rate) + markup% + materials
+    const baseTotal = (li.qty || 0) * (li.rate || 0);
     const markup = Number(li.markup) || 0;
-    const lineItemSubtotal = (li.qty || 0) * rateWithMaterials;
-    const total = lineItemSubtotal + markup;
+    const markupAmount = baseTotal * (markup / 100);
+    const lineItemTotal = baseTotal + markupAmount;
+    const total = lineItemTotal + materialsCost;
     calculatedTotal += total;
 
     // Generate materials HTML if any exist for this line item
@@ -296,7 +298,7 @@ const openClientView = (doc) => {
           ${li.notes ? `<div style="font-size: 12px; color: var(--muted); line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; margin-bottom: 4px;">${li.notes}</div>` : ''}
           ${materialsHtml}
         </td>
-        <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${currency(rateWithMaterials)}</td>
+        <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${currency(li.rate || 0)}</td>
         <td style="padding: 12px 4px; text-align: center; color: var(--muted); font-size: 13px; vertical-align: top;">${li.qty || 0}</td>
         <td style="padding: 12px 4px; text-align: right; font-weight: 600; font-size: 14px; vertical-align: top;">${currency(total)}</td>
       </tr>
